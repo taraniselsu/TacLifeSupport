@@ -22,5 +22,5 @@ Add the following lines to any part that you want to have the Life Support funct
 
 MODULE
 {
-	name = TacLifeSupport
+	name = TacLifeSupportModule
 }

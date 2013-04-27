@@ -48,8 +48,9 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="TacLifeSupport.cs" />
+    <Compile Include="TacLifeSupportModule.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="TacLifeSupportMain.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
