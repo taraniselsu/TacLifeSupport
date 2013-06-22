@@ -32,10 +32,10 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Assembly-CSharp">
-      <HintPath>..\..\..\..\..\..\..\Games\KSP_win-0.19.1-modtester\KSP_Data\Managed\Assembly-CSharp.dll</HintPath>
+      <HintPath>..\..\..\..\..\..\..\Games\KSP_win-0.20.2\KSP_Data\Managed\Assembly-CSharp.dll</HintPath>
     </Reference>
     <Reference Include="Assembly-CSharp-firstpass">
-      <HintPath>..\..\..\..\..\..\..\Games\KSP_win-0.19.1-modtester\KSP_Data\Managed\Assembly-CSharp-firstpass.dll</HintPath>
+      <HintPath>..\..\..\..\..\..\..\Games\KSP_win-0.20.2\KSP_Data\Managed\Assembly-CSharp-firstpass.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -44,10 +44,22 @@
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
     <Reference Include="UnityEngine">
-      <HintPath>..\..\..\..\..\..\..\Games\KSP_win-0.19.1-modtester\KSP_Data\Managed\UnityEngine.dll</HintPath>
+      <HintPath>..\..\..\..\..\..\..\Games\KSP_win-0.20.2\KSP_Data\Managed\UnityEngine.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="..\..\TacLib\Source\Icon.cs">
+      <Link>Icon.cs</Link>
+    </Compile>
+    <Compile Include="..\..\TacLib\Source\PopupWindow.cs">
+      <Link>PopupWindow.cs</Link>
+    </Compile>
+    <Compile Include="..\..\TacLib\Source\Utilities.cs">
+      <Link>Utilities.cs</Link>
+    </Compile>
+    <Compile Include="..\..\TacLib\Source\Window.cs">
+      <Link>Window.cs</Link>
+    </Compile>
     <Compile Include="TacLifeSupportModule.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="TacLifeSupportMain.cs" />

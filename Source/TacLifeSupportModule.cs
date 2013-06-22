@@ -31,7 +31,7 @@ using System.Linq;
 using System.Text;
 using UnityEngine;
 
-public class TacLifeSupportModule : PartModule
+public class TacLifeSupportModule// : PartModule
 {/*
     private TacLifeSupportMain main;
 

@@ -30,7 +30,7 @@ using System.Linq;
 using System.Text;
 using UnityEngine;
 
-class TacLifeSupportMain : MonoBehaviour
+class TacLifeSupportMain// : MonoBehaviour
 {/*
     private static double SECONDS_PER_DAY = 24 * 60 * 60;
     private string windowTitle;

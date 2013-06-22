@@ -4,8 +4,8 @@ using System.Linq;
 using System.Text;
 using UnityEngine;
 
-class TestBehavior : MonoBehaviour
-{
+class TestBehavior// : MonoBehaviour
+{/*
     private static float updateInterval = 10.0f;
     private Vessel lastVessel;
     private float lastUpdate;
@@ -128,5 +128,5 @@ class TestBehavior : MonoBehaviour
     void OnDestroy()
     {
         Debug.Log("TAC Test [" + this.GetInstanceID().ToString("X") + "][" + Time.time + "]: OnDestroy");
-    }
+    }*/
 }
