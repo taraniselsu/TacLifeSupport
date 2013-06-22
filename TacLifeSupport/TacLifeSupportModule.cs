@@ -29,18 +29,30 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 using UnityEngine;
 
 public class TacLifeSupportModule : PartModule
-{
+{/*
     private TacLifeSupportMain main;
 
     public override void OnAwake()
     {
         base.OnAwake();
         main = TacLifeSupportMain.GetInstance();
+
+        NotificationManager.OnVesselChange_Add(OnVesselChange);
+        NotificationManager.OnVesselDock_Add(OnVesselDock);
     }
+
+    //public override void OnStart(PartModule.StartState state)
+    //{
+    //    base.OnStart(state);
+    //    if (state != StartState.Editor)
+    //    {
+    //        part.OnJustAboutToBeDestroyed += CleanUp;
+    //        vessel.OnJustAboutToBeDestroyed += CleanUp;
+    //    }
+    //}
 
     public override void OnLoad(ConfigNode node)
     {
@@ -53,4 +65,28 @@ public class TacLifeSupportModule : PartModule
         base.OnSave(node);
         main.Save(node);
     }
+
+    public void OnVesselChange(Vessel v)
+    {
+        string message = "TAC LifeSupport -- Vessel changed! ";
+        if (v != null)
+        {
+            message += v.vesselName;
+        }
+        Debug.Log(message);
+    }
+
+    public void OnVesselDock(Vessel v)
+    {
+        string message = "TAC LifeSupport -- Vessel docked! ";
+        if (v != null)
+        {
+            message += v.vesselName;
+        }
+        Debug.Log(message);
+    }
+
+    //private void CleanUp()
+    //{
+    //}*/
 }

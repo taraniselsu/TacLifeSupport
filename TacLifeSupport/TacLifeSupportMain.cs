@@ -28,11 +28,10 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 using UnityEngine;
 
 class TacLifeSupportMain : MonoBehaviour
-{
+{/*
     private static double SECONDS_PER_DAY = 24 * 60 * 60;
     private string windowTitle;
     private int windowId;
@@ -90,12 +89,13 @@ class TacLifeSupportMain : MonoBehaviour
         lastUpdateTime = -1;
 
         // consumption rates in kg per Earth day (24-hour)
-        foodConsumptionRate = 0.62;
-        waterConsumptionRate = 3.52;
-        oxygenConsumptionRate = 0.84;
-        co2ProductionRate = 1.00;
-        liquidWasteProductionRate = 3.87;
-        solidWasteProductionRate = 0.11;
+        double multiplier = 24 * 12 * 4;
+        foodConsumptionRate = 0.62 * multiplier;
+        waterConsumptionRate = 3.52 * multiplier;
+        oxygenConsumptionRate = 0.84 * multiplier;
+        co2ProductionRate = 1.00 * multiplier;
+        liquidWasteProductionRate = 3.87 * multiplier;
+        solidWasteProductionRate = 0.11 * multiplier;
 
         foodCritical = false;
         waterCritical = false;
@@ -105,9 +105,9 @@ class TacLifeSupportMain : MonoBehaviour
         timeWaterRanOut = -1.0;
         timeOxygenRanOut = -1.0;
 
-        maxTimeNoFood = 30 * 24 * 60 * 60; // 30 days
-        maxTimeNoWater = 3 * 24 * 60 * 60; // 3 days
-        maxTimeNoOxygen = 2 * 60 * 60; // 2 hours
+        maxTimeNoFood = 30 * 24 * 60 * 60 / multiplier; // 30 days
+        maxTimeNoWater = 3 * 24 * 60 * 60 / multiplier; // 3 days
+        maxTimeNoOxygen = 2 * 60 * 60 / multiplier; // 2 hours
 
         alerted = false;
     }
@@ -148,12 +148,12 @@ class TacLifeSupportMain : MonoBehaviour
                     desiredFood /= 2.0;
                 }
                 double foodObtained = part.RequestResource(foodResourceId, desiredFood);
-                if (foodObtained < (desiredFood * 0.99))
+                if (foodObtained < (desiredFood * 0.98))
                 {
                     if (timeFoodRanOut == -1)
                     {
                         TimeWarp.SetRate(0, true);
-                        ScreenMessages.PostScreenMessage("LIFE SUPPORT CRITICAL: FOOD DEPLETED!", 5.0f, ScreenMessageStyle.UPPER_CENTER);
+                        ScreenMessages.PostScreenMessage("LIFE SUPPORT CRITICAL: FOOD DEPLETED!", 10.0f, ScreenMessageStyle.UPPER_CENTER);
                         timeFoodRanOut = currentTime - ((desiredFood - foodObtained) / foodConsumptionRate * SECONDS_PER_DAY);
                     }
                     else if ((currentTime - timeFoodRanOut) > maxTimeNoFood)
@@ -173,12 +173,12 @@ class TacLifeSupportMain : MonoBehaviour
                     desiredWater /= 2.0;
                 }
                 double waterObtained = part.RequestResource(waterResourceId, desiredWater);
-                if (waterObtained < (desiredWater * 0.99))
+                if (waterObtained < (desiredWater * 0.98))
                 {
                     if (timeWaterRanOut == -1)
                     {
                         TimeWarp.SetRate(0, true);
-                        ScreenMessages.PostScreenMessage("LIFE SUPPORT CRITICAL: WATER DEPLETED!", 5.0f, ScreenMessageStyle.UPPER_CENTER);
+                        ScreenMessages.PostScreenMessage("LIFE SUPPORT CRITICAL: WATER DEPLETED!", 10.0f, ScreenMessageStyle.UPPER_CENTER);
                         timeWaterRanOut = currentTime;
                     }
                     else if ((currentTime - timeWaterRanOut) > maxTimeNoWater)
@@ -196,12 +196,12 @@ class TacLifeSupportMain : MonoBehaviour
                     // Oxygen
                     double desiredOxygen = numCrew * timeDelta * oxygenConsumptionRate / SECONDS_PER_DAY;
                     double oxygenObtained = part.RequestResource(oxygenResourceId, desiredOxygen);
-                    if (oxygenObtained < (desiredOxygen * 0.99))
+                    if (oxygenObtained < (desiredOxygen * 0.98))
                     {
                         if (timeOxygenRanOut == -1)
                         {
                             TimeWarp.SetRate(0, true);
-                            ScreenMessages.PostScreenMessage("LIFE SUPPORT CRITICAL: OXYGEN DEPLETED!", 5.0f, ScreenMessageStyle.UPPER_CENTER);
+                            ScreenMessages.PostScreenMessage("LIFE SUPPORT CRITICAL: OXYGEN DEPLETED!", 10.0f, ScreenMessageStyle.UPPER_CENTER);
                             timeOxygenRanOut = currentTime;
                         }
                         else if ((currentTime - timeOxygenRanOut) > maxTimeNoOxygen)
@@ -336,14 +336,14 @@ class TacLifeSupportMain : MonoBehaviour
         GUILayout.BeginVertical();
 
         GUILayout.BeginHorizontal();
-        
+
         GUILayout.BeginVertical();
         GUILayout.Label("Vessel:", labelStyle);
         GUILayout.Label("Type:", labelStyle);
         GUILayout.Label("Kerbals:", labelStyle);
         GUILayout.Label("Last update time:", labelStyle);
         GUILayout.EndVertical();
-        
+
         GUILayout.BeginVertical();
         GUILayout.Label(vesselName, labelStyle);
         GUILayout.Label(vesselType, labelStyle);
@@ -385,12 +385,6 @@ class TacLifeSupportMain : MonoBehaviour
         GUILayout.EndVertical();
 
         GUI.DragWindow();
-
-        if (GUI.changed)
-        {
-            windowPos.width = 100;
-            windowPos.height = 100;
-        }
     }
 
     public void Load(ConfigNode node)
@@ -416,12 +410,12 @@ class TacLifeSupportMain : MonoBehaviour
     private void GetResourceIds()
     {
         PartResourceLibrary resourceLibrary = PartResourceLibrary.Instance;
-        foodResourceId = resourceLibrary.GetDefinition("TAC_Food").id;
-        waterResourceId = resourceLibrary.GetDefinition("TAC_Water").id;
-        oxygenResourceId = resourceLibrary.GetDefinition("TAC_Oxygen").id;
-        co2ResourceId = resourceLibrary.GetDefinition("TAC_CO2").id;
-        liquidWasteResourceId = resourceLibrary.GetDefinition("TAC_LiquidWaste").id;
-        solidWasteResourceId = resourceLibrary.GetDefinition("TAC_SolidWaste").id;
+        foodResourceId = resourceLibrary.GetDefinition("Food_TAC").id;
+        waterResourceId = resourceLibrary.GetDefinition("Water_TAC").id;
+        oxygenResourceId = resourceLibrary.GetDefinition("Oxygen_TAC").id;
+        co2ResourceId = resourceLibrary.GetDefinition("CO2_TAC").id;
+        liquidWasteResourceId = resourceLibrary.GetDefinition("LiquidWaste_TAC").id;
+        solidWasteResourceId = resourceLibrary.GetDefinition("SolidWaste_TAC").id;
     }
 
     private static void GetValue(ConfigNode config, string name, out double value, double defaultValue)
@@ -437,11 +431,16 @@ class TacLifeSupportMain : MonoBehaviour
         }
     }
 
-    private double KillCrewMember(Vessel vessel, string causeOfDeath)
+    private static double KillCrewMember(Vessel vessel, string causeOfDeath)
     {
         List<ProtoCrewMember> crew = vessel.GetVesselCrew();
         if (crew.Count > 0)
         {
+            //if (CameraManager.Instance.currentCameraMode == CameraManager.CameraMode.IVA)
+            //{
+            //    CameraManager.Instance.SetCameraFlight();
+            //}
+
             int crewMemberIndex = UnityEngine.Random.Range(0, crew.Count - 1);
             ProtoCrewMember crewMember = crew[crewMemberIndex];
 
@@ -455,7 +454,7 @@ class TacLifeSupportMain : MonoBehaviour
         return 0.0;
     }
 
-    private string FormatTime(double time)
+    private static string FormatTime(double time)
     {
         int hours = (int)(time / 3600);
         time -= hours * 3600;
@@ -466,5 +465,5 @@ class TacLifeSupportMain : MonoBehaviour
         int seconds = (int)time;
 
         return hours.ToString("#0") + ":" + minutes.ToString("00") + ":" + seconds.ToString("00");
-    }
+    }*/
 }
