@@ -36,6 +36,7 @@ namespace Tac
         public string Food { get; private set; }
         public string Water { get; private set; }
         public string Oxygen { get; private set; }
+        public string Electricity { get { return "ElectricCharge"; } }
         public string CO2 { get; private set; }
         public string Waste { get; private set; }
         public string WasteWater { get; private set; }
@@ -45,6 +46,7 @@ namespace Tac
         public double OxygenConsumptionRate { get; set; }
         public double ElectricityConsumptionRate { get; set; }
         public double BaseElectricityConsumptionRate { get; set; }
+        public double EvaElectricityConsumptionRate { get; set; }
         public double CO2ProductionRate { get; set; }
         public double WasteProductionRate { get; set; }
         public double WasteWaterProductionRate { get; set; }
@@ -54,8 +56,8 @@ namespace Tac
         public double MaxTimeWithoutOxygen { get; set; }
         public double MaxTimeWithoutElectricity { get; set; }
 
-        public double DaysWorthOfResources { get; set; }
-        public double EvaDaysWorthOfResources { get; set; }
+        public double DefaultResourceAmount { get; set; }
+        public double EvaDefaultResourceAmount { get; set; }
 
         public int FoodId
         {
@@ -82,7 +84,7 @@ namespace Tac
         {
             get
             {
-                return PartResourceLibrary.Instance.GetDefinition("ElectricCharge").id;
+                return PartResourceLibrary.Instance.GetDefinition(Electricity).id;
             }
         }
         public int CO2Id
@@ -109,7 +111,8 @@ namespace Tac
 
         public Settings()
         {
-            const int SECONDS_PER_HOUR = 3600;
+            const int SECONDS_PER_MINUTE = 60;
+            const int SECONDS_PER_HOUR = 60 * SECONDS_PER_MINUTE;
             const int SECONDS_PER_DAY = 24 * SECONDS_PER_HOUR;
 
             Food = "Food_TAC";
@@ -119,25 +122,27 @@ namespace Tac
             Waste = "Waste_TAC";
             WasteWater = "WasteWater_TAC";
 
-            // Consumption rates in units per Earth day (24-hour)
+            // Consumption rates in units per Earth second
             // See the TacResources.cfg for conversions between units and kg.
             // FIXME add my calculations and references
-            FoodConsumptionRate = 1;
-            WaterConsumptionRate = 1;
-            OxygenConsumptionRate = 1;
-            ElectricityConsumptionRate = 1200;
-            BaseElectricityConsumptionRate = 2400;
-            CO2ProductionRate = 1;
-            WasteProductionRate = 1;
-            WasteWaterProductionRate = 1;
+            FoodConsumptionRate = 1.0 / SECONDS_PER_DAY;
+            WaterConsumptionRate = 1.0 / SECONDS_PER_DAY;
+            OxygenConsumptionRate = 1.0 / SECONDS_PER_DAY;
+            ElectricityConsumptionRate = 1200.0 / SECONDS_PER_DAY;
+            BaseElectricityConsumptionRate = 2400.0 / SECONDS_PER_DAY;
+            EvaElectricityConsumptionRate = 100.0 / (SECONDS_PER_DAY / 2.0); // 100 per 12 hours (1/2 day)
+            CO2ProductionRate = 1.0 / SECONDS_PER_DAY;
+            WasteProductionRate = 1.0 / SECONDS_PER_DAY;
+            WasteWaterProductionRate = 1.0 / SECONDS_PER_DAY;
 
-            MaxTimeWithoutFood = 30 * SECONDS_PER_DAY; // 30 days
-            MaxTimeWithoutWater = 3 * SECONDS_PER_DAY; // 3 days
-            MaxTimeWithoutOxygen = 2 * SECONDS_PER_HOUR; // 2 hours
-            MaxTimeWithoutElectricity = 2 * SECONDS_PER_HOUR; // 2 hours
+            MaxTimeWithoutFood = 30.0 * SECONDS_PER_DAY; // 30 days
+            MaxTimeWithoutWater = 3.0 * SECONDS_PER_DAY; // 3 days
+            MaxTimeWithoutOxygen = 5.0 * SECONDS_PER_MINUTE; // 5 minutes
+            MaxTimeWithoutElectricity = 2.0 * SECONDS_PER_HOUR; // 2 hours
 
-            DaysWorthOfResources = 3;
-            EvaDaysWorthOfResources = 0.5;
+            // Amount of resources to load crewable parts with, in seconds
+            DefaultResourceAmount = 3.0 * SECONDS_PER_DAY; // 3 days
+            EvaDefaultResourceAmount = 12.0 * SECONDS_PER_HOUR; // 12 hours (1/2 day)
         }
 
         public void Load(ConfigNode config)
@@ -154,6 +159,7 @@ namespace Tac
             OxygenConsumptionRate = Utilities.GetValue(config, "OxygenConsumptionRate", OxygenConsumptionRate);
             ElectricityConsumptionRate = Utilities.GetValue(config, "ElectricityConsumptionRate", ElectricityConsumptionRate);
             BaseElectricityConsumptionRate = Utilities.GetValue(config, "BaseElectricityConsumptionRate", BaseElectricityConsumptionRate);
+            EvaElectricityConsumptionRate = Utilities.GetValue(config, "EvaElectricityConsumptionRate", EvaElectricityConsumptionRate);
             CO2ProductionRate = Utilities.GetValue(config, "CO2ProductionRate", CO2ProductionRate);
             WasteProductionRate = Utilities.GetValue(config, "WasteProductionRate", WasteProductionRate);
             WasteWaterProductionRate = Utilities.GetValue(config, "WasteWaterProductionRate", WasteWaterProductionRate);
@@ -163,8 +169,8 @@ namespace Tac
             MaxTimeWithoutOxygen = Utilities.GetValue(config, "MaxTimeWithoutOxygen", MaxTimeWithoutOxygen);
             MaxTimeWithoutElectricity = Utilities.GetValue(config, "MaxTimeWithoutElectricity", MaxTimeWithoutElectricity);
 
-            DaysWorthOfResources = Utilities.GetValue(config, "DaysWorthOfResources", DaysWorthOfResources);
-            EvaDaysWorthOfResources = Utilities.GetValue(config, "EvaDaysWorthOfResources", EvaDaysWorthOfResources);
+            DefaultResourceAmount = Utilities.GetValue(config, "DefaultResourceAmount", DefaultResourceAmount);
+            EvaDefaultResourceAmount = Utilities.GetValue(config, "EvaDefaultResourceAmount", EvaDefaultResourceAmount);
         }
 
         public void Save(ConfigNode config)
@@ -181,6 +187,7 @@ namespace Tac
             config.AddValue("OxygenConsumptionRate", OxygenConsumptionRate);
             config.AddValue("ElectricityConsumptionRate", ElectricityConsumptionRate);
             config.AddValue("BaseElectricityConsumptionRate", BaseElectricityConsumptionRate);
+            config.AddValue("EvaElectricityConsumptionRate", EvaElectricityConsumptionRate);
             config.AddValue("CO2ProductionRate", CO2ProductionRate);
             config.AddValue("WasteProductionRate", WasteProductionRate);
             config.AddValue("WasteWaterProductionRate", WasteWaterProductionRate);
@@ -190,8 +197,8 @@ namespace Tac
             config.AddValue("MaxTimeWithoutOxygen", MaxTimeWithoutOxygen);
             config.AddValue("MaxTimeWithoutElectricity", MaxTimeWithoutElectricity);
 
-            config.AddValue("DaysWorthOfResources", DaysWorthOfResources);
-            config.AddValue("EvaDaysWorthOfResources", EvaDaysWorthOfResources);
+            config.AddValue("DefaultResourceAmount", DefaultResourceAmount);
+            config.AddValue("EvaDefaultResourceAmount", EvaDefaultResourceAmount);
         }
     }
 }

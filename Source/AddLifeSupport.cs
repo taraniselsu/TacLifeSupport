@@ -24,6 +24,7 @@
  * purposes. It is in no way meant to represent a real entity. Any similarity to a real entity
  * is purely coincidental.
  */
+using KSP.IO;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -58,18 +59,23 @@ namespace Tac
             if (!initialized)
             {
                 initialized = true;
-                settings = LifeSupportController.Instance.settings;
+                LoadSettings();
 
-                List<AvailablePart> parts = PartLoader.LoadedPartsList;
+                var parts = PartLoader.LoadedPartsList.Where(p => p.partPrefab != null && p.partPrefab.CrewCapacity > 0);
                 foreach (AvailablePart part in parts)
                 {
                     try
                     {
-                        Part prefabPart = part.partPrefab;
-                        if (prefabPart.CrewCapacity > 0 && !part.name.Equals("kerbalEVA"))
+                        if (part.name.Equals("kerbalEVA"))
                         {
+                            EvaAddLifeSupport(part);
+                        }
+                        else
+                        {
+                            Part prefabPart = part.partPrefab;
+
                             Debug.Log("TAC Life Support (AddLifeSupport) [" + this.GetInstanceID().ToString("X") + "][" + Time.time
-                                + "]: Adding Life Support to " + prefabPart.partName + " (" + prefabPart.partInfo.title + ")");
+                                + "]: Adding Life Support to " + part.name + "/" + prefabPart.partName + "/" + prefabPart.partInfo.title);
 
                             AddPartModule(prefabPart);
 
@@ -84,11 +90,23 @@ namespace Tac
                     catch (Exception ex)
                     {
                         Debug.LogError("TAC Life Support (AddLifeSupport) [" + this.GetInstanceID().ToString("X") + "][" + Time.time
-                            + "]: Failed to add Life Support to " + part + ":\n" + ex.Message + "\n" + ex.StackTrace);
+                            + "]: Failed to add Life Support to " + part.name + ":\n" + ex.Message + "\n" + ex.StackTrace);
                     }
                 }
+            }
 
-                Destroy(this);
+            Destroy(this);
+        }
+
+        private void LoadSettings()
+        {
+            string configFilename = IOUtils.GetFilePathFor(this.GetType(), "LifeSupport.cfg");
+            settings = new Settings();
+
+            if (File.Exists<LifeSupportController>(configFilename))
+            {
+                ConfigNode config = ConfigNode.Load(configFilename);
+                settings.Load(config);
             }
         }
 
@@ -123,7 +141,7 @@ namespace Tac
             {
                 if (!part.Resources.Contains(id))
                 {
-                    double max = part.CrewCapacity * rate * settings.DaysWorthOfResources;
+                    double max = part.CrewCapacity * rate * settings.DefaultResourceAmount;
                     ConfigNode node = new ConfigNode("RESOURCE");
                     node.AddValue("name", name);
                     node.AddValue("maxAmount", max);
@@ -143,7 +161,71 @@ namespace Tac
             catch (Exception ex)
             {
                 Debug.LogError("TAC Life Support (AddLifeSupport) [" + this.GetInstanceID().ToString("X") + "][" + Time.time
-                    + "]: Failed to add resource " + name + " to the part: " + ex.Message + "\n" + ex.StackTrace);
+                    + "]: Failed to add resource " + name + " to " + part.name + ": " + ex.Message + "\n" + ex.StackTrace);
+            }
+        }
+
+        private void EvaAddLifeSupport(AvailablePart part)
+        {
+            Part prefabPart = part.partPrefab;
+
+            Debug.Log("TAC Life Support (AddLifeSupport) [" + this.GetInstanceID().ToString("X") + "][" + Time.time
+                + "]: Adding resources to " + part.name + "/" + prefabPart.partName + "/" + prefabPart.partInfo.title);
+
+            EvaAddPartModule(prefabPart);
+
+            EvaAddResource(prefabPart, settings.EvaElectricityConsumptionRate, settings.Electricity, false);
+            EvaAddResource(prefabPart, settings.FoodConsumptionRate, settings.Food, false);
+            EvaAddResource(prefabPart, settings.WaterConsumptionRate, settings.Water, false);
+            EvaAddResource(prefabPart, settings.OxygenConsumptionRate, settings.Oxygen, false);
+            EvaAddResource(prefabPart, settings.CO2ProductionRate, settings.CO2, false);
+            EvaAddResource(prefabPart, settings.WasteProductionRate, settings.Waste, false);
+            EvaAddResource(prefabPart, settings.WasteWaterProductionRate, settings.WasteWater, false);
+        }
+
+        private void EvaAddPartModule(Part part)
+        {
+            try
+            {
+                ConfigNode node = new ConfigNode("MODULE");
+                node.AddValue("name", "LifeSupportModule");
+
+                part.AddModule(node);
+
+            }
+            catch (Exception ex)
+            {
+                Debug.LogError("TAC Life Support (AddLifeSupport) [" + this.GetInstanceID().ToString("X") + "][" + Time.time
+                    + "]: Failed to add the part module to EVA: " + ex.Message + "\n" + ex.StackTrace);
+            }
+
+        }
+
+        private void EvaAddResource(Part part, double rate, string name, bool full)
+        {
+            try
+            {
+                double max = rate * settings.EvaDefaultResourceAmount;
+                PartResource resource = part.gameObject.AddComponent<PartResource>();
+                resource.SetInfo(PartResourceLibrary.Instance.resourceDefinitions[name]);
+                resource.maxAmount = max;
+
+                if (full)
+                {
+                    resource.amount = max;
+                }
+                else
+                {
+                    resource.amount = 0;
+                }
+
+                part.Resources.list.Add(resource);
+
+            }
+            catch (Exception ex)
+            {
+                Debug.LogError("TAC Life Support (AddLifeSupport) [" + this.GetInstanceID().ToString("X") + "][" + Time.time
+                    + "]: Failed to add resource " + name + " to EVA: " + ex.Message + "\n" + ex.StackTrace);
             }
         }
     }

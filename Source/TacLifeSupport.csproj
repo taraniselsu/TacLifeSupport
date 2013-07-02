@@ -60,15 +60,14 @@
     <Compile Include="..\..\TacLib\Source\Window.cs">
       <Link>Window.cs</Link>
     </Compile>
-    <Compile Include="AddEvaLifeSupport.cs" />
     <Compile Include="AddLifeSupport.cs" />
-    <Compile Include="EvaLifeSupportModule.cs" />
+    <Compile Include="CrewMemberInfo.cs" />
     <Compile Include="LifeSupportController.cs" />
-    <Compile Include="LifeSupportFlightController.cs" />
     <Compile Include="LifeSupportModule.cs" />
     <Compile Include="LifeSupportMonitoringWindow.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Settings.cs" />
+    <Compile Include="VesselInfo.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
