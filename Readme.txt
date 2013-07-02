@@ -3,24 +3,24 @@ designed by Taranis Elsu.
 
 For use with the Kerbal Space Program, http://kerbalspaceprogram.com/
 
-This mod is made available under the Attribution-NonCommercial-ShareAlike 3.0 (CC BY-NC-SA
-3.0) creative commons license. See the LICENSE.txt file.
+This mod is made available under the Attribution-NonCommercial-ShareAlike 3.0 (CC
+BY-NC-SA 3.0) creative commons license. See the LICENSE.txt file.
 
 Source code is available from: https://github.com/taraniselsu/TacLifeSupport
 
 
 ===== Features =====
 
-* Kerbals require resources to survive whether in a vessel or on EVA: Food, Water, Oxygen,
-      Electricity (for air quality and climate control)
+* Kerbals require resources to survive whether in a vessel or on EVA: Food, Water,
+      Oxygen, Electricity (for air quality and climate control)
 * They produce waste resources: CO2, Waste, WasteWater
 * They will die if they go without resources for too long: 30 days without food, 3 days
       without water, 5 minutes without Oxygen, and 2 hours without Electricity
 * Crewed pods come stocked with 3 days of resources.
 * When a Kerbal goes on EVA, he takes a half day of each resource with him in the EVA
       suit, taking from the pod that he was in.
-* Kerbals do require resources even when their vessel is not active, and they can die if you
-      leave them alone for too long.
+* Kerbals do require resources even when their vessel is not active, and they can die if
+      you leave them alone for too long.
 * The system tries to stop Time Warp when resources get low and again when resources
       run out. No guarantees.
 
