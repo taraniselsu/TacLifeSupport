@@ -45,7 +45,7 @@ namespace Tac
         private Vector2 scrollPosition;
 
         public LifeSupportMonitoringWindow(LifeSupportController controller, Settings settings)
-            : base("Life Support Monitoring")
+            : base("Life Support Monitoring", 240, 400)
         {
             this.controller = controller;
             this.settings = settings;
@@ -135,7 +135,7 @@ namespace Tac
                         }
 
                         double electricityConsumptionRate = controller.CalculateElectricityConsumptionRate(vessel, vesselInfo);
-                        GUILayout.Label("Remaining Electricity: " + FormatTime(vesselInfo.remainingElectricity / electricityConsumptionRate) + " (" + vesselInfo.remainingElectricity.ToString("0.000000") + ")", style);
+                        GUILayout.Label("Remaining Electricity: " + FormatTime(vesselInfo.remainingElectricity / electricityConsumptionRate)/* + " (" + vesselInfo.remainingElectricity.ToString("0.000000") + ")"*/, style);
                     }
 
                     // Food
@@ -152,7 +152,7 @@ namespace Tac
                             style = warningStyle;
                         }
 
-                        GUILayout.Label("Remaining Food: " + FormatTime(vesselInfo.remainingFood / settings.FoodConsumptionRate / vesselInfo.numCrew) + " (" + vesselInfo.remainingFood.ToString("0.000000") + ")", style);
+                        GUILayout.Label("Remaining Food: " + FormatTime(vesselInfo.remainingFood / settings.FoodConsumptionRate / vesselInfo.numCrew)/* + " (" + vesselInfo.remainingFood.ToString("0.000000") + ")"*/, style);
                     }
 
                     // Water
@@ -169,7 +169,7 @@ namespace Tac
                             style = warningStyle;
                         }
 
-                        GUILayout.Label("Remaining Water: " + FormatTime(vesselInfo.remainingWater / settings.WaterConsumptionRate / vesselInfo.numCrew) + " (" + vesselInfo.remainingWater.ToString("0.000000") + ")", style);
+                        GUILayout.Label("Remaining Water: " + FormatTime(vesselInfo.remainingWater / settings.WaterConsumptionRate / vesselInfo.numCrew)/* + " (" + vesselInfo.remainingWater.ToString("0.000000") + ")"*/, style);
                     }
 
                     // Oxygen
@@ -186,7 +186,7 @@ namespace Tac
                             style = warningStyle;
                         }
 
-                        GUILayout.Label("Remaining Oxygen: " + FormatTime(vesselInfo.remainingOxygen / settings.OxygenConsumptionRate / vesselInfo.numCrew) + " (" + vesselInfo.remainingOxygen.ToString("0.000000") + ")", style);
+                        GUILayout.Label("Remaining Oxygen: " + FormatTime(vesselInfo.remainingOxygen / settings.OxygenConsumptionRate / vesselInfo.numCrew)/* + " (" + vesselInfo.remainingOxygen.ToString("0.000000") + ")"*/, style);
                     }
 
                     GUILayout.Space(20);
@@ -205,7 +205,7 @@ namespace Tac
             GUILayout.EndVertical();
             GUILayout.EndScrollView();
 
-            GUILayout.Space(6);
+            GUILayout.Space(8);
         }
 
         private static string FormatTime(double time)

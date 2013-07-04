@@ -57,7 +57,6 @@ namespace Tac
 
             settings = new Settings();
             monitoringWindow = new LifeSupportMonitoringWindow(this, settings);
-            monitoringWindow.SetSize(300, 200);
 
             icon = new Icon<LifeSupportController>(new Rect(Screen.width * 0.75f, 0, 32, 32), "icon.png", "LS",
                 "Click to show the Life Support Monitoring Window", OnIconClicked);
