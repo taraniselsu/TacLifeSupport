@@ -37,6 +37,8 @@ namespace Tac
     {
         private readonly LifeSupportController controller;
         private readonly Settings settings;
+        private readonly SettingsWindow settingsWindow;
+        private readonly RosterWindow rosterWindow;
 
         private GUIStyle labelStyle;
         private GUIStyle warningStyle;
@@ -44,11 +46,24 @@ namespace Tac
         private GUIStyle headerStyle;
         private Vector2 scrollPosition;
 
-        public LifeSupportMonitoringWindow(LifeSupportController controller, Settings settings)
-            : base("Life Support Monitoring", 240, 400)
+        public LifeSupportMonitoringWindow(LifeSupportController controller, Settings settings, SettingsWindow settingsWindow, RosterWindow rosterWindow)
+            : base("Life Support Monitoring", 300, 300)
         {
             this.controller = controller;
             this.settings = settings;
+            this.settingsWindow = settingsWindow;
+            this.rosterWindow = rosterWindow;
+        }
+
+        public override void SetVisible(bool newValue)
+        {
+            base.SetVisible(newValue);
+
+            if (newValue == false)
+            {
+                settingsWindow.SetVisible(false);
+                rosterWindow.SetVisible(false);
+            }
         }
 
         protected override void ConfigureStyles()
@@ -102,17 +117,17 @@ namespace Tac
                         StringBuilder text = new StringBuilder(crewMemberInfo.name);
                         if ((currentTime - crewMemberInfo.lastFood) > 1)
                         {
-                            text.Append("  Food=").Append(FormatTime(currentTime - crewMemberInfo.lastFood));
+                            text.Append("  Food=").Append(Utilities.FormatTime(currentTime - crewMemberInfo.lastFood));
                             style = criticalStyle;
                         }
                         if ((currentTime - crewMemberInfo.lastWater) > 1)
                         {
-                            text.Append("  Water=").Append(FormatTime(currentTime - crewMemberInfo.lastWater));
+                            text.Append("  Water=").Append(Utilities.FormatTime(currentTime - crewMemberInfo.lastWater));
                             style = criticalStyle;
                         }
                         if ((currentTime - crewMemberInfo.lastOxygen) > 1)
                         {
-                            text.Append("  Oxygen=").Append(FormatTime(currentTime - crewMemberInfo.lastOxygen));
+                            text.Append("  Oxygen=").Append(Utilities.FormatTime(currentTime - crewMemberInfo.lastOxygen));
                             style = criticalStyle;
                         }
 
@@ -124,7 +139,7 @@ namespace Tac
                     // Electricity
                     if (vesselInfo.electricityStatus == VesselInfo.Status.CRITICAL)
                     {
-                        GUILayout.Label("Electric Charge depleted!  " + FormatTime(vesselInfo.lastElectricity - currentTime), criticalStyle);
+                        GUILayout.Label("Electric Charge depleted!  " + Utilities.FormatTime(vesselInfo.lastElectricity - currentTime), criticalStyle);
                     }
                     else
                     {
@@ -135,14 +150,14 @@ namespace Tac
                         }
 
                         double electricityConsumptionRate = controller.CalculateElectricityConsumptionRate(vessel, vesselInfo);
-                        GUILayout.Label("Remaining Electricity: " + FormatTime(vesselInfo.remainingElectricity / electricityConsumptionRate)/* + " (" + vesselInfo.remainingElectricity.ToString("0.000000") + ")"*/, style);
+                        GUILayout.Label("Remaining Electricity: " + Utilities.FormatTime(vesselInfo.remainingElectricity / electricityConsumptionRate)/* + " (" + vesselInfo.remainingElectricity.ToString("0.000000") + ")"*/, style);
                     }
 
                     // Food
                     if (vesselInfo.foodStatus == VesselInfo.Status.CRITICAL)
                     {
                         CrewMemberInfo crewMemberInfo = crew.OrderBy(cmi => cmi.lastFood).First();
-                        GUILayout.Label("Food depleted! " + FormatTime(crewMemberInfo.lastFood - currentTime), criticalStyle);
+                        GUILayout.Label("Food depleted! " + Utilities.FormatTime(crewMemberInfo.lastFood - currentTime), criticalStyle);
                     }
                     else
                     {
@@ -152,14 +167,14 @@ namespace Tac
                             style = warningStyle;
                         }
 
-                        GUILayout.Label("Remaining Food: " + FormatTime(vesselInfo.remainingFood / settings.FoodConsumptionRate / vesselInfo.numCrew)/* + " (" + vesselInfo.remainingFood.ToString("0.000000") + ")"*/, style);
+                        GUILayout.Label("Remaining Food: " + Utilities.FormatTime(vesselInfo.remainingFood / settings.FoodConsumptionRate / vesselInfo.numCrew)/* + " (" + vesselInfo.remainingFood.ToString("0.000000") + ")"*/, style);
                     }
 
                     // Water
                     if (vesselInfo.waterStatus == VesselInfo.Status.CRITICAL)
                     {
                         CrewMemberInfo crewMemberInfo = crew.OrderBy(cmi => cmi.lastWater).First();
-                        GUILayout.Label("Water depleted! " + FormatTime(crewMemberInfo.lastWater - currentTime), criticalStyle);
+                        GUILayout.Label("Water depleted! " + Utilities.FormatTime(crewMemberInfo.lastWater - currentTime), criticalStyle);
                     }
                     else
                     {
@@ -169,14 +184,14 @@ namespace Tac
                             style = warningStyle;
                         }
 
-                        GUILayout.Label("Remaining Water: " + FormatTime(vesselInfo.remainingWater / settings.WaterConsumptionRate / vesselInfo.numCrew)/* + " (" + vesselInfo.remainingWater.ToString("0.000000") + ")"*/, style);
+                        GUILayout.Label("Remaining Water: " + Utilities.FormatTime(vesselInfo.remainingWater / settings.WaterConsumptionRate / vesselInfo.numCrew)/* + " (" + vesselInfo.remainingWater.ToString("0.000000") + ")"*/, style);
                     }
 
                     // Oxygen
                     if (vesselInfo.oxygenStatus == VesselInfo.Status.CRITICAL)
                     {
                         CrewMemberInfo crewMemberInfo = crew.OrderBy(cmi => cmi.lastOxygen).First();
-                        GUILayout.Label("Oxygen depleted! " + FormatTime(crewMemberInfo.lastOxygen - currentTime), criticalStyle);
+                        GUILayout.Label("Oxygen depleted! " + Utilities.FormatTime(crewMemberInfo.lastOxygen - currentTime), criticalStyle);
                     }
                     else
                     {
@@ -186,60 +201,26 @@ namespace Tac
                             style = warningStyle;
                         }
 
-                        GUILayout.Label("Remaining Oxygen: " + FormatTime(vesselInfo.remainingOxygen / settings.OxygenConsumptionRate / vesselInfo.numCrew)/* + " (" + vesselInfo.remainingOxygen.ToString("0.000000") + ")"*/, style);
+                        GUILayout.Label("Remaining Oxygen: " + Utilities.FormatTime(vesselInfo.remainingOxygen / settings.OxygenConsumptionRate / vesselInfo.numCrew)/* + " (" + vesselInfo.remainingOxygen.ToString("0.000000") + ")"*/, style);
                     }
 
                     GUILayout.Space(20);
                 }
-
-                //List<ProtoCrewMember> crewRoster = KerbalCrewRoster.CrewRoster;
-                //GUILayout.Label("All crew: " + crewRoster.Count, headerStyle);
-                //foreach (ProtoCrewMember crewMember in crewRoster)
-                //{
-                //    string part = (crewMember.KerbalRef != null) ? crewMember.KerbalRef.InPart.ToString() : "Unknown";
-                //    string vessel = (crewMember.KerbalRef != null) ? crewMember.KerbalRef.InVessel.vesselName : "Unknown";
-                //    GUILayout.Label(crewMember.name + ", " + crewMember.rosterStatus + ", " + vessel + ", " + part, labelStyle);
-                //}
             }
 
             GUILayout.EndVertical();
             GUILayout.EndScrollView();
 
             GUILayout.Space(8);
-        }
 
-        private static string FormatTime(double time)
-        {
-            const int SECONDS_PER_MINUTE = 60;
-            const int SECONDS_PER_HOUR = 3600;
-            const int SECONDS_PER_DAY = 24 * SECONDS_PER_HOUR;
-
-            time = (int)time;
-
-            string result = "";
-            if (time < 0)
+            if (GUI.Button(new Rect(windowPos.width - 68, 4, 20, 20), "R", closeButtonStyle))
             {
-                result += "-";
-                time = -time;
+                rosterWindow.SetVisible(true);
             }
-
-            int days = (int)(time / SECONDS_PER_DAY);
-            time -= days * SECONDS_PER_DAY;
-
-            int hours = (int)(time / SECONDS_PER_HOUR);
-            time -= hours * SECONDS_PER_HOUR;
-
-            int minutes = (int)(time / SECONDS_PER_MINUTE);
-            time -= minutes * SECONDS_PER_MINUTE;
-
-            int seconds = (int)time;
-
-            if (days > 0)
+            if (GUI.Button(new Rect(windowPos.width - 46, 4, 20, 20), "S", closeButtonStyle))
             {
-                result += days.ToString("#0") + ":";
+                settingsWindow.SetVisible(true);
             }
-            result += hours.ToString("00") + ":" + minutes.ToString("00") + ":" + seconds.ToString("00");
-            return result;
         }
     }
 }

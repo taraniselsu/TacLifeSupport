@@ -110,6 +110,19 @@ namespace Tac
             }
         }
 
+        public bool AllowCrewRespawn
+        {
+            get
+            {
+                return HighLogic.CurrentGame.Parameters.Difficulty.MissingCrewsRespawn;
+            }
+            set
+            {
+                HighLogic.CurrentGame.Parameters.Difficulty.MissingCrewsRespawn = value;
+            }
+        }
+        public double RespawnDelay { get; set; }
+
         public Settings()
         {
             const int SECONDS_PER_MINUTE = 60;
@@ -144,6 +157,8 @@ namespace Tac
             // Amount of resources to load crewable parts with, in seconds
             DefaultResourceAmount = 3.0 * SECONDS_PER_DAY; // 3 days
             EvaDefaultResourceAmount = 12.0 * SECONDS_PER_HOUR; // 12 hours (1/2 day)
+
+            RespawnDelay = 3 * 24 * 60 * 60; // 3 days (default is too short, only 36 minutes)
         }
 
         public void Load(ConfigNode config)
@@ -172,6 +187,8 @@ namespace Tac
 
             DefaultResourceAmount = Utilities.GetValue(config, "DefaultResourceAmount", DefaultResourceAmount);
             EvaDefaultResourceAmount = Utilities.GetValue(config, "EvaDefaultResourceAmount", EvaDefaultResourceAmount);
+
+            RespawnDelay = Utilities.GetValue(config, "RespawnDelay", RespawnDelay);
         }
 
         public void Save(ConfigNode config)
@@ -200,6 +217,8 @@ namespace Tac
 
             config.AddValue("DefaultResourceAmount", DefaultResourceAmount);
             config.AddValue("EvaDefaultResourceAmount", EvaDefaultResourceAmount);
+
+            config.AddValue("RespawnDelay", RespawnDelay);
         }
     }
 }

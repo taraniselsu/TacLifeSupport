@@ -44,6 +44,8 @@ namespace Tac
 
         private Settings settings;
         private LifeSupportMonitoringWindow monitoringWindow;
+        private SettingsWindow settingsWindow;
+        private RosterWindow rosterWindow;
         private Icon<LifeSupportController> icon;
         private string configFilename;
 
@@ -56,7 +58,9 @@ namespace Tac
             knownVessels = new Dictionary<Guid, VesselInfo>();
 
             settings = new Settings();
-            monitoringWindow = new LifeSupportMonitoringWindow(this, settings);
+            settingsWindow = new SettingsWindow(settings);
+            rosterWindow = new RosterWindow();
+            monitoringWindow = new LifeSupportMonitoringWindow(this, settings, settingsWindow, rosterWindow);
 
             icon = new Icon<LifeSupportController>(new Rect(Screen.width * 0.75f, 0, 32, 32), "icon.png", "LS",
                 "Click to show the Life Support Monitoring Window", OnIconClicked);
@@ -331,7 +335,7 @@ namespace Tac
 
         private void ShowWarnings(Vessel vessel, double resourceRemaining, double max, double consumptionRate, string resourceName, ref VesselInfo.Status status)
         {
-            const double multiplier = 1.5;
+            const double multiplier = 1.1;
             const double warningLevel = 0.10;
 
             int currentWarpRateIndex = TimeWarp.CurrentRateIndex;
@@ -473,9 +477,6 @@ namespace Tac
                 CameraManager.Instance.SetCameraFlight();
             }
 
-            crewMember.Die();
-            crewMember.rosterStatus = ProtoCrewMember.RosterStatus.DEAD;
-
             ScreenMessages.PostScreenMessage(vessel.vesselName + " - " + crewMember.name + " died of " + causeOfDeath + "!", 30.0f, ScreenMessageStyle.UPPER_CENTER);
             Debug.Log("TAC Life Support (LifeSupportController) [" + this.GetInstanceID().ToString("X") + "][" + Time.time + "]: " + vessel.vesselName + " - " + crewMember.name + " died of " + causeOfDeath + "!");
 
@@ -485,11 +486,22 @@ namespace Tac
                 if (part != null)
                 {
                     part.RemoveCrewmember(crewMember);
+                    crewMember.Die();
+
+                    if (settings.AllowCrewRespawn)
+                    {
+                        crewMember.StartRespawnPeriod(settings.RespawnDelay);
+                    }
                 }
             }
             else
             {
-                vessel.rootPart.explode();
+                vessel.rootPart.Die();
+
+                if (settings.AllowCrewRespawn)
+                {
+                    crewMember.StartRespawnPeriod(settings.RespawnDelay);
+                }
             }
         }
 
@@ -498,18 +510,22 @@ namespace Tac
             if (File.Exists<LifeSupportController>(configFilename))
             {
                 ConfigNode config = ConfigNode.Load(configFilename);
+                settings.Load(config);
                 icon.Load(config);
                 monitoringWindow.Load(config);
-                settings.Load(config);
+                settingsWindow.Load(config);
+                rosterWindow.Load(config);
             }
         }
 
         public void Save()
         {
             ConfigNode config = new ConfigNode();
+            settings.Save(config);
             icon.Save(config);
             monitoringWindow.Save(config);
-            settings.Save(config);
+            settingsWindow.Save(config);
+            rosterWindow.Save(config);
 
             config.Save(configFilename);
         }
