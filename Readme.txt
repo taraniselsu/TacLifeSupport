@@ -9,6 +9,11 @@ BY-NC-SA 3.0) creative commons license. See the LICENSE.txt file.
 Source code is available from: https://github.com/taraniselsu/TacLifeSupport
 
 
+Includes HexCan parts from Greys, licensed CC-BY 3.0. Used with permission. See
+Readme-HexCans.txt and LICENSE-HexCans.txt in the HexCans directory.
+Forum thread: http://forum.kerbalspaceprogram.com/showthread.php/33754
+
+
 ===== Features =====
 
 * Kerbals require resources to survive whether in a vessel or on EVA: Food, Water,
@@ -23,6 +28,8 @@ Source code is available from: https://github.com/taraniselsu/TacLifeSupport
       you leave them alone for too long.
 * The system tries to stop Time Warp when resources get low and again when resources
       run out. No guarantees.
+* Includes Hex Can containers for Food, Water, and Oxygen.
+
 
 ===== How to use =====
 
@@ -34,6 +41,7 @@ MODULE
 }
 
 And add the resources.
+
 
 ===== Installation procedure =====
 
