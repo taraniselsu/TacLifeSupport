@@ -158,7 +158,7 @@ namespace Tac
             DefaultResourceAmount = 3.0 * SECONDS_PER_DAY; // 3 days
             EvaDefaultResourceAmount = 12.0 * SECONDS_PER_HOUR; // 12 hours (1/2 day)
 
-            RespawnDelay = 3 * 24 * 60 * 60; // 3 days (default is too short, only 36 minutes)
+            RespawnDelay = 365 * SECONDS_PER_DAY; // 1 year (default is too short at only 36 minutes)
         }
 
         public void Load(ConfigNode config)
