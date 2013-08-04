@@ -82,5 +82,10 @@ namespace Tac
                 }
             }
         }
+
+        public override string GetInfo()
+        {
+            return base.GetInfo() + "\nTAC Life Support added!\n";
+        }
     }
 }

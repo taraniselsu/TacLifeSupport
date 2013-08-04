@@ -42,7 +42,7 @@ namespace Tac
         public Dictionary<string, CrewMemberInfo> knownCrew { get; private set; }
         public Dictionary<Guid, VesselInfo> knownVessels { get; private set; }
 
-        private Settings settings;
+        public Settings settings { get; private set; }
         private LifeSupportMonitoringWindow monitoringWindow;
         private SettingsWindow settingsWindow;
         private RosterWindow rosterWindow;

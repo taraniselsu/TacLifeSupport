@@ -65,6 +65,7 @@
       <Link>Window.cs</Link>
     </Compile>
     <Compile Include="AddLifeSupport.cs" />
+    <Compile Include="TacGenericConverter.cs" />
     <Compile Include="RosterWindow.cs" />
     <Compile Include="CrewMemberInfo.cs" />
     <Compile Include="LifeSupportController.cs" />
