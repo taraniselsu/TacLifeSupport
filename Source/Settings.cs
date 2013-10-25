@@ -129,12 +129,12 @@ namespace Tac
             const int SECONDS_PER_HOUR = 60 * SECONDS_PER_MINUTE;
             const int SECONDS_PER_DAY = 24 * SECONDS_PER_HOUR;
 
-            Food = "Food_TAC";
-            Water = "Water_TAC";
-            Oxygen = "Oxygen_TAC";
-            CO2 = "CO2_TAC";
-            Waste = "Waste_TAC";
-            WasteWater = "WasteWater_TAC";
+            Food = "Food";
+            Water = "Water";
+            Oxygen = "Oxygen";
+            CO2 = "CO2";
+            Waste = "Waste";
+            WasteWater = "WasteWater";
 
             // Consumption rates in units per Earth second
             // See the TacResources.cfg for conversions between units and kg.
