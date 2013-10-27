@@ -18,7 +18,7 @@ Forum thread: http://forum.kerbalspaceprogram.com/showthread.php/33754
 
 * Kerbals require resources to survive whether in a vessel or on EVA: Food, Water,
       Oxygen, Electricity (for air quality and climate control)
-* They produce waste resources: CO2, Waste, WasteWater
+* They produce waste resources: CarbonDioxide, Waste, WasteWater
 * They will die if they go without resources for too long: 30 days without food, 3 days
       without water, 5 minutes without Oxygen, and 2 hours without Electricity
 * Crewed pods come stocked with 3 days of resources.

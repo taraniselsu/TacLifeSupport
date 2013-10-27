@@ -132,7 +132,7 @@ namespace Tac
             Food = "Food";
             Water = "Water";
             Oxygen = "Oxygen";
-            CO2 = "CO2";
+            CO2 = "CarbonDioxide";
             Waste = "Waste";
             WasteWater = "WasteWater";
 
