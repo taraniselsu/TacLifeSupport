@@ -85,7 +85,7 @@ namespace Tac
 
         public override string GetInfo()
         {
-            return base.GetInfo() + "\nTAC Life Support added!\n";
+            return base.GetInfo() + "\nEquipped with the Thunder Aerospace Corporation (TAC) Life Support System.\n";
         }
     }
 }
