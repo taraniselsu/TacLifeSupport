@@ -34,6 +34,11 @@ namespace Tac
 {
     public class Settings
     {
+        private const int SECONDS_PER_MINUTE = 60;
+        private const int SECONDS_PER_HOUR = 60 * SECONDS_PER_MINUTE;
+        private const int SECONDS_PER_DAY = 24 * SECONDS_PER_HOUR;
+        private const int SECONDS_PER_KERBIN_DAY = 6 * SECONDS_PER_HOUR;
+
         public string Food { get; private set; }
         public string Water { get; private set; }
         public string Oxygen { get; private set; }
@@ -125,10 +130,6 @@ namespace Tac
 
         public Settings()
         {
-            const int SECONDS_PER_MINUTE = 60;
-            const int SECONDS_PER_HOUR = 60 * SECONDS_PER_MINUTE;
-            const int SECONDS_PER_DAY = 24 * SECONDS_PER_HOUR;
-
             Food = "Food";
             Water = "Water";
             Oxygen = "Oxygen";
@@ -139,46 +140,46 @@ namespace Tac
             // Consumption rates in units per Earth second
             // See the TacResources.cfg for conversions between units and kg.
             // FIXME add my calculations and references
-            FoodConsumptionRate = 1.0 / SECONDS_PER_DAY;
-            WaterConsumptionRate = 1.0 / SECONDS_PER_DAY;
-            OxygenConsumptionRate = 1.0 / SECONDS_PER_DAY;
+            FoodConsumptionRate = 1.0 / SECONDS_PER_KERBIN_DAY;
+            WaterConsumptionRate = 1.0 / SECONDS_PER_KERBIN_DAY;
+            OxygenConsumptionRate = 1.0 / SECONDS_PER_KERBIN_DAY;
             ElectricityConsumptionRate = 1200.0 / SECONDS_PER_DAY;
             BaseElectricityConsumptionRate = 2400.0 / SECONDS_PER_DAY;
             EvaElectricityConsumptionRate = 100.0 / (SECONDS_PER_DAY / 2.0); // 100 per 12 hours (1/2 day)
-            CO2ProductionRate = 1.0 / SECONDS_PER_DAY;
-            WasteProductionRate = 1.0 / SECONDS_PER_DAY;
-            WasteWaterProductionRate = 1.0 / SECONDS_PER_DAY;
+            CO2ProductionRate = 1.0 / SECONDS_PER_KERBIN_DAY;
+            WasteProductionRate = 1.0 / SECONDS_PER_KERBIN_DAY;
+            WasteWaterProductionRate = 1.0 / SECONDS_PER_KERBIN_DAY;
 
-            MaxTimeWithoutFood = 30.0 * SECONDS_PER_DAY; // 30 days
-            MaxTimeWithoutWater = 3.0 * SECONDS_PER_DAY; // 3 days
+            MaxTimeWithoutFood = 30.0 * SECONDS_PER_KERBIN_DAY; // 30 days
+            MaxTimeWithoutWater = 3.0 * SECONDS_PER_KERBIN_DAY; // 3 days
             MaxTimeWithoutOxygen = 5.0 * SECONDS_PER_MINUTE; // 5 minutes
             MaxTimeWithoutElectricity = 2.0 * SECONDS_PER_HOUR; // 2 hours
 
             // Amount of resources to load crewable parts with, in seconds
-            DefaultResourceAmount = 3.0 * SECONDS_PER_DAY; // 3 days
-            EvaDefaultResourceAmount = 12.0 * SECONDS_PER_HOUR; // 12 hours (1/2 day)
+            DefaultResourceAmount = 1.0 * SECONDS_PER_KERBIN_DAY; // 1 Kerbin day (~6 hours)
+            EvaDefaultResourceAmount = 0.5 * SECONDS_PER_KERBIN_DAY; // 1/2 Kerbin day (~3 hours)
 
-            RespawnDelay = 365 * SECONDS_PER_DAY; // 1 year (default is too short at only 36 minutes)
+            RespawnDelay = 9203545.0; // 1 Kerbin year (default is too short at only 36 minutes)
         }
 
         public void Load(ConfigNode config)
         {
-            Food = Utilities.GetValue(config, "Food", Food);
-            Water = Utilities.GetValue(config, "Water", Water);
-            Oxygen = Utilities.GetValue(config, "Oxygen", Oxygen);
-            CO2 = Utilities.GetValue(config, "CO2", CO2);
-            Waste = Utilities.GetValue(config, "Waste", Waste);
-            WasteWater = Utilities.GetValue(config, "WasteWater", WasteWater);
+            Food = Utilities.GetValue(config, "FoodResource", Food);
+            Water = Utilities.GetValue(config, "WaterResource", Water);
+            Oxygen = Utilities.GetValue(config, "OxygenResource", Oxygen);
+            CO2 = Utilities.GetValue(config, "CarbonDioxideResource", CO2);
+            Waste = Utilities.GetValue(config, "WasteResource", Waste);
+            WasteWater = Utilities.GetValue(config, "WasteWaterResource", WasteWater);
 
-            FoodConsumptionRate = Utilities.GetValue(config, "FoodConsumptionRate", FoodConsumptionRate);
-            WaterConsumptionRate = Utilities.GetValue(config, "WaterConsumptionRate", WaterConsumptionRate);
-            OxygenConsumptionRate = Utilities.GetValue(config, "OxygenConsumptionRate", OxygenConsumptionRate);
-            ElectricityConsumptionRate = Utilities.GetValue(config, "ElectricityConsumptionRate", ElectricityConsumptionRate);
-            BaseElectricityConsumptionRate = Utilities.GetValue(config, "BaseElectricityConsumptionRate", BaseElectricityConsumptionRate);
-            EvaElectricityConsumptionRate = Utilities.GetValue(config, "EvaElectricityConsumptionRate", EvaElectricityConsumptionRate);
-            CO2ProductionRate = Utilities.GetValue(config, "CO2ProductionRate", CO2ProductionRate);
-            WasteProductionRate = Utilities.GetValue(config, "WasteProductionRate", WasteProductionRate);
-            WasteWaterProductionRate = Utilities.GetValue(config, "WasteWaterProductionRate", WasteWaterProductionRate);
+            FoodConsumptionRate = Utilities.GetValue(config, "FoodConsumptionRate", FoodConsumptionRate) / SECONDS_PER_KERBIN_DAY;
+            WaterConsumptionRate = Utilities.GetValue(config, "WaterConsumptionRate", WaterConsumptionRate) / SECONDS_PER_KERBIN_DAY;
+            OxygenConsumptionRate = Utilities.GetValue(config, "OxygenConsumptionRate", OxygenConsumptionRate) / SECONDS_PER_KERBIN_DAY;
+            ElectricityConsumptionRate = Utilities.GetValue(config, "ElectricityConsumptionRate", ElectricityConsumptionRate) / SECONDS_PER_KERBIN_DAY;
+            BaseElectricityConsumptionRate = Utilities.GetValue(config, "BaseElectricityConsumptionRate", BaseElectricityConsumptionRate) / SECONDS_PER_KERBIN_DAY;
+            EvaElectricityConsumptionRate = Utilities.GetValue(config, "EvaElectricityConsumptionRate", EvaElectricityConsumptionRate) / SECONDS_PER_KERBIN_DAY;
+            CO2ProductionRate = Utilities.GetValue(config, "CO2ProductionRate", CO2ProductionRate) / SECONDS_PER_KERBIN_DAY;
+            WasteProductionRate = Utilities.GetValue(config, "WasteProductionRate", WasteProductionRate) / SECONDS_PER_KERBIN_DAY;
+            WasteWaterProductionRate = Utilities.GetValue(config, "WasteWaterProductionRate", WasteWaterProductionRate) / SECONDS_PER_KERBIN_DAY;
 
             MaxTimeWithoutFood = Utilities.GetValue(config, "MaxTimeWithoutFood", MaxTimeWithoutFood);
             MaxTimeWithoutWater = Utilities.GetValue(config, "MaxTimeWithoutWater", MaxTimeWithoutWater);
@@ -193,22 +194,22 @@ namespace Tac
 
         public void Save(ConfigNode config)
         {
-            config.AddValue("Food", Food);
-            config.AddValue("Water", Water);
-            config.AddValue("Oxygen", Oxygen);
-            config.AddValue("CO2", CO2);
-            config.AddValue("Waste", Waste);
-            config.AddValue("WasteWater", WasteWater);
+            config.AddValue("FoodResource", Food);
+            config.AddValue("WaterResource", Water);
+            config.AddValue("OxygenResource", Oxygen);
+            config.AddValue("CarbonDioxideResource", CO2);
+            config.AddValue("WasteResource", Waste);
+            config.AddValue("WasteWaterResource", WasteWater);
 
-            config.AddValue("FoodConsumptionRate", FoodConsumptionRate);
-            config.AddValue("WaterConsumptionRate", WaterConsumptionRate);
-            config.AddValue("OxygenConsumptionRate", OxygenConsumptionRate);
-            config.AddValue("ElectricityConsumptionRate", ElectricityConsumptionRate);
-            config.AddValue("BaseElectricityConsumptionRate", BaseElectricityConsumptionRate);
-            config.AddValue("EvaElectricityConsumptionRate", EvaElectricityConsumptionRate);
-            config.AddValue("CO2ProductionRate", CO2ProductionRate);
-            config.AddValue("WasteProductionRate", WasteProductionRate);
-            config.AddValue("WasteWaterProductionRate", WasteWaterProductionRate);
+            config.AddValue("FoodConsumptionRate", FoodConsumptionRate * SECONDS_PER_KERBIN_DAY);
+            config.AddValue("WaterConsumptionRate", WaterConsumptionRate * SECONDS_PER_KERBIN_DAY);
+            config.AddValue("OxygenConsumptionRate", OxygenConsumptionRate * SECONDS_PER_KERBIN_DAY);
+            config.AddValue("ElectricityConsumptionRate", ElectricityConsumptionRate * SECONDS_PER_KERBIN_DAY);
+            config.AddValue("BaseElectricityConsumptionRate", BaseElectricityConsumptionRate * SECONDS_PER_KERBIN_DAY);
+            config.AddValue("EvaElectricityConsumptionRate", EvaElectricityConsumptionRate * SECONDS_PER_KERBIN_DAY);
+            config.AddValue("CO2ProductionRate", CO2ProductionRate * SECONDS_PER_KERBIN_DAY);
+            config.AddValue("WasteProductionRate", WasteProductionRate * SECONDS_PER_KERBIN_DAY);
+            config.AddValue("WasteWaterProductionRate", WasteWaterProductionRate * SECONDS_PER_KERBIN_DAY);
 
             config.AddValue("MaxTimeWithoutFood", MaxTimeWithoutFood);
             config.AddValue("MaxTimeWithoutWater", MaxTimeWithoutWater);
