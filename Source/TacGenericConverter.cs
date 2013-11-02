@@ -58,6 +58,7 @@ namespace Tac
     class TacGenericConverter : PartModule
     {
         private static char[] delimiters = { ' ', ',', '\t', ';' };
+        private const int MAX_DELTA_TIME = 30 * 6 * 60 * 60; // 30 Kerbin days (6 hours each)
 
         [KSPField]
         public string converterName = "TAC Generic Converter";
@@ -77,6 +78,8 @@ namespace Tac
         [KSPField]
         public string outputResources = "";
 
+        private double lastUpdateTime = 0.0f;
+
         private LifeSupportController controller;
         private Settings settings;
 
@@ -85,14 +88,14 @@ namespace Tac
 
         public override void OnAwake()
         {
-            Debug.Log("TAC Converter [" + this.GetInstanceID().ToString("X") + "][" + Time.time + "]: OnAwake");
+            Debug.Log("TAC Converter [" + this.GetInstanceID().ToString("X") + "][" + Time.time.ToString("0.00") + "]: OnAwake");
             base.OnAwake();
             UpdateResourceLists();
         }
 
         public override void OnStart(PartModule.StartState state)
         {
-            Debug.Log("TAC Converter [" + this.GetInstanceID().ToString("X") + "][" + Time.time + "]: OnStart: " + state);
+            Debug.Log("TAC Converter [" + this.GetInstanceID().ToString("X") + "][" + Time.time.ToString("0.00") + "]: OnStart: " + state);
             base.OnStart(state);
 
             if (state != StartState.Editor)
@@ -107,21 +110,33 @@ namespace Tac
         {
             base.OnFixedUpdate();
 
+            if (lastUpdateTime == 0.0f)
+            {
+                // Just started running
+                lastUpdateTime = Planetarium.GetUniversalTime();
+                return;
+            }
+
+            double deltaTime = Planetarium.GetUniversalTime() - lastUpdateTime;
+            if (deltaTime > MAX_DELTA_TIME)
+            {
+                deltaTime = MAX_DELTA_TIME;
+            }
+            lastUpdateTime += deltaTime;
+
             if (converterEnabled)
             {
-                // StringBuilder sb = new StringBuilder();
-
-                double desiredAmount = conversionRate * TimeWarp.fixedDeltaTime;
+                double desiredAmount = conversionRate * deltaTime;
 
                 // Limit the resource amounts so that we do not produce more than we have room for, nor consume more than is available
                 foreach (ResourceRatio output in outputResourceList)
                 {
                     if (!output.allowExtra)
                     {
-                        double availableSpace = AvailableSpace(output.resource.id, desiredAmount * output.ratio);
+                        double availableSpace = -part.IsResourceAvailable(output.resource, -desiredAmount * output.ratio);
                         desiredAmount = availableSpace / output.ratio;
 
-                        if (desiredAmount <= 0.000001)
+                        if (desiredAmount <= 0.000000001)
                         {
                             // Out of space, so no need to run
                             converterStatus = "Idle: no space for more " + output.resource.name;
@@ -132,10 +147,10 @@ namespace Tac
 
                 foreach (ResourceRatio input in inputResourceList)
                 {
-                    double amountAvailable = AmountAvailable(input.resource.id, desiredAmount * input.ratio);
+                    double amountAvailable = part.IsResourceAvailable(input.resource, desiredAmount * input.ratio);
                     desiredAmount = amountAvailable / input.ratio;
 
-                    if (desiredAmount <= 0.000001)
+                    if (desiredAmount <= 0.000000001)
                     {
                         // Not enough input resources
                         converterStatus = "Idle: not enough " + input.resource.name;
@@ -143,36 +158,39 @@ namespace Tac
                     }
                 }
 
-                // sb.Append("Inputs: ");
                 foreach (ResourceRatio input in inputResourceList)
                 {
                     double desired = desiredAmount * input.ratio;
-                    double actual = part.RequestResource(input.resource.id, desired);
-                    // sb.Append(input.resource.name + "(" + desired.ToString("0.000000") + "/" + actual.ToString("0.000000") + "), ");
+                    double actual = part.TakeResource(input.resource, desired);
+
+                    if (actual < (desired * 0.999))
+                    {
+                        Debug.LogWarning("TAC Converter [" + this.GetInstanceID().ToString("X") + "][" + Time.time.ToString("0.00") + "]: OnFixedUpdate: obtained less "
+                            + input.resource.name + " than expected: " + desired.ToString("0.000000") + "/" + actual.ToString("0.000000"));
+                    }
                 }
 
-                // sb.Append("Outputs: ");
                 foreach (ResourceRatio output in outputResourceList)
                 {
                     double desired = desiredAmount * output.ratio;
-                    double actual = part.RequestResource(output.resource.id, -desired);
-                    // sb.Append(output.resource.name + "(" + desired.ToString("0.000000") + "/" + actual.ToString("0.000000") + "), ");
+                    double actual = -part.TakeResource(output.resource.id, -desired);
+
+                    if (actual < (desired * 0.999) && !output.allowExtra)
+                    {
+                        Debug.LogWarning("TAC Converter [" + this.GetInstanceID().ToString("X") + "][" + Time.time.ToString("0.00") + "]: OnFixedUpdate: put less "
+                            + output.resource.name + " than expected: " + desired.ToString("0.000000") + "/" + actual.ToString("0.000000"));
+                    }
                 }
 
-                // Debug.Log("TAC Converter [" + this.GetInstanceID().ToString("X") + "][" + Time.time + "]: OnFixedUpdate: " + sb);
                 converterStatus = "Running";
             }
         }
 
         public override void OnLoad(ConfigNode node)
         {
-            Debug.Log("TAC Converter [" + this.GetInstanceID().ToString("X") + "][" + Time.time + "]: OnLoad: " + node);
+            Debug.Log("TAC Converter [" + this.GetInstanceID().ToString("X") + "][" + Time.time.ToString("0.00") + "]: OnLoad: " + node);
             base.OnLoad(node);
-
-            Events["ActivateConverter"].guiName = "Activate " + converterName;
-            Events["DeactivateConverter"].guiName = "Deactivate " + converterName;
-            Actions["ToggleConverter"].guiName = "Toggle " + converterName;
-            Fields["converterStatus"].guiName = converterName;
+            lastUpdateTime = Utilities.GetValue(node, "lastUpdateTime", lastUpdateTime);
 
             UpdateResourceLists();
             UpdateEvents();
@@ -180,7 +198,8 @@ namespace Tac
 
         public override void OnSave(ConfigNode node)
         {
-            Debug.Log("TAC Converter [" + this.GetInstanceID().ToString("X") + "][" + Time.time + "]: OnSave: " + node);
+            node.AddValue("lastUpdateTime", lastUpdateTime);
+            Debug.Log("TAC Converter [" + this.GetInstanceID().ToString("X") + "][" + Time.time.ToString("0.00") + "]: OnSave: " + node);
         }
 
         public override string GetInfo()
@@ -236,6 +255,11 @@ namespace Tac
 
             parseInputResourceString(inputResources, inputResourceList);
             parseOutputResourceString(outputResources, outputResourceList);
+
+            Events["ActivateConverter"].guiName = "Activate " + converterName;
+            Events["DeactivateConverter"].guiName = "Deactivate " + converterName;
+            Actions["ToggleConverter"].guiName = "Toggle " + converterName;
+            Fields["converterStatus"].guiName = converterName;
         }
 
         private void parseInputResourceString(string resourceString, List<ResourceRatio> resources)
@@ -254,12 +278,12 @@ namespace Tac
                 }
                 else
                 {
-                    Debug.Log("TAC Converter [" + this.GetHashCode().ToString("X") + "][" + Time.time + "]: Cannot parse \"" + resourceString + "\", something went wrong.");
+                    Debug.Log("TAC Converter [" + this.GetHashCode().ToString("X") + "][" + Time.time.ToString("0.00") + "]: Cannot parse \"" + resourceString + "\", something went wrong.");
                 }
             }
 
             var ratios = resources.Aggregate("", (result, value) => result + value.resource.name + ", " + value.ratio + ", ");
-            Debug.Log("TAC Converter [" + this.GetHashCode().ToString("X") + "][" + Time.time + "]: Input resources parsed: " + ratios + "\nfrom " + resourceString);
+            Debug.Log("TAC Converter [" + this.GetHashCode().ToString("X") + "][" + Time.time.ToString("0.00") + "]: Input resources parsed: " + ratios + "\nfrom " + resourceString);
         }
 
         private void parseOutputResourceString(string resourceString, List<ResourceRatio> resources)
@@ -279,60 +303,12 @@ namespace Tac
                 }
                 else
                 {
-                    Debug.Log("TAC Converter [" + this.GetHashCode().ToString("X") + "][" + Time.time + "]: Cannot parse \"" + resourceString + "\", something went wrong.");
+                    Debug.Log("TAC Converter [" + this.GetHashCode().ToString("X") + "][" + Time.time.ToString("0.00") + "]: Cannot parse \"" + resourceString + "\", something went wrong.");
                 }
             }
 
             var ratios = resources.Aggregate("", (result, value) => result + value.resource.name + ", " + value.ratio + ", ");
-            Debug.Log("TAC Converter [" + this.GetHashCode().ToString("X") + "][" + Time.time + "]: Output resources parsed: " + ratios + "\nfrom " + resourceString);
-        }
-
-        private double AvailableSpace(int resourceId, double desiredSpace)
-        {
-            double availableSpace = 0.0;
-
-            List<PartResource> connectedResources = new List<PartResource>();
-            part.GetConnectedResources(resourceId, connectedResources);
-
-            // string resourceName = PartResourceLibrary.Instance.GetDefinition(resourceId).name;
-            // string connectedParts = connectedResources.Aggregate("", (str, partResource) => str + partResource.part.partInfo.title + "(" + partResource.amount.ToString("0.00") + "), ");
-            // Debug.Log("TAC Converter [" + this.GetInstanceID().ToString("X") + "][" + Time.time + "]: AvailableSpace connectedParts with " + resourceName + ": " + connectedParts);
-
-            foreach (PartResource partResource in connectedResources)
-            {
-                availableSpace += (partResource.maxAmount - partResource.amount);
-
-                if ((availableSpace * 0.95) > desiredSpace)
-                {
-                    return desiredSpace;
-                }
-            }
-
-            return availableSpace;
-        }
-
-        private double AmountAvailable(int resourceId, double desiredAmount)
-        {
-            double amountAvailable = 0.0;
-
-            List<PartResource> connectedResources = new List<PartResource>();
-            part.GetConnectedResources(resourceId, connectedResources);
-
-            // string resourceName = PartResourceLibrary.Instance.GetDefinition(resourceId).name;
-            // string connectedParts = connectedResources.Aggregate("", (str, partResource) => str + partResource.part.partInfo.title + "(" + partResource.amount.ToString("0.00") + "), ");
-            // Debug.Log("TAC Converter [" + this.GetInstanceID().ToString("X") + "][" + Time.time + "]: AmountAvailable connectedParts with " + resourceName + ": " + connectedParts);
-
-            foreach (PartResource partResource in connectedResources)
-            {
-                amountAvailable += partResource.amount;
-
-                if ((amountAvailable * 0.95) > desiredAmount)
-                {
-                    return desiredAmount;
-                }
-            }
-
-            return amountAvailable;
+            Debug.Log("TAC Converter [" + this.GetHashCode().ToString("X") + "][" + Time.time.ToString("0.00") + "]: Output resources parsed: " + ratios + "\nfrom " + resourceString);
         }
     }
 

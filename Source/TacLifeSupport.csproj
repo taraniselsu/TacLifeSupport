@@ -55,6 +55,9 @@
     <Compile Include="..\..\TacLib\Source\Icon.cs">
       <Link>Icon.cs</Link>
     </Compile>
+    <Compile Include="..\..\TacLib\Source\PartExtensions.cs">
+      <Link>PartExtensions.cs</Link>
+    </Compile>
     <Compile Include="..\..\TacLib\Source\PopupWindow.cs">
       <Link>PopupWindow.cs</Link>
     </Compile>

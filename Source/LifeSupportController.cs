@@ -51,7 +51,7 @@ namespace Tac
 
         void Awake()
         {
-            Debug.Log("TAC Life Support (LifeSupportController) [" + this.GetInstanceID().ToString("X") + "][" + Time.time + "]: Awake");
+            Debug.Log("TAC Life Support (LifeSupportController) [" + this.GetInstanceID().ToString("X") + "][" + Time.time.ToString("0.00") + "]: Awake");
             Instance = this;
 
             knownCrew = new Dictionary<string, CrewMemberInfo>();
@@ -70,14 +70,14 @@ namespace Tac
 
         void Start()
         {
-            Debug.Log("TAC Life Support (LifeSupportController) [" + this.GetInstanceID().ToString("X") + "][" + Time.time + "]: Start");
+            Debug.Log("TAC Life Support (LifeSupportController) [" + this.GetInstanceID().ToString("X") + "][" + Time.time.ToString("0.00") + "]: Start");
             Load();
             icon.SetVisible(true);
         }
 
         void OnDestroy()
         {
-            Debug.Log("TAC Life Support (LifeSupportController) [" + this.GetInstanceID().ToString("X") + "][" + Time.time + "]: OnDestroy");
+            Debug.Log("TAC Life Support (LifeSupportController) [" + this.GetInstanceID().ToString("X") + "][" + Time.time.ToString("0.00") + "]: OnDestroy");
             Save();
         }
 
@@ -165,7 +165,7 @@ namespace Tac
                 }
                 else
                 {
-                    Debug.Log("TAC Life Support (LifeSupportController) [" + this.GetInstanceID().ToString("X") + "][" + Time.time + "]: Unknown crew member: " + crewMember.name);
+                    Debug.Log("TAC Life Support (LifeSupportController) [" + this.GetInstanceID().ToString("X") + "][" + Time.time.ToString("0.00") + "]: Unknown crew member: " + crewMember.name);
                     knownCrew[crewMember.name] = new CrewMemberInfo(crewMember.name, vessel, currentTime);
                 }
             }
@@ -347,13 +347,13 @@ namespace Tac
                 {
                     if (currentWarpRateIndex > 0)
                     {
-                        Debug.Log("TAC Life Support (LifeSupportController) [" + this.GetInstanceID().ToString("X") + "][" + Time.time + "]: @CRITICAL, warp rate: " + currentWarpRate);
+                        Debug.Log("TAC Life Support (LifeSupportController) [" + this.GetInstanceID().ToString("X") + "][" + Time.time.ToString("0.00") + "]: @CRITICAL, warp rate: " + currentWarpRate);
                         TimeWarp.SetRate(currentWarpRateIndex - 1, false);
                     }
                     else
                     {
                         ScreenMessages.PostScreenMessage(vessel.vesselName + " - " + resourceName + " depleted!", 15.0f, ScreenMessageStyle.UPPER_CENTER);
-                        Debug.Log("TAC Life Support (LifeSupportController) [" + this.GetInstanceID().ToString("X") + "][" + Time.time + "]: " + vessel.vesselName + " - " + resourceName + " depleted!");
+                        Debug.Log("TAC Life Support (LifeSupportController) [" + this.GetInstanceID().ToString("X") + "][" + Time.time.ToString("0.00") + "]: " + vessel.vesselName + " - " + resourceName + " depleted!");
                         status = VesselInfo.Status.CRITICAL;
                     }
                 }
@@ -364,13 +364,13 @@ namespace Tac
                 {
                     if (currentWarpRateIndex > 0)
                     {
-                        Debug.Log("TAC Life Support (LifeSupportController) [" + this.GetInstanceID().ToString("X") + "][" + Time.time + "]: @LOW, warp rate: " + currentWarpRate);
+                        Debug.Log("TAC Life Support (LifeSupportController) [" + this.GetInstanceID().ToString("X") + "][" + Time.time.ToString("0.00") + "]: @LOW, warp rate: " + currentWarpRate);
                         TimeWarp.SetRate(currentWarpRateIndex - 1, false);
                     }
                     else
                     {
                         ScreenMessages.PostScreenMessage(vessel.vesselName + " - " + resourceName + " is running out!", 15.0f, ScreenMessageStyle.UPPER_CENTER);
-                        Debug.Log("TAC Life Support (LifeSupportController) [" + this.GetInstanceID().ToString("X") + "][" + Time.time + "]: " + vessel.vesselName + " - " + resourceName + " is running out!");
+                        Debug.Log("TAC Life Support (LifeSupportController) [" + this.GetInstanceID().ToString("X") + "][" + Time.time.ToString("0.00") + "]: " + vessel.vesselName + " - " + resourceName + " is running out!");
                         status = VesselInfo.Status.LOW;
                     }
                 }
@@ -401,7 +401,7 @@ namespace Tac
 
             if (crewMemberInfo.vesselId != evaVessel.id)
             {
-                Debug.Log("TAC Life Support (LifeSupportController) [" + this.GetInstanceID().ToString("X") + "][" + Time.time + "]: Filling EVA suit for " + crewMember.name);
+                Debug.Log("TAC Life Support (LifeSupportController) [" + this.GetInstanceID().ToString("X") + "][" + Time.time.ToString("0.00") + "]: Filling EVA suit for " + crewMember.name);
 
                 Vessel lastVessel = FlightGlobals.Vessels.Find(v => v.id.Equals(crewMemberInfo.vesselId));
                 VesselInfo lastVesselInfo = knownVessels[crewMemberInfo.vesselId];
@@ -420,6 +420,7 @@ namespace Tac
                 double electricityObtained = RequestResource(settings.Electricity, Min(desiredElectricity, lastVesselInfo.remainingElectricity / numCrew, lastVesselInfo.remainingElectricity * 0.95), oldPart);
 
                 Part newPart = evaVessel.rootPart;
+                newPart.Resources.list.ForEach(r => r.flowState = true);
                 RequestResource(settings.Food, -foodObtained, newPart);
                 RequestResource(settings.Water, -waterObtained, newPart);
                 RequestResource(settings.Oxygen, -oxygenObtained, newPart);
@@ -430,7 +431,7 @@ namespace Tac
             }
             else
             {
-                Debug.Log("TAC Life Support (LifeSupportController) [" + this.GetInstanceID().ToString("X") + "][" + Time.time + "]: EVA suit for " + crewMember.name + " has already been filled.");
+                Debug.Log("TAC Life Support (LifeSupportController) [" + this.GetInstanceID().ToString("X") + "][" + Time.time.ToString("0.00") + "]: EVA suit for " + crewMember.name + " has already been filled.");
             }
         }
 
@@ -448,25 +449,7 @@ namespace Tac
 
         private double RequestResource(string resourceName, double requestedAmount, Part part)
         {
-            if (part.vessel.isEVA)
-            {
-                double amount;
-                if (requestedAmount >= 0)
-                {
-                    amount = Math.Min(requestedAmount, part.Resources[resourceName].amount);
-                }
-                else
-                {
-                    double remainingCapacity = part.Resources[resourceName].maxAmount - part.Resources[resourceName].amount;
-                    amount = -Math.Min(-requestedAmount, remainingCapacity);
-                }
-                part.Resources[resourceName].amount -= amount;
-                return amount;
-            }
-            else
-            {
-                return part.RequestResource(resourceName, requestedAmount);
-            }
+            return part.TakeResource(resourceName, requestedAmount);
         }
 
         private void KillCrewMember(ProtoCrewMember crewMember, string causeOfDeath, Vessel vessel)
@@ -478,7 +461,7 @@ namespace Tac
             }
 
             ScreenMessages.PostScreenMessage(vessel.vesselName + " - " + crewMember.name + " died of " + causeOfDeath + "!", 30.0f, ScreenMessageStyle.UPPER_CENTER);
-            Debug.Log("TAC Life Support (LifeSupportController) [" + this.GetInstanceID().ToString("X") + "][" + Time.time + "]: " + vessel.vesselName + " - " + crewMember.name + " died of " + causeOfDeath + "!");
+            Debug.Log("TAC Life Support (LifeSupportController) [" + this.GetInstanceID().ToString("X") + "][" + Time.time.ToString("0.00") + "]: " + vessel.vesselName + " - " + crewMember.name + " died of " + causeOfDeath + "!");
 
             if (!vessel.isEVA)
             {
