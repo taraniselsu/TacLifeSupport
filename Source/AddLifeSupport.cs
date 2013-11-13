@@ -210,6 +210,9 @@ namespace Tac
                 PartResource resource = part.gameObject.AddComponent<PartResource>();
                 resource.SetInfo(PartResourceLibrary.Instance.resourceDefinitions[name]);
                 resource.maxAmount = max;
+                resource.flowState = true;
+                resource.flowMode = PartResource.FlowMode.Both;
+                resource.part = part;
 
                 if (full)
                 {
