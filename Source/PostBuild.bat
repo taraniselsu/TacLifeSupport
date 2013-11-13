@@ -1,4 +1,4 @@
-set DIR=%1..\GameData\TacLifeSupport\
+set DIR=%1..\GameData\ThunderAerospace\TacLifeSupport\
 if not exist %DIR% mkdir %DIR%
 copy Tac*.dll %DIR%
 
