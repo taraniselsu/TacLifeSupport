@@ -152,7 +152,7 @@ namespace Tac
 
             MaxTimeWithoutFood = 30.0 * SECONDS_PER_KERBIN_DAY; // 30 days
             MaxTimeWithoutWater = 3.0 * SECONDS_PER_KERBIN_DAY; // 3 days
-            MaxTimeWithoutOxygen = 5.0 * SECONDS_PER_MINUTE; // 5 minutes
+            MaxTimeWithoutOxygen = 2.0 * SECONDS_PER_HOUR; // 2 hours
             MaxTimeWithoutElectricity = 2.0 * SECONDS_PER_HOUR; // 2 hours
 
             // Amount of resources to load crewable parts with, in seconds
