@@ -325,49 +325,39 @@ namespace Tac
 
         private void ShowWarnings(Vessel vessel, double resourceRemaining, double max, double consumptionRate, string resourceName, ref VesselInfo.Status status)
         {
-            const double multiplier = 1.1;
-            const double warningLevel = 0.10;
+            double criticalLevel = consumptionRate; // 1 second
+            double warningLevel = max * 0.10; // 10%
 
-            int currentWarpRateIndex = TimeWarp.CurrentRateIndex;
-            float currentWarpRate = TimeWarp.fetch.warpRates[currentWarpRateIndex];
-
-            if ((resourceRemaining / consumptionRate) < (currentWarpRate * multiplier))
+            if (resourceRemaining < criticalLevel)
             {
                 if (status != VesselInfo.Status.CRITICAL)
                 {
-                    if (currentWarpRateIndex > 0)
-                    {
-                        Debug.Log("TAC Life Support (LifeSupportController) [" + this.GetInstanceID().ToString("X") + "][" + Time.time.ToString("0.00") + "]: @CRITICAL, warp rate: " + currentWarpRate);
-                        TimeWarp.SetRate(currentWarpRateIndex - 1, false);
-                    }
-                    else
-                    {
-                        ScreenMessages.PostScreenMessage(vessel.vesselName + " - " + resourceName + " depleted!", 15.0f, ScreenMessageStyle.UPPER_CENTER);
-                        Debug.Log("TAC Life Support (LifeSupportController) [" + this.GetInstanceID().ToString("X") + "][" + Time.time.ToString("0.00") + "]: " + vessel.vesselName + " - " + resourceName + " depleted!");
-                        status = VesselInfo.Status.CRITICAL;
-                    }
-                }
-            }
-            else if (resourceRemaining < (max * warningLevel))
-            {
-                if (status != VesselInfo.Status.LOW)
-                {
-                    if (currentWarpRateIndex > 0)
-                    {
-                        Debug.Log("TAC Life Support (LifeSupportController) [" + this.GetInstanceID().ToString("X") + "][" + Time.time.ToString("0.00") + "]: @LOW, warp rate: " + currentWarpRate);
-                        TimeWarp.SetRate(currentWarpRateIndex - 1, false);
-                    }
-                    else
-                    {
-                        ScreenMessages.PostScreenMessage(vessel.vesselName + " - " + resourceName + " is running out!", 15.0f, ScreenMessageStyle.UPPER_CENTER);
-                        Debug.Log("TAC Life Support (LifeSupportController) [" + this.GetInstanceID().ToString("X") + "][" + Time.time.ToString("0.00") + "]: " + vessel.vesselName + " - " + resourceName + " is running out!");
-                        status = VesselInfo.Status.LOW;
-                    }
+                    ScreenMessages.PostScreenMessage(vessel.vesselName + " - " + resourceName + " depleted!", 15.0f, ScreenMessageStyle.UPPER_CENTER);
+                    Debug.Log("TAC Life Support (LifeSupportController) [" + this.GetInstanceID().ToString("X") + "][" + Time.time.ToString("0.00") + "]: " + vessel.vesselName + " - " + resourceName + " depleted!");
+                    status = VesselInfo.Status.CRITICAL;
+                    TimeWarp.SetRate(0, false);
                 }
             }
             else
             {
-                status = VesselInfo.Status.GOOD;
+                if (resourceRemaining < warningLevel)
+                {
+                    if (status == VesselInfo.Status.CRITICAL)
+                    {
+                        status = VesselInfo.Status.LOW;
+                    }
+                    else if (status != VesselInfo.Status.LOW)
+                    {
+                        ScreenMessages.PostScreenMessage(vessel.vesselName + " - " + resourceName + " is running out!", 15.0f, ScreenMessageStyle.UPPER_CENTER);
+                        Debug.Log("TAC Life Support (LifeSupportController) [" + this.GetInstanceID().ToString("X") + "][" + Time.time.ToString("0.00") + "]: " + vessel.vesselName + " - " + resourceName + " is running out!");
+                        status = VesselInfo.Status.LOW;
+                        TimeWarp.SetRate(0, false);
+                    }
+                }
+                else
+                {
+                    status = VesselInfo.Status.GOOD;
+                }
             }
         }
 
