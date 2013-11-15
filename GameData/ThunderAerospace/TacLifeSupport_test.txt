@@ -1,3 +1,0 @@
-You have installed the TAC Life Support test version.
-
-See the Readme.txt and LICENSE.txt files for more information.
