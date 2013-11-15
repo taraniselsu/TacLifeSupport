@@ -73,12 +73,18 @@ namespace Tac
             Debug.Log("TAC Life Support (LifeSupportController) [" + this.GetInstanceID().ToString("X") + "][" + Time.time.ToString("0.00") + "]: Start");
             Load();
             icon.SetVisible(true);
+
+            GameEvents.onCrewOnEva.Add(OnCrewOnEva);
+            GameEvents.onCrewBoardVessel.Add(OnCrewBoardVessel);
         }
 
         void OnDestroy()
         {
             Debug.Log("TAC Life Support (LifeSupportController) [" + this.GetInstanceID().ToString("X") + "][" + Time.time.ToString("0.00") + "]: OnDestroy");
             Save();
+
+            GameEvents.onCrewOnEva.Remove(OnCrewOnEva);
+            GameEvents.onCrewBoardVessel.Remove(OnCrewBoardVessel);
         }
 
         void FixedUpdate()
@@ -110,12 +116,7 @@ namespace Tac
                 }
                 else
                 {
-                    if (vessel.missionTime < 0.05)
-                    {
-                        // It is a new EVA
-                        FillEvaSuit(vessel);
-                    }
-                    else
+                    if (vessel.missionTime > 0.05)
                     {
                         VesselInfo vesselInfo = GetVesselInfo(vessel, currentTime);
                         ConsumeResources(currentTime, vessel, vesselInfo);
@@ -144,19 +145,8 @@ namespace Tac
                     CrewMemberInfo crewMemberInfo = knownCrew[crewMember.name];
                     var part = (crewMember.KerbalRef != null) ? crewMember.KerbalRef.InPart : vessel.rootPart;
 
-                    if (crewMemberInfo.vesselId != vessel.id && crewMemberInfo.isEVA)
-                    {
-                        // The crewmember came back inside after EVA, return the remaining resources out of the suit
-                        EmptyEvaSuit(crewMemberInfo, part);
-                    }
-
-                    // Oxygen
                     ConsumeOxygen(currentTime, vessel, vesselInfo, crewMember, crewMemberInfo, part);
-
-                    // Water
                     ConsumeWater(currentTime, vessel, vesselInfo, crewMember, crewMemberInfo, part);
-
-                    // Food
                     ConsumeFood(currentTime, vessel, vesselInfo, crewMember, crewMemberInfo, part);
 
                     crewMemberInfo.lastUpdate = currentTime;
@@ -394,57 +384,45 @@ namespace Tac
             }
         }
 
-        private void FillEvaSuit(Vessel evaVessel)
+        private void FillEvaSuit(Part oldPart, Part newPart)
         {
-            ProtoCrewMember crewMember = evaVessel.GetVesselCrew()[0];
-            CrewMemberInfo crewMemberInfo = knownCrew[crewMember.name];
+            double desiredFood = settings.FoodConsumptionRate * settings.EvaDefaultResourceAmount;
+            double desiredWater = settings.WaterConsumptionRate * settings.EvaDefaultResourceAmount;
+            double desiredOxygen = settings.OxygenConsumptionRate * settings.EvaDefaultResourceAmount;
+            double desiredElectricity = settings.EvaElectricityConsumptionRate * settings.EvaDefaultResourceAmount;
 
-            if (crewMemberInfo.vesselId != evaVessel.id)
-            {
-                Debug.Log("TAC Life Support (LifeSupportController) [" + this.GetInstanceID().ToString("X") + "][" + Time.time.ToString("0.00") + "]: Filling EVA suit for " + crewMember.name);
+            VesselInfo lastVesselInfo = GetVesselInfo(oldPart.vessel, Planetarium.GetUniversalTime());
+            int numCrew = lastVesselInfo.numCrew;
 
-                Vessel lastVessel = FlightGlobals.Vessels.Find(v => v.id.Equals(crewMemberInfo.vesselId));
-                VesselInfo lastVesselInfo = knownVessels[crewMemberInfo.vesselId];
+            double foodObtained = oldPart.TakeResource(settings.FoodId, Min(desiredFood, lastVesselInfo.remainingFood / numCrew));
+            double waterObtained = oldPart.TakeResource(settings.WaterId, Min(desiredWater, lastVesselInfo.remainingWater / numCrew));
+            double oxygenObtained = oldPart.TakeResource(settings.OxygenId, Min(desiredOxygen, lastVesselInfo.remainingOxygen / numCrew));
+            double electricityObtained = oldPart.TakeResource(settings.ElectricityId, Min(desiredElectricity, lastVesselInfo.remainingElectricity / numCrew));
 
-                double desiredFood = settings.FoodConsumptionRate * settings.EvaDefaultResourceAmount;
-                double desiredWater = settings.WaterConsumptionRate * settings.EvaDefaultResourceAmount;
-                double desiredOxygen = settings.OxygenConsumptionRate * settings.EvaDefaultResourceAmount;
-                double desiredElectricity = settings.EvaElectricityConsumptionRate * settings.EvaDefaultResourceAmount;
-
-                Part oldPart = lastVessel.rootPart;
-                int numCrew = lastVessel.GetCrewCount() + 1;
-
-                double foodObtained = RequestResource(settings.Food, Min(desiredFood, lastVesselInfo.remainingFood / numCrew, lastVesselInfo.remainingFood * 0.95), oldPart);
-                double waterObtained = RequestResource(settings.Water, Min(desiredWater, lastVesselInfo.remainingWater / numCrew, lastVesselInfo.remainingWater * 0.95), oldPart);
-                double oxygenObtained = RequestResource(settings.Oxygen, Min(desiredOxygen, lastVesselInfo.remainingOxygen / numCrew, lastVesselInfo.remainingOxygen * 0.95), oldPart);
-                double electricityObtained = RequestResource(settings.Electricity, Min(desiredElectricity, lastVesselInfo.remainingElectricity / numCrew, lastVesselInfo.remainingElectricity * 0.95), oldPart);
-
-                Part newPart = evaVessel.rootPart;
-                newPart.Resources.list.ForEach(r => r.flowState = true);
-                RequestResource(settings.Food, -foodObtained, newPart);
-                RequestResource(settings.Water, -waterObtained, newPart);
-                RequestResource(settings.Oxygen, -oxygenObtained, newPart);
-                RequestResource(settings.Electricity, -electricityObtained, newPart);
-
-                crewMemberInfo.vesselId = evaVessel.id;
-                crewMemberInfo.isEVA = true;
-            }
-            else
-            {
-                Debug.Log("TAC Life Support (LifeSupportController) [" + this.GetInstanceID().ToString("X") + "][" + Time.time.ToString("0.00") + "]: EVA suit for " + crewMember.name + " has already been filled.");
-            }
+            newPart.TakeResource(settings.FoodId, -foodObtained);
+            newPart.TakeResource(settings.WaterId, -waterObtained);
+            newPart.TakeResource(settings.OxygenId, -oxygenObtained);
+            newPart.TakeResource(settings.ElectricityId, -electricityObtained);
         }
 
-        private void EmptyEvaSuit(CrewMemberInfo crewMemberInfo, Part part)
+        private void EmptyEvaSuit(Part oldPart, Part newPart)
         {
-            VesselInfo lastVesselInfo = knownVessels[crewMemberInfo.vesselId];
-            RequestResource(settings.Food, -lastVesselInfo.remainingFood, part);
-            RequestResource(settings.Water, -lastVesselInfo.remainingWater, part);
-            RequestResource(settings.Oxygen, -lastVesselInfo.remainingOxygen, part);
-            RequestResource(settings.Electricity, -lastVesselInfo.remainingElectricity, part);
-            RequestResource(settings.CO2, -lastVesselInfo.remainingCO2, part);
-            RequestResource(settings.Waste, -lastVesselInfo.remainingWaste, part);
-            RequestResource(settings.WasteWater, -lastVesselInfo.remainingWasteWater, part);
+            VesselInfo lastVesselInfo = knownVessels[oldPart.vessel.id];
+            double foodObtained = oldPart.TakeResource(settings.FoodId, -lastVesselInfo.remainingFood);
+            double waterObtained = oldPart.TakeResource(settings.WaterId, -lastVesselInfo.remainingWater);
+            double oxygenObtained = oldPart.TakeResource(settings.OxygenId, -lastVesselInfo.remainingOxygen);
+            double electricityObtained = oldPart.TakeResource(settings.ElectricityId, -lastVesselInfo.remainingElectricity);
+            double co2Obtained = oldPart.TakeResource(settings.CO2Id, -lastVesselInfo.remainingCO2);
+            double wasteObtained = oldPart.TakeResource(settings.WasteId, -lastVesselInfo.remainingWaste);
+            double wasteWaterObtained = oldPart.TakeResource(settings.WasteWaterId, -lastVesselInfo.remainingWasteWater);
+
+            newPart.TakeResource(settings.FoodId, -foodObtained);
+            newPart.TakeResource(settings.WaterId, -waterObtained);
+            newPart.TakeResource(settings.OxygenId, -oxygenObtained);
+            newPart.TakeResource(settings.ElectricityId, -electricityObtained);
+            newPart.TakeResource(settings.CO2Id, -co2Obtained);
+            newPart.TakeResource(settings.WasteId, -wasteObtained);
+            newPart.TakeResource(settings.WasteWaterId, -wasteWaterObtained);
         }
 
         private double RequestResource(string resourceName, double requestedAmount, Part part)
@@ -460,7 +438,8 @@ namespace Tac
                 CameraManager.Instance.SetCameraFlight();
             }
 
-            ScreenMessages.PostScreenMessage(vessel.vesselName + " - " + crewMember.name + " died of " + causeOfDeath + "!", 30.0f, ScreenMessageStyle.UPPER_CENTER);
+            string vesselName = (!vessel.isEVA) ? vessel.vesselName + " - " : "";
+            ScreenMessages.PostScreenMessage(vesselName + crewMember.name + " died of " + causeOfDeath + "!", 30.0f, ScreenMessageStyle.UPPER_CENTER);
             Debug.Log("TAC Life Support (LifeSupportController) [" + this.GetInstanceID().ToString("X") + "][" + Time.time.ToString("0.00") + "]: " + vessel.vesselName + " - " + crewMember.name + " died of " + causeOfDeath + "!");
 
             if (!vessel.isEVA)
@@ -516,6 +495,22 @@ namespace Tac
         private void OnIconClicked()
         {
             monitoringWindow.ToggleVisible();
+        }
+
+        private void OnCrewOnEva(GameEvents.FromToAction<Part, Part> action)
+        {
+            Debug.Log("TAC Life Support (LifeSupportController) [" + this.GetInstanceID().ToString("X")
+                + "][" + Time.time.ToString("0.00") + "]: OnCrewOnEva: from=" + action.from.partInfo.title + "(" + action.from.vessel.vesselName + ")"
+                + ", to=" + action.to.partInfo.title + "(" + action.to.vessel.vesselName + ")");
+            FillEvaSuit(action.from, action.to);
+        }
+
+        private void OnCrewBoardVessel(GameEvents.FromToAction<Part, Part> action)
+        {
+            Debug.Log("TAC Life Support (LifeSupportController) [" + this.GetInstanceID().ToString("X")
+                + "][" + Time.time.ToString("0.00") + "]: OnCrewBoardVessel: from=" + action.from.partInfo.title + "(" + action.from.vessel.vesselName + ")"
+                + ", to=" + action.to.partInfo.title + "(" + action.to.vessel.vesselName + ")");
+            EmptyEvaSuit(action.from, action.to);
         }
 
         private static double Min(double value1, double value2)
