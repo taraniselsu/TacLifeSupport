@@ -38,27 +38,38 @@ namespace Tac
      *    MODULE
      *    {
      *       name = TacGenericConverter
-     *       converterName = CO2 Recycler
-     *       conversionRate = 0.001
+     *
+     *       // Displayed when right clicking the part
+     *       converterName = Carbon Extractor
+     *
+     *       // Number of units to convert per Kerbin day (6 hours)
+     *       conversionRate = 8
+     *
+     *       // A comma separated list of resources to use as inputs.
+     *       // For each resource, list the resource name and the amount (which
+     *       // is multiplied by the conversionRate)
      *       inputResources = CarbonDioxide, 1, ElectricCharge, 1000
+     *
+     *       // A comma separated list of resources to output. Same as above
+     *       // but also specify whether it should keep converting if the
+     *       // resource is full (generating excess that will be thrown away).
      *       outputResources = Oxygen, 0.9, false, Waste, 2.218, true
-     *       // syntax = resource_name, amount, [allow extra]
      *    }
      * or
      *    MODULE
      *    {
      *       name = TacGenericConverter
-     *       converterName = Water Recycler
-     *       conversionRate = 0.001
+     *       converterName = Water Purifier
+     *       conversionRate = 8
      *       inputResources = WasteWater, 1, ElectricCharge, 1000
      *       outputResources = Water, 0.9, false, Waste, 6.382, true
-     *       // syntax = resource_name, amount, [allow extra]
      *    }
      */
     class TacGenericConverter : PartModule
     {
         private static char[] delimiters = { ' ', ',', '\t', ';' };
-        private const int MAX_DELTA_TIME = 30 * 6 * 60 * 60; // 30 Kerbin days (6 hours each)
+        private const int SECONDS_PER_KERBIN_DAY = 6 * 60 * 60;
+        private const int MAX_DELTA_TIME = 10 * SECONDS_PER_KERBIN_DAY; // 10 Kerbin days (6 hours each)
 
         [KSPField]
         public string converterName = "TAC Generic Converter";
@@ -126,7 +137,7 @@ namespace Tac
 
             if (converterEnabled)
             {
-                double desiredAmount = conversionRate * deltaTime;
+                double desiredAmount = conversionRate / SECONDS_PER_KERBIN_DAY * deltaTime;
 
                 // Limit the resource amounts so that we do not produce more than we have room for, nor consume more than is available
                 foreach (ResourceRatio output in outputResourceList)
@@ -139,7 +150,7 @@ namespace Tac
                         if (desiredAmount <= 0.000000001)
                         {
                             // Out of space, so no need to run
-                            converterStatus = "Idle: no space for more " + output.resource.name;
+                            converterStatus = "No space for more " + output.resource.name;
                             return;
                         }
                     }
@@ -153,7 +164,7 @@ namespace Tac
                     if (desiredAmount <= 0.000000001)
                     {
                         // Not enough input resources
-                        converterStatus = "Idle: not enough " + input.resource.name;
+                        converterStatus = "Not enough " + input.resource.name;
                         return;
                     }
                 }
@@ -207,7 +218,7 @@ namespace Tac
             var inputs = String.Join(", ", inputResourceList.Select(value => value.resource.name + ", " + value.ratio).ToArray());
             var outputs = String.Join(", ", outputResourceList.Select(value => value.resource.name + ", " + value.ratio).ToArray());
 
-            return base.GetInfo() + "\nContains the " + converterName + " module\n  Inputs: " + inputs + "\n  Outputs: " + outputs + "\n";
+            return base.GetInfo() + "\nContains the " + converterName + " module\n  Inputs: " + inputs + "\n  Outputs: " + outputs + "\n  Conversion Rate: " + conversionRate + "\n";
         }
 
         [KSPEvent(active = false, guiActive = true, guiName = "Activate Converter")]
