@@ -63,8 +63,9 @@ namespace Tac
             lastUpdate = currentTime;
         }
 
-        public void ClearResourceAmounts()
+        public void ClearAmounts()
         {
+            numCrew = 0;
             remainingFood = 0.0;
             remainingWater = 0.0;
             remainingOxygen = 0.0;

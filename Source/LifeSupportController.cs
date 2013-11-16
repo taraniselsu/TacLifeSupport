@@ -273,11 +273,12 @@ namespace Tac
                 knownVessels[vessel.id] = vesselInfo;
             }
 
-            vesselInfo.numCrew = vessel.GetCrewCount();
-            vesselInfo.ClearResourceAmounts();
+            vesselInfo.ClearAmounts();
 
             foreach (Part part in vessel.parts)
             {
+                vesselInfo.numCrew += part.protoModuleCrew.Count;
+
                 foreach (PartResource resource in part.Resources)
                 {
                     if (resource.info.id == settings.FoodId)
@@ -315,9 +316,9 @@ namespace Tac
                 }
             }
 
-            ShowWarnings(vessel, vesselInfo.remainingFood, vesselInfo.maxFood, settings.FoodConsumptionRate / vesselInfo.numCrew, "Food", ref vesselInfo.foodStatus);
-            ShowWarnings(vessel, vesselInfo.remainingWater, vesselInfo.maxWater, settings.WaterConsumptionRate / vesselInfo.numCrew, "Water", ref vesselInfo.waterStatus);
-            ShowWarnings(vessel, vesselInfo.remainingOxygen, vesselInfo.maxOxygen, settings.OxygenConsumptionRate / vesselInfo.numCrew, "Oxygen", ref vesselInfo.oxygenStatus);
+            ShowWarnings(vessel, vesselInfo.remainingFood, vesselInfo.maxFood, settings.FoodConsumptionRate * vesselInfo.numCrew, "Food", ref vesselInfo.foodStatus);
+            ShowWarnings(vessel, vesselInfo.remainingWater, vesselInfo.maxWater, settings.WaterConsumptionRate * vesselInfo.numCrew, "Water", ref vesselInfo.waterStatus);
+            ShowWarnings(vessel, vesselInfo.remainingOxygen, vesselInfo.maxOxygen, settings.OxygenConsumptionRate * vesselInfo.numCrew, "Oxygen", ref vesselInfo.oxygenStatus);
             ShowWarnings(vessel, vesselInfo.remainingElectricity, vesselInfo.maxElectricity, CalculateElectricityConsumptionRate(vessel, vesselInfo), "Electric Charge", ref vesselInfo.electricityStatus);
 
             return vesselInfo;
@@ -382,7 +383,7 @@ namespace Tac
             double desiredElectricity = settings.EvaElectricityConsumptionRate * settings.EvaDefaultResourceAmount;
 
             VesselInfo lastVesselInfo = GetVesselInfo(oldPart.vessel, Planetarium.GetUniversalTime());
-            int numCrew = lastVesselInfo.numCrew;
+            int numCrew = lastVesselInfo.numCrew + 1;
 
             double foodObtained = oldPart.TakeResource(settings.FoodId, Min(desiredFood, lastVesselInfo.remainingFood / numCrew));
             double waterObtained = oldPart.TakeResource(settings.WaterId, Min(desiredWater, lastVesselInfo.remainingWater / numCrew));
@@ -398,21 +399,13 @@ namespace Tac
         private void EmptyEvaSuit(Part oldPart, Part newPart)
         {
             VesselInfo lastVesselInfo = knownVessels[oldPart.vessel.id];
-            double foodObtained = oldPart.TakeResource(settings.FoodId, -lastVesselInfo.remainingFood);
-            double waterObtained = oldPart.TakeResource(settings.WaterId, -lastVesselInfo.remainingWater);
-            double oxygenObtained = oldPart.TakeResource(settings.OxygenId, -lastVesselInfo.remainingOxygen);
-            double electricityObtained = oldPart.TakeResource(settings.ElectricityId, -lastVesselInfo.remainingElectricity);
-            double co2Obtained = oldPart.TakeResource(settings.CO2Id, -lastVesselInfo.remainingCO2);
-            double wasteObtained = oldPart.TakeResource(settings.WasteId, -lastVesselInfo.remainingWaste);
-            double wasteWaterObtained = oldPart.TakeResource(settings.WasteWaterId, -lastVesselInfo.remainingWasteWater);
-
-            newPart.TakeResource(settings.FoodId, -foodObtained);
-            newPart.TakeResource(settings.WaterId, -waterObtained);
-            newPart.TakeResource(settings.OxygenId, -oxygenObtained);
-            newPart.TakeResource(settings.ElectricityId, -electricityObtained);
-            newPart.TakeResource(settings.CO2Id, -co2Obtained);
-            newPart.TakeResource(settings.WasteId, -wasteObtained);
-            newPart.TakeResource(settings.WasteWaterId, -wasteWaterObtained);
+            newPart.TakeResource(settings.FoodId, -lastVesselInfo.remainingFood);
+            newPart.TakeResource(settings.WaterId, -lastVesselInfo.remainingWater);
+            newPart.TakeResource(settings.OxygenId, -lastVesselInfo.remainingOxygen);
+            newPart.TakeResource(settings.ElectricityId, -lastVesselInfo.remainingElectricity);
+            newPart.TakeResource(settings.CO2Id, -lastVesselInfo.remainingCO2);
+            newPart.TakeResource(settings.WasteId, -lastVesselInfo.remainingWaste);
+            newPart.TakeResource(settings.WasteWaterId, -lastVesselInfo.remainingWasteWater);
         }
 
         private double RequestResource(string resourceName, double requestedAmount, Part part)

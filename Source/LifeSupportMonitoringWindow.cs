@@ -104,8 +104,13 @@ namespace Tac
 
                 foreach (var entry in controller.knownVessels)
                 {
-                    Vessel vessel = FlightGlobals.Vessels.Find(v => v.id.Equals(entry.Key));
+                    Vessel vessel = FlightGlobals.Vessels.FirstOrDefault(v => v.id.Equals(entry.Key));
                     VesselInfo vesselInfo = entry.Value;
+
+                    if (vessel == null || vesselInfo.numCrew < 1)
+                    {
+                        continue;
+                    }
 
                     GUILayout.Label("Vessel: " + vessel.vesselName + " (" + vessel.vesselType + ")", headerStyle);
                     GUILayout.Label("Crew: " + vesselInfo.numCrew, headerStyle);
