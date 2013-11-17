@@ -70,10 +70,19 @@ namespace Tac
         void Start()
         {
             Debug.Log("TAC Life Support (LifeSupportController) [" + this.GetInstanceID().ToString("X") + "][" + Time.time.ToString("0.00") + "]: Start");
-            icon.SetVisible(true);
+            if (gameSettings.Enabled)
+            {
+                icon.SetVisible(true);
 
-            GameEvents.onCrewOnEva.Add(OnCrewOnEva);
-            GameEvents.onCrewBoardVessel.Add(OnCrewBoardVessel);
+                GameEvents.onCrewOnEva.Add(OnCrewOnEva);
+                GameEvents.onCrewBoardVessel.Add(OnCrewBoardVessel);
+            }
+            else
+            {
+                icon.SetVisible(false);
+                monitoringWindow.SetVisible(false);
+                Destroy(this);
+            }
         }
 
         void OnDestroy()

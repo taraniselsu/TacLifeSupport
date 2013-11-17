@@ -88,12 +88,9 @@ namespace Tac
             }
             else if (HighLogic.LoadedScene == GameScenes.FLIGHT)
             {
-                if (gameSettings.Enabled)
-                {
-                    Debug.Log("TAC Life Support (TacLifeSupport) [" + this.GetInstanceID().ToString("X") + "][" + Time.time.ToString("0.00") + "]: Adding LifeSupportController");
-                    var c = gameObject.AddComponent<LifeSupportController>();
-                    children.Add(c);
-                }
+                Debug.Log("TAC Life Support (TacLifeSupport) [" + this.GetInstanceID().ToString("X") + "][" + Time.time.ToString("0.00") + "]: Adding LifeSupportController");
+                var c = gameObject.AddComponent<LifeSupportController>();
+                children.Add(c);
             }
         }
 
