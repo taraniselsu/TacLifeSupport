@@ -62,7 +62,7 @@ namespace Tac
         private readonly string globalConfigFilename;
         private ConfigNode globalConfigNode = new ConfigNode();
 
-        private readonly List<Savable> savables = new List<Savable>();
+        private readonly List<Component> children = new List<Component>();
 
         public TacLifeSupport()
         {
@@ -75,7 +75,8 @@ namespace Tac
 
         public override void OnAwake()
         {
-            Debug.Log("TAC Life Support (TacLifeSupport) [" + this.GetInstanceID().ToString("X") + "][" + Time.time.ToString("0.00") + "]: OnAwake in " + HighLogic.LoadedScene);
+            Debug.Log("TAC Life Support (TacLifeSupport) [" + this.GetInstanceID().ToString("X") + "][" + Time.time.ToString("0.00") + "]: OnAwake in " + HighLogic.LoadedScene
+                + "; GameObject name = " + gameObject.name);
             base.OnAwake();
             Instance = this;
 
@@ -83,7 +84,7 @@ namespace Tac
             {
                 Debug.Log("TAC Life Support (TacLifeSupport) [" + this.GetInstanceID().ToString("X") + "][" + Time.time.ToString("0.00") + "]: Adding SpaceCenterManager");
                 var c = gameObject.AddComponent<SpaceCenterManager>();
-                savables.Add(c as Savable);
+                children.Add(c);
             }
             else if (HighLogic.LoadedScene == GameScenes.FLIGHT)
             {
@@ -91,7 +92,7 @@ namespace Tac
                 {
                     Debug.Log("TAC Life Support (TacLifeSupport) [" + this.GetInstanceID().ToString("X") + "][" + Time.time.ToString("0.00") + "]: Adding LifeSupportController");
                     var c = gameObject.AddComponent<LifeSupportController>();
-                    savables.Add(c as Savable);
+                    children.Add(c);
                 }
             }
         }
@@ -106,7 +107,7 @@ namespace Tac
             {
                 globalConfigNode = ConfigNode.Load(globalConfigFilename);
                 globalSettings.Load(globalConfigNode);
-                foreach (Savable s in savables)
+                foreach (Savable s in children.Where(c => c is Savable))
                 {
                     s.Load(globalConfigNode);
                 }
@@ -122,13 +123,23 @@ namespace Tac
 
             // Save the global settings
             globalSettings.Save(globalConfigNode);
-            foreach (Savable s in savables)
+            foreach (Savable s in children.Where(c => c is Savable))
             {
                 s.Save(globalConfigNode);
             }
             globalConfigNode.Save(globalConfigFilename);
 
             Debug.Log("TAC Life Support (TacLifeSupport) [" + this.GetInstanceID().ToString("X") + "][" + Time.time.ToString("0.00") + "]: OnSave: " + node + "\n" + globalConfigNode);
+        }
+
+        void OnDestroy()
+        {
+            Debug.Log("TAC Life Support (TacLifeSupport) [" + this.GetInstanceID().ToString("X") + "][" + Time.time.ToString("0.00") + "]: OnDestroy");
+            foreach (Component c in children)
+            {
+                Destroy(c);
+            }
+            children.Clear();
         }
     }
 
