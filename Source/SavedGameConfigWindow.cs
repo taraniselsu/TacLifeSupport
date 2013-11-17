@@ -171,17 +171,17 @@ namespace Tac
 
         private void HibernateOrKill()
         {
-            string[] killOptions = { "Die", "Hibernate" };
-            int oldValue = (gameSettings.HibernateInsteadOfKill) ? 1 : 0;
+            //string[] killOptions = { "Die", "Hibernate" };
+            //int oldValue = (gameSettings.HibernateInsteadOfKill) ? 1 : 0;
 
-            GUILayout.BeginVertical(GUI.skin.box);
+            GUILayout.BeginVertical();
 
-            GUILayout.BeginHorizontal();
-            GUILayout.Label("When resources run out, Kerbals ", labelStyle);
-            int newValue = GUILayout.SelectionGrid(oldValue, killOptions, 2);
-            GUILayout.EndHorizontal();
+            //GUILayout.BeginHorizontal();
+            //GUILayout.Label("When resources run out, Kerbals ", labelStyle);
+            //int newValue = GUILayout.SelectionGrid(oldValue, killOptions, 2);
+            //GUILayout.EndHorizontal();
 
-            gameSettings.HibernateInsteadOfKill = (newValue == 1);
+            //gameSettings.HibernateInsteadOfKill = (newValue == 1);
 
             if (!gameSettings.HibernateInsteadOfKill)
             {
