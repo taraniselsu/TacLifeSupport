@@ -51,6 +51,8 @@ namespace Tac
             this.controller = controller;
             this.globalSettings = globalSettings;
             this.rosterWindow = rosterWindow;
+
+            windowPos.y = 20;
         }
 
         public override void SetVisible(bool newValue)

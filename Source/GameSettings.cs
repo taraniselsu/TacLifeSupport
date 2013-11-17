@@ -28,7 +28,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using UnityEngine;
 
 namespace Tac
 {
@@ -36,6 +35,7 @@ namespace Tac
     {
         private const string configNodeName = "SavedGameSettings";
 
+        public bool IsNewSave { get; set; }
         public bool Enabled { get; set; }
         public bool HibernateInsteadOfKill { get; set; }
         public double RespawnDelay { get; set; }
@@ -54,7 +54,7 @@ namespace Tac
 
         public GameSettings()
         {
-            Debug.Log("TAC Life Support (GameSettings) [" + this.GetHashCode().ToString("X") + "][" + Time.time.ToString("0.00") + "]: Constructor");
+            IsNewSave = true;
             Enabled = true;
             HibernateInsteadOfKill = false;
             RespawnDelay = 9203545.0; // 1 Kerbin year (default is too short at only 36 minutes)
@@ -62,11 +62,11 @@ namespace Tac
 
         public void Load(ConfigNode node)
         {
-            Debug.Log("TAC Life Support (GameSettings) [" + this.GetHashCode().ToString("X") + "][" + Time.time.ToString("0.00") + "]: Load: " + node);
             if (node.HasNode(configNodeName))
             {
                 ConfigNode settingsNode = node.GetNode(configNodeName);
 
+                IsNewSave = Utilities.GetValue(settingsNode, "IsNewSave", IsNewSave);
                 Enabled = Utilities.GetValue(settingsNode, "Enabled", Enabled);
                 HibernateInsteadOfKill = Utilities.GetValue(settingsNode, "HibernateInsteadOfKill", HibernateInsteadOfKill);
                 RespawnDelay = Utilities.GetValue(settingsNode, "RespawnDelay", RespawnDelay);
@@ -85,11 +85,10 @@ namespace Tac
                 settingsNode = node.AddNode(configNodeName);
             }
 
+            settingsNode.AddValue("IsNewSave", IsNewSave);
             settingsNode.AddValue("Enabled", Enabled);
             settingsNode.AddValue("HibernateInsteadOfKill", HibernateInsteadOfKill);
             settingsNode.AddValue("RespawnDelay", RespawnDelay);
-
-            Debug.Log("TAC Life Support (GameSettings) [" + this.GetHashCode().ToString("X") + "][" + Time.time.ToString("0.00") + "]: Save: " + node);
         }
     }
 }

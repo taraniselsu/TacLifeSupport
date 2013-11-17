@@ -69,6 +69,8 @@
     </Compile>
     <Compile Include="AddLifeSupport.cs" />
     <Compile Include="GameSettings.cs" />
+    <Compile Include="SavedGameConfigWindow.cs" />
+    <Compile Include="SpaceCenterManager.cs" />
     <Compile Include="TacLifeSupport.cs" />
     <Compile Include="TacGenericConverter.cs" />
     <Compile Include="RosterWindow.cs" />

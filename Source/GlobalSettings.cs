@@ -28,7 +28,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using UnityEngine;
 
 namespace Tac
 {
@@ -118,8 +117,6 @@ namespace Tac
 
         public GlobalSettings()
         {
-            Debug.Log("TAC Life Support (GlobalSettings) [" + this.GetHashCode().ToString("X") + "][" + Time.time.ToString("0.00") + "]: Constructor");		
-
             Food = "Food";
             Water = "Water";
             Oxygen = "Oxygen";
@@ -153,8 +150,6 @@ namespace Tac
 
         public void Load(ConfigNode node)
         {
-            Debug.Log("TAC Life Support (GlobalSettings) [" + this.GetHashCode().ToString("X") + "][" + Time.time.ToString("0.00") + "]: Load: " + node);
-
             if (node.HasNode(configNodeName))
             {
                 ConfigNode settingsNode = node.GetNode(configNodeName);
@@ -192,6 +187,7 @@ namespace Tac
             if (node.HasNode(configNodeName))
             {
                 settingsNode = node.GetNode(configNodeName);
+                settingsNode.ClearData();
             }
             else
             {
@@ -222,8 +218,6 @@ namespace Tac
             settingsNode.AddValue("MaxTimeWithoutWater", MaxTimeWithoutWater);
             settingsNode.AddValue("MaxTimeWithoutOxygen", MaxTimeWithoutOxygen);
             settingsNode.AddValue("MaxTimeWithoutElectricity", MaxTimeWithoutElectricity);
-
-            Debug.Log("TAC Life Support (GlobalSettings) [" + this.GetHashCode().ToString("X") + "][" + Time.time.ToString("0.00") + "]: Save: " + node);
         }
     }
 }

@@ -39,7 +39,7 @@ namespace Tac
      * appropriate scenes).
      */
     [KSPAddon(KSPAddon.Startup.SpaceCentre, false)]
-    class AddScenarioModules : MonoBehaviour
+    public class AddScenarioModules : MonoBehaviour
     {
         void Start()
         {
@@ -60,6 +60,9 @@ namespace Tac
         public GlobalSettings globalSettings { get; private set; }
 
         private readonly string globalConfigFilename;
+        private ConfigNode globalConfigNode = new ConfigNode();
+
+        private readonly List<Savable> savables = new List<Savable>();
 
         public TacLifeSupport()
         {
@@ -78,28 +81,38 @@ namespace Tac
 
             if (HighLogic.LoadedScene == GameScenes.SPACECENTER)
             {
-                Debug.Log("TAC Life Support (TacLifeSupport) [" + this.GetInstanceID().ToString("X") + "][" + Time.time.ToString("0.00") + "]: Adding AddLifeSupport");
-                gameObject.AddComponent<AddLifeSupport>();
+                Debug.Log("TAC Life Support (TacLifeSupport) [" + this.GetInstanceID().ToString("X") + "][" + Time.time.ToString("0.00") + "]: Adding SpaceCenterManager");
+                var c = gameObject.AddComponent<SpaceCenterManager>();
+                savables.Add(c as Savable);
             }
             else if (HighLogic.LoadedScene == GameScenes.FLIGHT)
             {
-                Debug.Log("TAC Life Support (TacLifeSupport) [" + this.GetInstanceID().ToString("X") + "][" + Time.time.ToString("0.00") + "]: Adding LifeSupportController");
-                gameObject.AddComponent<LifeSupportController>();
+                if (gameSettings.Enabled)
+                {
+                    Debug.Log("TAC Life Support (TacLifeSupport) [" + this.GetInstanceID().ToString("X") + "][" + Time.time.ToString("0.00") + "]: Adding LifeSupportController");
+                    var c = gameObject.AddComponent<LifeSupportController>();
+                    savables.Add(c as Savable);
+                }
             }
         }
 
         public override void OnLoad(ConfigNode node)
         {
-            Debug.Log("TAC Life Support (TacLifeSupport) [" + this.GetInstanceID().ToString("X") + "][" + Time.time.ToString("0.00") + "]: OnLoad");
             base.OnLoad(node);
             gameSettings.Load(node);
 
             // Load the global settings
             if (File.Exists<TacLifeSupport>(globalConfigFilename))
             {
-                ConfigNode globalNode = ConfigNode.Load(globalConfigFilename);
-                globalSettings.Load(globalNode);
+                globalConfigNode = ConfigNode.Load(globalConfigFilename);
+                globalSettings.Load(globalConfigNode);
+                foreach (Savable s in savables)
+                {
+                    s.Load(globalConfigNode);
+                }
             }
+
+            Debug.Log("TAC Life Support (TacLifeSupport) [" + this.GetInstanceID().ToString("X") + "][" + Time.time.ToString("0.00") + "]: OnLoad: " + node + "\n" + globalConfigNode);
         }
 
         public override void OnSave(ConfigNode node)
@@ -107,11 +120,21 @@ namespace Tac
             base.OnSave(node);
             gameSettings.Save(node);
 
-            ConfigNode globalNode = new ConfigNode();
-            globalSettings.Save(globalNode);
-            globalNode.Save(globalConfigFilename);
+            // Save the global settings
+            globalSettings.Save(globalConfigNode);
+            foreach (Savable s in savables)
+            {
+                s.Save(globalConfigNode);
+            }
+            globalConfigNode.Save(globalConfigFilename);
 
-            Debug.Log("TAC Life Support (TacLifeSupport) [" + this.GetInstanceID().ToString("X") + "][" + Time.time.ToString("0.00") + "]: OnSave");
+            Debug.Log("TAC Life Support (TacLifeSupport) [" + this.GetInstanceID().ToString("X") + "][" + Time.time.ToString("0.00") + "]: OnSave: " + node + "\n" + globalConfigNode);
         }
+    }
+
+    public interface Savable
+    {
+        void Load(ConfigNode node);
+        void Save(ConfigNode node);
     }
 }

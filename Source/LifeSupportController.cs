@@ -34,7 +34,7 @@ using UnityEngine;
 
 namespace Tac
 {
-    class LifeSupportController : MonoBehaviour
+    class LifeSupportController : MonoBehaviour, Savable
     {
         public static LifeSupportController Instance { get; private set; }
 
@@ -70,7 +70,6 @@ namespace Tac
         void Start()
         {
             Debug.Log("TAC Life Support (LifeSupportController) [" + this.GetInstanceID().ToString("X") + "][" + Time.time.ToString("0.00") + "]: Start");
-            Load();
             icon.SetVisible(true);
 
             GameEvents.onCrewOnEva.Add(OnCrewOnEva);
@@ -80,7 +79,6 @@ namespace Tac
         void OnDestroy()
         {
             Debug.Log("TAC Life Support (LifeSupportController) [" + this.GetInstanceID().ToString("X") + "][" + Time.time.ToString("0.00") + "]: OnDestroy");
-            Save();
 
             GameEvents.onCrewOnEva.Remove(OnCrewOnEva);
             GameEvents.onCrewBoardVessel.Remove(OnCrewBoardVessel);
@@ -449,27 +447,18 @@ namespace Tac
             }
         }
 
-        public void Load()
+        public void Load(ConfigNode node)
         {
-            if (File.Exists<LifeSupportController>(configFilename))
-            {
-                ConfigNode config = ConfigNode.Load(configFilename);
-                globalSettings.Load(config);
-                icon.Load(config);
-                monitoringWindow.Load(config);
-                rosterWindow.Load(config);
-            }
+            icon.Load(node);
+            monitoringWindow.Load(node);
+            rosterWindow.Load(node);
         }
 
-        public void Save()
+        public void Save(ConfigNode node)
         {
-            ConfigNode config = new ConfigNode();
-            globalSettings.Save(config);
-            icon.Save(config);
-            monitoringWindow.Save(config);
-            rosterWindow.Save(config);
-
-            config.Save(configFilename);
+            icon.Save(node);
+            monitoringWindow.Save(node);
+            rosterWindow.Save(node);
         }
 
         private void OnIconClicked()
