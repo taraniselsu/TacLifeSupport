@@ -1,7 +1,6 @@
 ﻿/**
- * AddLifeSupport.cs
- * 
- * Thunder Aerospace Corporation's Life Support for the Kerbal Space Program, by Taranis Elsu
+ * Thunder Aerospace Corporation's Life Support for Kerbal Space Program.
+ * Written by Taranis Elsu.
  * 
  * (C) Copyright 2013, Taranis Elsu
  * 
@@ -34,33 +33,23 @@ using UnityEngine;
 
 namespace Tac
 {
-    [KSPAddon(KSPAddon.Startup.SpaceCentre, false)]
     public class AddLifeSupport : MonoBehaviour
     {
         private static bool initialized = false;
-        private Settings settings;
+        private GlobalSettings globalSettings;
 
         void Awake()
         {
             Debug.Log("TAC Life Support (AddLifeSupport) [" + this.GetInstanceID().ToString("X") + "][" + Time.time + "]: Awake");
+            globalSettings = TacLifeSupport.Instance.globalSettings;
         }
 
         void Start()
         {
             Debug.Log("TAC Life Support (AddLifeSupport) [" + this.GetInstanceID().ToString("X") + "][" + Time.time + "]: Start");
-        }
-
-        void OnDestroy()
-        {
-            Debug.Log("TAC Life Support (AddLifeSupport) [" + this.GetInstanceID().ToString("X") + "][" + Time.time + "]: OnDestroy");
-        }
-
-        void Update()
-        {
             if (!initialized)
             {
                 initialized = true;
-                LoadSettings();
 
                 var parts = PartLoader.LoadedPartsList.Where(p => p.partPrefab != null && p.partPrefab.CrewCapacity > 0);
                 foreach (AvailablePart part in parts)
@@ -80,12 +69,12 @@ namespace Tac
 
                             AddPartModule(prefabPart);
 
-                            AddResource(prefabPart, settings.FoodId, settings.Food, settings.FoodConsumptionRate, true);
-                            AddResource(prefabPart, settings.WaterId, settings.Water, settings.WaterConsumptionRate, true);
-                            AddResource(prefabPart, settings.OxygenId, settings.Oxygen, settings.OxygenConsumptionRate, true);
-                            AddResource(prefabPart, settings.CO2Id, settings.CO2, settings.CO2ProductionRate, false);
-                            AddResource(prefabPart, settings.WasteId, settings.Waste, settings.WasteProductionRate, false);
-                            AddResource(prefabPart, settings.WasteWaterId, settings.WasteWater, settings.WasteWaterProductionRate, false);
+                            AddResource(prefabPart, globalSettings.FoodId, globalSettings.Food, globalSettings.FoodConsumptionRate, true);
+                            AddResource(prefabPart, globalSettings.WaterId, globalSettings.Water, globalSettings.WaterConsumptionRate, true);
+                            AddResource(prefabPart, globalSettings.OxygenId, globalSettings.Oxygen, globalSettings.OxygenConsumptionRate, true);
+                            AddResource(prefabPart, globalSettings.CO2Id, globalSettings.CO2, globalSettings.CO2ProductionRate, false);
+                            AddResource(prefabPart, globalSettings.WasteId, globalSettings.Waste, globalSettings.WasteProductionRate, false);
+                            AddResource(prefabPart, globalSettings.WasteWaterId, globalSettings.WasteWater, globalSettings.WasteWaterProductionRate, false);
                         }
                     }
                     catch (Exception ex)
@@ -97,18 +86,6 @@ namespace Tac
             }
 
             Destroy(this);
-        }
-
-        private void LoadSettings()
-        {
-            string configFilename = IOUtils.GetFilePathFor(this.GetType(), "LifeSupport.cfg");
-            settings = new Settings();
-
-            if (File.Exists<LifeSupportController>(configFilename))
-            {
-                ConfigNode config = ConfigNode.Load(configFilename);
-                settings.Load(config);
-            }
         }
 
         private void AddPartModule(Part part)
@@ -142,7 +119,7 @@ namespace Tac
             {
                 if (!part.Resources.Contains(id))
                 {
-                    double max = part.CrewCapacity * rate * settings.DefaultResourceAmount;
+                    double max = part.CrewCapacity * rate * globalSettings.DefaultResourceAmount;
                     ConfigNode node = new ConfigNode("RESOURCE");
                     node.AddValue("name", name);
                     node.AddValue("maxAmount", max);
@@ -175,13 +152,13 @@ namespace Tac
 
             EvaAddPartModule(prefabPart);
 
-            EvaAddResource(prefabPart, settings.EvaElectricityConsumptionRate, settings.Electricity, false);
-            EvaAddResource(prefabPart, settings.FoodConsumptionRate, settings.Food, false);
-            EvaAddResource(prefabPart, settings.WaterConsumptionRate, settings.Water, false);
-            EvaAddResource(prefabPart, settings.OxygenConsumptionRate, settings.Oxygen, false);
-            EvaAddResource(prefabPart, settings.CO2ProductionRate, settings.CO2, false);
-            EvaAddResource(prefabPart, settings.WasteProductionRate, settings.Waste, false);
-            EvaAddResource(prefabPart, settings.WasteWaterProductionRate, settings.WasteWater, false);
+            EvaAddResource(prefabPart, globalSettings.EvaElectricityConsumptionRate, globalSettings.Electricity, false);
+            EvaAddResource(prefabPart, globalSettings.FoodConsumptionRate, globalSettings.Food, false);
+            EvaAddResource(prefabPart, globalSettings.WaterConsumptionRate, globalSettings.Water, false);
+            EvaAddResource(prefabPart, globalSettings.OxygenConsumptionRate, globalSettings.Oxygen, false);
+            EvaAddResource(prefabPart, globalSettings.CO2ProductionRate, globalSettings.CO2, false);
+            EvaAddResource(prefabPart, globalSettings.WasteProductionRate, globalSettings.Waste, false);
+            EvaAddResource(prefabPart, globalSettings.WasteWaterProductionRate, globalSettings.WasteWater, false);
         }
 
         private void EvaAddPartModule(Part part)
@@ -206,7 +183,7 @@ namespace Tac
         {
             try
             {
-                double max = rate * settings.EvaDefaultResourceAmount;
+                double max = rate * globalSettings.EvaDefaultResourceAmount;
                 PartResource resource = part.gameObject.AddComponent<PartResource>();
                 resource.SetInfo(PartResourceLibrary.Instance.resourceDefinitions[name]);
                 resource.maxAmount = max;
@@ -231,6 +208,11 @@ namespace Tac
                 Debug.LogError("TAC Life Support (AddLifeSupport) [" + this.GetInstanceID().ToString("X") + "][" + Time.time
                     + "]: Failed to add resource " + name + " to EVA: " + ex.Message + "\n" + ex.StackTrace);
             }
+        }
+
+        void OnDestroy()
+        {
+            Debug.Log("TAC Life Support (AddLifeSupport) [" + this.GetInstanceID().ToString("X") + "][" + Time.time + "]: OnDestroy");
         }
     }
 }

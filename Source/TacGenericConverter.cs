@@ -91,9 +91,6 @@ namespace Tac
 
         private double lastUpdateTime = 0.0f;
 
-        private LifeSupportController controller;
-        private Settings settings;
-
         private List<ResourceRatio> inputResourceList;
         private List<ResourceRatio> outputResourceList;
 
@@ -111,8 +108,6 @@ namespace Tac
 
             if (state != StartState.Editor)
             {
-                controller = LifeSupportController.Instance;
-                settings = controller.settings;
                 part.force_activate();
             }
         }

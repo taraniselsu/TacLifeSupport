@@ -36,8 +36,7 @@ namespace Tac
     class LifeSupportMonitoringWindow : Window<LifeSupportMonitoringWindow>
     {
         private readonly LifeSupportController controller;
-        private readonly Settings settings;
-        private readonly SettingsWindow settingsWindow;
+        private readonly GlobalSettings globalSettings;
         private readonly RosterWindow rosterWindow;
 
         private GUIStyle labelStyle;
@@ -46,12 +45,11 @@ namespace Tac
         private GUIStyle headerStyle;
         private Vector2 scrollPosition;
 
-        public LifeSupportMonitoringWindow(LifeSupportController controller, Settings settings, SettingsWindow settingsWindow, RosterWindow rosterWindow)
+        public LifeSupportMonitoringWindow(LifeSupportController controller, GlobalSettings globalSettings, RosterWindow rosterWindow)
             : base("Life Support Monitoring", 300, 300)
         {
             this.controller = controller;
-            this.settings = settings;
-            this.settingsWindow = settingsWindow;
+            this.globalSettings = globalSettings;
             this.rosterWindow = rosterWindow;
         }
 
@@ -61,7 +59,6 @@ namespace Tac
 
             if (newValue == false)
             {
-                settingsWindow.SetVisible(false);
                 rosterWindow.SetVisible(false);
             }
         }
@@ -172,7 +169,7 @@ namespace Tac
                             style = warningStyle;
                         }
 
-                        GUILayout.Label("Remaining Food: " + Utilities.FormatTime(vesselInfo.remainingFood / settings.FoodConsumptionRate / vesselInfo.numCrew)/* + " (" + vesselInfo.remainingFood.ToString("0.000000") + ")"*/, style);
+                        GUILayout.Label("Remaining Food: " + Utilities.FormatTime(vesselInfo.remainingFood / globalSettings.FoodConsumptionRate / vesselInfo.numCrew)/* + " (" + vesselInfo.remainingFood.ToString("0.000000") + ")"*/, style);
                     }
 
                     // Water
@@ -189,7 +186,7 @@ namespace Tac
                             style = warningStyle;
                         }
 
-                        GUILayout.Label("Remaining Water: " + Utilities.FormatTime(vesselInfo.remainingWater / settings.WaterConsumptionRate / vesselInfo.numCrew)/* + " (" + vesselInfo.remainingWater.ToString("0.000000") + ")"*/, style);
+                        GUILayout.Label("Remaining Water: " + Utilities.FormatTime(vesselInfo.remainingWater / globalSettings.WaterConsumptionRate / vesselInfo.numCrew)/* + " (" + vesselInfo.remainingWater.ToString("0.000000") + ")"*/, style);
                     }
 
                     // Oxygen
@@ -206,7 +203,7 @@ namespace Tac
                             style = warningStyle;
                         }
 
-                        GUILayout.Label("Remaining Oxygen: " + Utilities.FormatTime(vesselInfo.remainingOxygen / settings.OxygenConsumptionRate / vesselInfo.numCrew)/* + " (" + vesselInfo.remainingOxygen.ToString("0.000000") + ")"*/, style);
+                        GUILayout.Label("Remaining Oxygen: " + Utilities.FormatTime(vesselInfo.remainingOxygen / globalSettings.OxygenConsumptionRate / vesselInfo.numCrew)/* + " (" + vesselInfo.remainingOxygen.ToString("0.000000") + ")"*/, style);
                     }
 
                     GUILayout.Space(20);
@@ -218,13 +215,9 @@ namespace Tac
 
             GUILayout.Space(8);
 
-            if (GUI.Button(new Rect(windowPos.width - 68, 4, 20, 20), "R", closeButtonStyle))
+            if (GUI.Button(new Rect(windowPos.width - 46, 4, 20, 20), "R", closeButtonStyle))
             {
                 rosterWindow.SetVisible(true);
-            }
-            if (GUI.Button(new Rect(windowPos.width - 46, 4, 20, 20), "S", closeButtonStyle))
-            {
-                settingsWindow.SetVisible(true);
             }
         }
     }
