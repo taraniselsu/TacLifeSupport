@@ -86,7 +86,7 @@
   <Import Project="..\..\TacLib\Source\CommonProperties.proj" />
   <PropertyGroup>
     <AssemblyMajorVersion>0</AssemblyMajorVersion>
-    <AssemblyMinorVersion>3</AssemblyMinorVersion>
+    <AssemblyMinorVersion>4</AssemblyMinorVersion>
     <AssemblyFileMajorVersion>$(AssemblyMajorVersion)</AssemblyFileMajorVersion>
     <AssemblyFileMinorVersion>$(AssemblyMinorVersion)</AssemblyFileMinorVersion>
   </PropertyGroup>
