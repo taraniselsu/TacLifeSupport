@@ -35,7 +35,7 @@ namespace Tac
 {
     class SavedGameConfigWindow : Window<SavedGameConfigWindow>
     {
-        private const int SECONDS_PER_KERBIN_DAY = 6 * 60 * 60;
+        private const int SECONDS_PER_DAY = 24 * 60 * 60;
         private GlobalSettings globalSettings;
         private GameSettings gameSettings;
         private GUIStyle labelStyle;
@@ -116,33 +116,33 @@ namespace Tac
             {
                 GUILayout.BeginVertical(GUI.skin.box);
                 GUILayout.Label("These settings affect all saves. Restart KSP for changes to take effect.", warningStyle);
-                GUILayout.Label("The following values are in units per Kerbin day (6 hours).", headerStyle);
+                GUILayout.Label("The following values are in units per day (24 hours).", headerStyle);
                 GUILayout.Label("See the TacResources.cfg for conversions between units and metric tons.", headerStyle);
 
                 globalSettings.FoodConsumptionRate = Utilities.ShowTextField("Food Consumption Rate", labelStyle,
-                    globalSettings.FoodConsumptionRate * SECONDS_PER_KERBIN_DAY, 30, editStyle, GUILayout.MinWidth(150)) / SECONDS_PER_KERBIN_DAY;
+                    globalSettings.FoodConsumptionRate * SECONDS_PER_DAY, 30, editStyle, GUILayout.MinWidth(150)) / SECONDS_PER_DAY;
                 globalSettings.WaterConsumptionRate = Utilities.ShowTextField("Water Consumption Rate", labelStyle,
-                    globalSettings.WaterConsumptionRate * SECONDS_PER_KERBIN_DAY, 30, editStyle, GUILayout.MinWidth(150)) / SECONDS_PER_KERBIN_DAY;
+                    globalSettings.WaterConsumptionRate * SECONDS_PER_DAY, 30, editStyle, GUILayout.MinWidth(150)) / SECONDS_PER_DAY;
                 globalSettings.OxygenConsumptionRate = Utilities.ShowTextField("Oxygen Consumption Rate", labelStyle,
-                    globalSettings.OxygenConsumptionRate * SECONDS_PER_KERBIN_DAY, 30, editStyle, GUILayout.MinWidth(150)) / SECONDS_PER_KERBIN_DAY;
+                    globalSettings.OxygenConsumptionRate * SECONDS_PER_DAY, 30, editStyle, GUILayout.MinWidth(150)) / SECONDS_PER_DAY;
 
                 GUILayout.Space(5);
 
                 globalSettings.BaseElectricityConsumptionRate = Utilities.ShowTextField("Base Electricity Consumption Rate", labelStyle,
-                    globalSettings.BaseElectricityConsumptionRate * SECONDS_PER_KERBIN_DAY, 30, editStyle, GUILayout.MinWidth(150)) / SECONDS_PER_KERBIN_DAY;
+                    globalSettings.BaseElectricityConsumptionRate * SECONDS_PER_DAY, 30, editStyle, GUILayout.MinWidth(150)) / SECONDS_PER_DAY;
                 globalSettings.ElectricityConsumptionRate = Utilities.ShowTextField("Per Kerbal Electricity Consumption Rate", labelStyle,
-                    globalSettings.ElectricityConsumptionRate * SECONDS_PER_KERBIN_DAY, 30, editStyle, GUILayout.MinWidth(150)) / SECONDS_PER_KERBIN_DAY;
+                    globalSettings.ElectricityConsumptionRate * SECONDS_PER_DAY, 30, editStyle, GUILayout.MinWidth(150)) / SECONDS_PER_DAY;
                 globalSettings.EvaElectricityConsumptionRate = Utilities.ShowTextField("EVA Electricity Consumption Rate", labelStyle,
-                    globalSettings.EvaElectricityConsumptionRate * SECONDS_PER_KERBIN_DAY, 30, editStyle, GUILayout.MinWidth(150)) / SECONDS_PER_KERBIN_DAY;
+                    globalSettings.EvaElectricityConsumptionRate * SECONDS_PER_DAY, 30, editStyle, GUILayout.MinWidth(150)) / SECONDS_PER_DAY;
 
                 GUILayout.Space(5);
 
                 globalSettings.CO2ProductionRate = Utilities.ShowTextField("CarbonDioxide Production Rate", labelStyle,
-                    globalSettings.CO2ProductionRate * SECONDS_PER_KERBIN_DAY, 30, editStyle, GUILayout.MinWidth(150)) / SECONDS_PER_KERBIN_DAY;
+                    globalSettings.CO2ProductionRate * SECONDS_PER_DAY, 30, editStyle, GUILayout.MinWidth(150)) / SECONDS_PER_DAY;
                 globalSettings.WasteProductionRate = Utilities.ShowTextField("Waste Production Rate", labelStyle,
-                    globalSettings.WasteProductionRate * SECONDS_PER_KERBIN_DAY, 30, editStyle, GUILayout.MinWidth(150)) / SECONDS_PER_KERBIN_DAY;
+                    globalSettings.WasteProductionRate * SECONDS_PER_DAY, 30, editStyle, GUILayout.MinWidth(150)) / SECONDS_PER_DAY;
                 globalSettings.WasteWaterProductionRate = Utilities.ShowTextField("Waste Water Production Rate", labelStyle,
-                    globalSettings.WasteWaterProductionRate * SECONDS_PER_KERBIN_DAY, 30, editStyle, GUILayout.MinWidth(150)) / SECONDS_PER_KERBIN_DAY;
+                    globalSettings.WasteWaterProductionRate * SECONDS_PER_DAY, 30, editStyle, GUILayout.MinWidth(150)) / SECONDS_PER_DAY;
                 GUILayout.EndVertical();
             }
         }

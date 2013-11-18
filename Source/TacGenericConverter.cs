@@ -42,7 +42,7 @@ namespace Tac
      *       // Displayed when right clicking the part
      *       converterName = Carbon Extractor
      *
-     *       // Number of units to convert per Kerbin day (6 hours)
+     *       // Number of units to convert per day (24 hours)
      *       conversionRate = 8
      *
      *       // A comma separated list of resources to use as inputs.
@@ -68,8 +68,8 @@ namespace Tac
     public class TacGenericConverter : PartModule
     {
         private static char[] delimiters = { ' ', ',', '\t', ';' };
-        private const int SECONDS_PER_KERBIN_DAY = 6 * 60 * 60;
-        private const int MAX_DELTA_TIME = 10 * SECONDS_PER_KERBIN_DAY; // 10 Kerbin days (6 hours each)
+        private const int SECONDS_PER_DAY = 24 * 60 * 60;
+        private const int MAX_DELTA_TIME = SECONDS_PER_DAY; // max 1 day (24 hour) per physics update, or 50 days (4,320,000 seconds) per second
 
         [KSPField]
         public string converterName = "TAC Generic Converter";
@@ -132,7 +132,7 @@ namespace Tac
 
             if (converterEnabled)
             {
-                double desiredAmount = conversionRate / SECONDS_PER_KERBIN_DAY * deltaTime;
+                double desiredAmount = conversionRate / SECONDS_PER_DAY * deltaTime;
 
                 // Limit the resource amounts so that we do not produce more than we have room for, nor consume more than is available
                 foreach (ResourceRatio output in outputResourceList)
