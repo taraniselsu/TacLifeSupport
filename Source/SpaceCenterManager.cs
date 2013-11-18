@@ -71,18 +71,16 @@ namespace Tac
             als.run();
         }
 
-        public void Load(ConfigNode node)
+        public void Load(ConfigNode globalNode)
         {
-            Debug.Log("TAC Life Support (SpaceCenterManager) [" + this.GetInstanceID().ToString("X") + "][" + Time.time.ToString("0.00") + "]: Load: " + node);
-            icon.Load(node);
-            configWindow.Load(node);
+            icon.Load(globalNode);
+            configWindow.Load(globalNode);
         }
 
-        public void Save(ConfigNode node)
+        public void Save(ConfigNode globalNode)
         {
-            icon.Save(node);
-            configWindow.Save(node);
-            Debug.Log("TAC Life Support (SpaceCenterManager) [" + this.GetInstanceID().ToString("X") + "][" + Time.time.ToString("0.00") + "]: Save: " + node);
+            icon.Save(globalNode);
+            configWindow.Save(globalNode);
         }
 
         void OnDestroy()

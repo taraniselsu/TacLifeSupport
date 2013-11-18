@@ -47,42 +47,6 @@ namespace Tac
             base.OnStart(state);
         }
 
-        public override void OnLoad(ConfigNode node)
-        {
-            Debug.Log("TAC Life Support (LifeSupportModule) [" + this.GetInstanceID().ToString("X") + "][" + Time.time + "]: OnLoad");
-            base.OnLoad(node);
-
-            if (LifeSupportController.Instance != null)
-            {
-                Dictionary<string, CrewMemberInfo> knownCrew = LifeSupportController.Instance.knownCrew;
-                var crewNodes = node.GetNodes("CrewMemberInfo");
-                foreach (ConfigNode crewNode in crewNodes)
-                {
-                    CrewMemberInfo crewMemberInfo = new CrewMemberInfo(crewNode, vessel);
-                    knownCrew[crewMemberInfo.name] = crewMemberInfo;
-                }
-            }
-        }
-
-        public override void OnSave(ConfigNode node)
-        {
-            Debug.Log("TAC Life Support (LifeSupportModule) [" + this.GetInstanceID().ToString("X") + "][" + Time.time + "]: OnSave");
-            base.OnSave(node);
-
-            if (LifeSupportController.Instance != null)
-            {
-                Dictionary<string, CrewMemberInfo> knownCrew = LifeSupportController.Instance.knownCrew;
-                foreach (ProtoCrewMember crewMember in part.protoModuleCrew)
-                {
-                    CrewMemberInfo crewMemberInfo = knownCrew[crewMember.name];
-                    if (crewMemberInfo != null)
-                    {
-                        crewMemberInfo.Save(node);
-                    }
-                }
-            }
-        }
-
         public override string GetInfo()
         {
             return base.GetInfo() + "\nEquipped with the Thunder Aerospace Corporation (TAC) Life Support System.\n";

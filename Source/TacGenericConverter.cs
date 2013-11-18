@@ -65,7 +65,7 @@ namespace Tac
      *       outputResources = Water, 0.9, false, Waste, 6.382, true
      *    }
      */
-    class TacGenericConverter : PartModule
+    public class TacGenericConverter : PartModule
     {
         private static char[] delimiters = { ' ', ',', '\t', ';' };
         private const int SECONDS_PER_KERBIN_DAY = 6 * 60 * 60;

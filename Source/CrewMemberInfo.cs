@@ -32,33 +32,35 @@ using System.Text;
 
 namespace Tac
 {
-    class CrewMemberInfo
+    public class CrewMemberInfo
     {
         public string name;
         public Guid vesselId;
-        public bool isEVA;
         public double lastUpdate;
         public double lastFood;
         public double lastWater;
         public double lastOxygen;
         public readonly double respite = UnityEngine.Random.Range(30, 150);
 
-        public CrewMemberInfo(string crewMemberName, Vessel vessel, double currentTime)
+        public CrewMemberInfo(string crewMemberName, Guid vesselId, double currentTime)
         {
             name = crewMemberName;
-            vesselId = vessel.id;
-            isEVA = vessel.isEVA;
+            this.vesselId = vesselId;
             lastUpdate = currentTime;
             lastFood = currentTime;
             lastWater = currentTime;
             lastOxygen = currentTime;
         }
 
-        public CrewMemberInfo(ConfigNode node, Vessel vessel)
+        public CrewMemberInfo(ConfigNode node)
         {
             name = Utilities.GetValue(node, "name", name);
-            vesselId = vessel.id;
-            isEVA = vessel.isEVA;
+
+            if (node.HasValue("vesselId"))
+            {
+                vesselId = new Guid(node.GetValue("vesselId"));
+            }
+
             lastUpdate = Utilities.GetValue(node, "lastUpdate", lastUpdate);
             lastFood = Utilities.GetValue(node, "lastFood", lastFood);
             lastWater = Utilities.GetValue(node, "lastWater", lastWater);
@@ -69,6 +71,7 @@ namespace Tac
         {
             ConfigNode node = new ConfigNode("CrewMemberInfo");
             node.AddValue("name", name);
+            node.AddValue("vesselId", vesselId);
             node.AddValue("lastUpdate", lastUpdate);
             node.AddValue("lastFood", lastFood);
             node.AddValue("lastWater", lastWater);

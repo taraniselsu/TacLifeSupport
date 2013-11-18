@@ -52,12 +52,18 @@ namespace Tac
             }
         }
 
+        public Dictionary<string, CrewMemberInfo> knownCrew { get; private set; }
+        public Dictionary<Guid, VesselInfo> knownVessels { get; private set; }
+
         public GameSettings()
         {
             IsNewSave = true;
             Enabled = true;
             HibernateInsteadOfKill = false;
-            RespawnDelay = 9203545.0; // 1 Kerbin year (default is too short at only 36 minutes)
+            RespawnDelay = 9203545.0; // 1 Kerbin year (the game's default is too short at only 36 minutes)
+
+            knownCrew = new Dictionary<string, CrewMemberInfo>();
+            knownVessels = new Dictionary<Guid, VesselInfo>();
         }
 
         public void Load(ConfigNode node)
@@ -70,6 +76,30 @@ namespace Tac
                 Enabled = Utilities.GetValue(settingsNode, "Enabled", Enabled);
                 HibernateInsteadOfKill = Utilities.GetValue(settingsNode, "HibernateInsteadOfKill", HibernateInsteadOfKill);
                 RespawnDelay = Utilities.GetValue(settingsNode, "RespawnDelay", RespawnDelay);
+
+                knownCrew.Clear();
+                var crewNodes = settingsNode.GetNodes("CrewMemberInfo");
+                foreach (ConfigNode crewNode in crewNodes)
+                {
+                    CrewMemberInfo crewMemberInfo = new CrewMemberInfo(crewNode);
+                    knownCrew[crewMemberInfo.name] = crewMemberInfo;
+                }
+
+                knownVessels.Clear();
+                var vesselNodes = settingsNode.GetNodes("VesselInfo");
+                foreach (ConfigNode vesselNode in vesselNodes)
+                {
+                    if (node.HasValue("Guid"))
+                    {
+                        Guid id = new Guid(node.GetValue("Guid"));
+
+                        double lastUpdate = Utilities.GetValue(vesselNode, "lastUpdate", 0.0);
+                        VesselInfo vesselInfo = new VesselInfo(lastUpdate);
+                        vesselInfo.lastElectricity = Utilities.GetValue(vesselNode, "lastElectricity", lastUpdate);
+
+                        knownVessels[id] = vesselInfo;
+                    }
+                }
             }
         }
 
@@ -89,6 +119,20 @@ namespace Tac
             settingsNode.AddValue("Enabled", Enabled);
             settingsNode.AddValue("HibernateInsteadOfKill", HibernateInsteadOfKill);
             settingsNode.AddValue("RespawnDelay", RespawnDelay);
+
+            foreach (CrewMemberInfo crewMemberInfo in knownCrew.Values)
+            {
+                crewMemberInfo.Save(settingsNode);
+            }
+
+            foreach (var entry in knownVessels)
+            {
+                ConfigNode vesselNode = new ConfigNode("VesselInfo");
+                vesselNode.AddValue("Guid", entry.Key);
+                vesselNode.AddValue("lastUpdate", entry.Value.lastUpdate);
+                vesselNode.AddValue("lastElectricity", entry.Value.lastElectricity);
+                settingsNode.AddNode(vesselNode);
+            }
         }
     }
 }

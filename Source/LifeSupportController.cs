@@ -38,9 +38,6 @@ namespace Tac
     {
         public static LifeSupportController Instance { get; private set; }
 
-        public Dictionary<string, CrewMemberInfo> knownCrew { get; private set; }
-        public Dictionary<Guid, VesselInfo> knownVessels { get; private set; }
-
         private GlobalSettings globalSettings;
         private GameSettings gameSettings;
         private LifeSupportMonitoringWindow monitoringWindow;
@@ -53,13 +50,10 @@ namespace Tac
             Debug.Log("TAC Life Support (LifeSupportController) [" + this.GetInstanceID().ToString("X") + "][" + Time.time.ToString("0.00") + "]: Awake");
             Instance = this;
 
-            knownCrew = new Dictionary<string, CrewMemberInfo>();
-            knownVessels = new Dictionary<Guid, VesselInfo>();
-
             globalSettings = TacLifeSupport.Instance.globalSettings;
             gameSettings = TacLifeSupport.Instance.gameSettings;
             rosterWindow = new RosterWindow();
-            monitoringWindow = new LifeSupportMonitoringWindow(this, globalSettings, rosterWindow);
+            monitoringWindow = new LifeSupportMonitoringWindow(this, globalSettings, gameSettings, rosterWindow);
 
             icon = new Icon<LifeSupportController>(new Rect(Screen.width * 0.75f, 0, 32, 32), "icon.png", "LS",
                 "Click to show the Life Support Monitoring Window", OnIconClicked);
@@ -112,7 +106,7 @@ namespace Tac
                         // The vessel has not been launched yet
                         foreach (ProtoCrewMember crewMember in vessel.GetVesselCrew())
                         {
-                            knownCrew[crewMember.name] = new CrewMemberInfo(crewMember.name, vessel, currentTime);
+                            gameSettings.knownCrew[crewMember.name] = new CrewMemberInfo(crewMember.name, vessel.id, currentTime);
                         }
                     }
                     else
@@ -131,10 +125,10 @@ namespace Tac
             }
 
             // Clean up the mapping of known vessels, removing ones that are not in the list anymore
-            var oldVessels = knownVessels.Keys.Where(key => !vessels.Any(v => v.id.Equals(key))).ToList();
+            var oldVessels = gameSettings.knownVessels.Keys.Where(key => !vessels.Any(v => v.id.Equals(key))).ToList();
             foreach (Guid id in oldVessels)
             {
-                knownVessels.Remove(id);
+                gameSettings.knownVessels.Remove(id);
             }
         }
 
@@ -146,9 +140,9 @@ namespace Tac
             List<ProtoCrewMember> crew = vessel.GetVesselCrew();
             foreach (ProtoCrewMember crewMember in crew)
             {
-                if (knownCrew.ContainsKey(crewMember.name))
+                if (gameSettings.knownCrew.ContainsKey(crewMember.name))
                 {
-                    CrewMemberInfo crewMemberInfo = knownCrew[crewMember.name];
+                    CrewMemberInfo crewMemberInfo = gameSettings.knownCrew[crewMember.name];
                     var part = (crewMember.KerbalRef != null) ? crewMember.KerbalRef.InPart : vessel.rootPart;
 
                     ConsumeOxygen(currentTime, vessel, vesselInfo, crewMember, crewMemberInfo, part);
@@ -157,12 +151,11 @@ namespace Tac
 
                     crewMemberInfo.lastUpdate = currentTime;
                     crewMemberInfo.vesselId = vessel.id;
-                    crewMemberInfo.isEVA = vessel.isEVA;
                 }
                 else
                 {
                     Debug.Log("TAC Life Support (LifeSupportController) [" + this.GetInstanceID().ToString("X") + "][" + Time.time.ToString("0.00") + "]: Unknown crew member: " + crewMember.name);
-                    knownCrew[crewMember.name] = new CrewMemberInfo(crewMember.name, vessel, currentTime);
+                    gameSettings.knownCrew[crewMember.name] = new CrewMemberInfo(crewMember.name, vessel.id, currentTime);
                 }
             }
 
@@ -269,14 +262,14 @@ namespace Tac
         private VesselInfo GetVesselInfo(Vessel vessel, double currentTime)
         {
             VesselInfo vesselInfo;
-            if (knownVessels.ContainsKey(vessel.id))
+            if (gameSettings.knownVessels.ContainsKey(vessel.id))
             {
-                vesselInfo = knownVessels[vessel.id];
+                vesselInfo = gameSettings.knownVessels[vessel.id];
             }
             else
             {
                 vesselInfo = new VesselInfo(currentTime);
-                knownVessels[vessel.id] = vesselInfo;
+                gameSettings.knownVessels[vessel.id] = vesselInfo;
             }
 
             vesselInfo.ClearAmounts();
@@ -404,7 +397,7 @@ namespace Tac
 
         private void EmptyEvaSuit(Part oldPart, Part newPart)
         {
-            VesselInfo lastVesselInfo = knownVessels[oldPart.vessel.id];
+            VesselInfo lastVesselInfo = gameSettings.knownVessels[oldPart.vessel.id];
             newPart.TakeResource(globalSettings.FoodId, -lastVesselInfo.remainingFood);
             newPart.TakeResource(globalSettings.WaterId, -lastVesselInfo.remainingWater);
             newPart.TakeResource(globalSettings.OxygenId, -lastVesselInfo.remainingOxygen);
@@ -456,18 +449,18 @@ namespace Tac
             }
         }
 
-        public void Load(ConfigNode node)
+        public void Load(ConfigNode globalNode)
         {
-            icon.Load(node);
-            monitoringWindow.Load(node);
-            rosterWindow.Load(node);
+            icon.Load(globalNode);
+            monitoringWindow.Load(globalNode);
+            rosterWindow.Load(globalNode);
         }
 
-        public void Save(ConfigNode node)
+        public void Save(ConfigNode globalNode)
         {
-            icon.Save(node);
-            monitoringWindow.Save(node);
-            rosterWindow.Save(node);
+            icon.Save(globalNode);
+            monitoringWindow.Save(globalNode);
+            rosterWindow.Save(globalNode);
         }
 
         private void OnIconClicked()

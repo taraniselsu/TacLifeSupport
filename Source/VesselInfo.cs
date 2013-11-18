@@ -32,7 +32,7 @@ using System.Text;
 
 namespace Tac
 {
-    class VesselInfo
+    public class VesselInfo
     {
         public Status foodStatus = Status.GOOD;
         public Status waterStatus = Status.GOOD;

@@ -33,7 +33,7 @@ using UnityEngine;
 
 namespace Tac
 {
-    public class AddLifeSupport
+    class AddLifeSupport
     {
         private static bool initialized = false;
         private GlobalSettings globalSettings;

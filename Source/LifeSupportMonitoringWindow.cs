@@ -37,6 +37,7 @@ namespace Tac
     {
         private readonly LifeSupportController controller;
         private readonly GlobalSettings globalSettings;
+        private readonly GameSettings gameSettings;
         private readonly RosterWindow rosterWindow;
 
         private GUIStyle labelStyle;
@@ -45,11 +46,12 @@ namespace Tac
         private GUIStyle headerStyle;
         private Vector2 scrollPosition;
 
-        public LifeSupportMonitoringWindow(LifeSupportController controller, GlobalSettings globalSettings, RosterWindow rosterWindow)
+        public LifeSupportMonitoringWindow(LifeSupportController controller, GlobalSettings globalSettings, GameSettings gameSettings, RosterWindow rosterWindow)
             : base("Life Support Monitoring", 300, 300)
         {
             this.controller = controller;
             this.globalSettings = globalSettings;
+            this.gameSettings = gameSettings;
             this.rosterWindow = rosterWindow;
 
             windowPos.y = 20;
@@ -101,7 +103,7 @@ namespace Tac
             {
                 double currentTime = Planetarium.GetUniversalTime();
 
-                foreach (var entry in controller.knownVessels)
+                foreach (var entry in gameSettings.knownVessels)
                 {
                     Vessel vessel = FlightGlobals.Vessels.FirstOrDefault(v => v.id.Equals(entry.Key));
                     VesselInfo vesselInfo = entry.Value;
@@ -114,7 +116,7 @@ namespace Tac
                     GUILayout.Label("Vessel: " + vessel.vesselName + " (" + vessel.vesselType + ")", headerStyle);
                     GUILayout.Label("Crew: " + vesselInfo.numCrew, headerStyle);
 
-                    var crew = vessel.GetVesselCrew().Select(crewMember => controller.knownCrew[crewMember.name]);
+                    var crew = vessel.GetVesselCrew().Select(crewMember => gameSettings.knownCrew[crewMember.name]);
                     foreach (CrewMemberInfo crewMemberInfo in crew)
                     {
                         GUIStyle style = labelStyle;
