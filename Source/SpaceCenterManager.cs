@@ -42,7 +42,7 @@ namespace Tac
 
         public SpaceCenterManager()
         {
-            Debug.Log("TAC Life Support (SpaceCenterManager) [" + this.GetInstanceID().ToString("X") + "][" + Time.time.ToString("0.00") + "]: Constructor");
+            this.Log("Constructor");
             globalSettings = TacLifeSupport.Instance.globalSettings;
             gameSettings = TacLifeSupport.Instance.gameSettings;
             icon = new Icon<SpaceCenterManager>(new Rect(Screen.width * 0.75f, 0, 32, 32), "icon.png", "LS",
@@ -50,19 +50,14 @@ namespace Tac
             configWindow = new SavedGameConfigWindow(globalSettings, gameSettings);
         }
 
-        void Awake()
-        {
-            Debug.Log("TAC Life Support (SpaceCenterManager) [" + this.GetInstanceID().ToString("X") + "][" + Time.time.ToString("0.00") + "]: Awake, new game = " + gameSettings.IsNewSave);
-        }
-
         void Start()
         {
-            Debug.Log("TAC Life Support (SpaceCenterManager) [" + this.GetInstanceID().ToString("X") + "][" + Time.time.ToString("0.00") + "]: Start, new game = " + gameSettings.IsNewSave);
+            this.Log("Start, new game = " + gameSettings.IsNewSave);
             icon.SetVisible(true);
 
             if (gameSettings.IsNewSave)
             {
-                Debug.Log("TAC Life Support (SpaceCenterManager) [" + this.GetInstanceID().ToString("X") + "][" + Time.time.ToString("0.00") + "]: New save detected!");
+                this.Log("New save detected!");
                 configWindow.SetVisible(true);
                 gameSettings.IsNewSave = false;
             }
@@ -85,7 +80,7 @@ namespace Tac
 
         void OnDestroy()
         {
-            Debug.Log("TAC Life Support (SpaceCenterManager) [" + this.GetInstanceID().ToString("X") + "][" + Time.time.ToString("0.00") + "]: OnDestroy");
+            this.Log("OnDestroy");
         }
 
         private void OnIconClicked()

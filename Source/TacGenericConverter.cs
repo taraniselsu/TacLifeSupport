@@ -1,7 +1,6 @@
 ﻿/**
- * TacGenericConverter.cs
- * 
- * Thunder Aerospace Corporation's Life Support for the Kerbal Space Program, by Taranis Elsu
+ * Thunder Aerospace Corporation's Life Support for Kerbal Space Program.
+ * Written by Taranis Elsu.
  * 
  * (C) Copyright 2013, Taranis Elsu
  * 
@@ -69,7 +68,6 @@ namespace Tac
     {
         private static char[] delimiters = { ' ', ',', '\t', ';' };
         private const int SECONDS_PER_DAY = 24 * 60 * 60;
-        private const int MAX_DELTA_TIME = SECONDS_PER_DAY; // max 1 day (24 hour) per physics update, or 50 days (4,320,000 seconds) per second
 
         [KSPField]
         public string converterName = "TAC Generic Converter";
@@ -90,25 +88,27 @@ namespace Tac
         public string outputResources = "";
 
         private double lastUpdateTime = 0.0f;
+        private int maxDeltaTime;
 
         private List<ResourceRatio> inputResourceList;
         private List<ResourceRatio> outputResourceList;
 
         public override void OnAwake()
         {
-            Debug.Log("TAC Converter [" + this.GetInstanceID().ToString("X") + "][" + Time.time.ToString("0.00") + "]: OnAwake");
+            this.Log("OnAwake");
             base.OnAwake();
             UpdateResourceLists();
         }
 
         public override void OnStart(PartModule.StartState state)
         {
-            Debug.Log("TAC Converter [" + this.GetInstanceID().ToString("X") + "][" + Time.time.ToString("0.00") + "]: OnStart: " + state);
+            this.Log("OnStart: " + state);
             base.OnStart(state);
 
             if (state != StartState.Editor)
             {
                 part.force_activate();
+                maxDeltaTime = TacLifeSupport.Instance.globalSettings.MaxDeltaTime;
             }
         }
 
@@ -124,9 +124,9 @@ namespace Tac
             }
 
             double deltaTime = Planetarium.GetUniversalTime() - lastUpdateTime;
-            if (deltaTime > MAX_DELTA_TIME)
+            if (deltaTime > maxDeltaTime)
             {
-                deltaTime = MAX_DELTA_TIME;
+                deltaTime = maxDeltaTime;
             }
             lastUpdateTime += deltaTime;
 
@@ -171,8 +171,7 @@ namespace Tac
 
                     if (actual < (desired * 0.999))
                     {
-                        Debug.LogWarning("TAC Converter [" + this.GetInstanceID().ToString("X") + "][" + Time.time.ToString("0.00") + "]: OnFixedUpdate: obtained less "
-                            + input.resource.name + " than expected: " + desired.ToString("0.000000") + "/" + actual.ToString("0.000000"));
+                        this.LogWarning("OnFixedUpdate: obtained less " + input.resource.name + " than expected: " + desired.ToString("0.000000") + "/" + actual.ToString("0.000000"));
                     }
                 }
 
@@ -183,8 +182,7 @@ namespace Tac
 
                     if (actual < (desired * 0.999) && !output.allowExtra)
                     {
-                        Debug.LogWarning("TAC Converter [" + this.GetInstanceID().ToString("X") + "][" + Time.time.ToString("0.00") + "]: OnFixedUpdate: put less "
-                            + output.resource.name + " than expected: " + desired.ToString("0.000000") + "/" + actual.ToString("0.000000"));
+                        this.LogWarning("OnFixedUpdate: put less " + output.resource.name + " than expected: " + desired.ToString("0.000000") + "/" + actual.ToString("0.000000"));
                     }
                 }
 
@@ -194,7 +192,7 @@ namespace Tac
 
         public override void OnLoad(ConfigNode node)
         {
-            Debug.Log("TAC Converter [" + this.GetInstanceID().ToString("X") + "][" + Time.time.ToString("0.00") + "]: OnLoad: " + node);
+            this.Log("OnLoad: " + node);
             base.OnLoad(node);
             lastUpdateTime = Utilities.GetValue(node, "lastUpdateTime", lastUpdateTime);
 
@@ -205,7 +203,7 @@ namespace Tac
         public override void OnSave(ConfigNode node)
         {
             node.AddValue("lastUpdateTime", lastUpdateTime);
-            Debug.Log("TAC Converter [" + this.GetInstanceID().ToString("X") + "][" + Time.time.ToString("0.00") + "]: OnSave: " + node);
+            this.Log("OnSave: " + node);
         }
 
         public override string GetInfo()
@@ -284,12 +282,12 @@ namespace Tac
                 }
                 else
                 {
-                    Debug.Log("TAC Converter [" + this.GetHashCode().ToString("X") + "][" + Time.time.ToString("0.00") + "]: Cannot parse \"" + resourceString + "\", something went wrong.");
+                    this.Log("Cannot parse \"" + resourceString + "\", something went wrong.");
                 }
             }
 
             var ratios = resources.Aggregate("", (result, value) => result + value.resource.name + ", " + value.ratio + ", ");
-            Debug.Log("TAC Converter [" + this.GetHashCode().ToString("X") + "][" + Time.time.ToString("0.00") + "]: Input resources parsed: " + ratios + "\nfrom " + resourceString);
+            this.Log("Input resources parsed: " + ratios + "\nfrom " + resourceString);
         }
 
         private void parseOutputResourceString(string resourceString, List<ResourceRatio> resources)
@@ -309,12 +307,12 @@ namespace Tac
                 }
                 else
                 {
-                    Debug.Log("TAC Converter [" + this.GetHashCode().ToString("X") + "][" + Time.time.ToString("0.00") + "]: Cannot parse \"" + resourceString + "\", something went wrong.");
+                    this.Log("Cannot parse \"" + resourceString + "\", something went wrong.");
                 }
             }
 
             var ratios = resources.Aggregate("", (result, value) => result + value.resource.name + ", " + value.ratio + ", ");
-            Debug.Log("TAC Converter [" + this.GetHashCode().ToString("X") + "][" + Time.time.ToString("0.00") + "]: Output resources parsed: " + ratios + "\nfrom " + resourceString);
+            this.Log("Output resources parsed: " + ratios + "\nfrom " + resourceString);
         }
     }
 

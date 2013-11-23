@@ -1,7 +1,6 @@
 ﻿/**
- * RosterWindow.cs
- * 
- * Thunder Aerospace Corporation's Fuel Balancer for the Kerbal Space Program, by Taranis Elsu
+ * Thunder Aerospace Corporation's Life Support for Kerbal Space Program.
+ * Written by Taranis Elsu.
  * 
  * (C) Copyright 2013, Taranis Elsu
  * 
@@ -35,14 +34,20 @@ namespace Tac
 {
     class RosterWindow : Window<RosterWindow>
     {
-        private GUIStyle labelStyle;
-        private GUIStyle headerStyle;
+        private readonly GlobalSettings globalSettings;
+        private readonly GameSettings gameSettings;
 
+        private GUIStyle labelStyle;
+        private GUIStyle warningStyle;
+        private GUIStyle criticalStyle;
+        private GUIStyle headerStyle;
         private Vector2 scrollPosition;
 
-        public RosterWindow()
+        public RosterWindow(GlobalSettings globalSettings, GameSettings gameSettings)
             : base("TAC Life Support Crew Roster", 320, 200)
         {
+            this.globalSettings = globalSettings;
+            this.gameSettings = gameSettings;
         }
 
         protected override void ConfigureStyles()
@@ -60,6 +65,12 @@ namespace Tac
                 labelStyle.normal.textColor = Color.white;
                 labelStyle.wordWrap = false;
 
+                warningStyle = new GUIStyle(labelStyle);
+                warningStyle.normal.textColor = Color.yellow;
+
+                criticalStyle = new GUIStyle(labelStyle);
+                criticalStyle.normal.textColor = Color.red;
+
                 headerStyle = new GUIStyle(labelStyle);
                 headerStyle.fontStyle = FontStyle.Bold;
             }
@@ -67,31 +78,48 @@ namespace Tac
 
         protected override void DrawWindowContents(int windowID)
         {
-            scrollPosition = GUILayout.BeginScrollView(scrollPosition);
-            GUILayout.BeginVertical();
-
-            double currentTime = Planetarium.GetUniversalTime();
-            CrewRoster crewRoster = HighLogic.CurrentGame.CrewRoster;
-
-            GUILayout.Label("Number of crew: " + crewRoster.GetList().Count, headerStyle);
-
-            foreach (ProtoCrewMember crewMember in crewRoster)
+            if (FlightGlobals.ready)
             {
-                string respawnTime = "";
-                if (crewMember.rosterStatus == ProtoCrewMember.RosterStatus.MISSING)
+                scrollPosition = GUILayout.BeginScrollView(scrollPosition);
+                GUILayout.BeginVertical();
+                GUILayout.Space(4);
+
+                double currentTime = Planetarium.GetUniversalTime();
+
+                foreach (CrewMemberInfo crewInfo in gameSettings.knownCrew.Values)
                 {
-                    respawnTime = ", Respawn in " + Utilities.FormatTime(crewMember.UTaR - currentTime);
+                    GUILayout.Label(crewInfo.name + " (" + crewInfo.vesselName + ")", headerStyle);
+                    GUILayout.Label("  Last updated: " + Utilities.FormatTime(currentTime - crewInfo.lastUpdate), labelStyle);
+                    GUILayout.Label("  Last food: " + Utilities.FormatTime(currentTime - crewInfo.lastFood), getStyle(crewInfo.lastUpdate, crewInfo.lastFood, globalSettings.MaxTimeWithoutFood));
+                    GUILayout.Label("  Last water: " + Utilities.FormatTime(currentTime - crewInfo.lastWater), getStyle(crewInfo.lastUpdate, crewInfo.lastWater, globalSettings.MaxTimeWithoutWater));
+                    if (gameSettings.HibernateInsteadOfKill)
+                    {
+                        GUILayout.Label("  Hibernating: " + crewInfo.hibernating, labelStyle);
+                    }
+                    GUILayout.Space(10);
                 }
 
-                string vessel = (crewMember.KerbalRef != null) ? crewMember.KerbalRef.InVessel.vesselName : "Unknown";
-                string part = (crewMember.KerbalRef != null) ? crewMember.KerbalRef.InPart.ToString() : "Unknown";
-                GUILayout.Label(crewMember.name + ", " + crewMember.rosterStatus + ", " + vessel + ", " + part + respawnTime, labelStyle);
+                GUILayout.EndVertical();
+                GUILayout.EndScrollView();
             }
 
-            GUILayout.EndVertical();
-            GUILayout.EndScrollView();
-
             GUILayout.Space(8);
+        }
+
+        private GUIStyle getStyle(double lastUpdate, double lastConsumption, double maxTime)
+        {
+            if (lastUpdate > (lastConsumption + maxTime / 10))
+            {
+                return criticalStyle;
+            }
+            else if (lastUpdate > lastConsumption)
+            {
+                return warningStyle;
+            }
+            else
+            {
+                return labelStyle;
+            }
         }
     }
 }

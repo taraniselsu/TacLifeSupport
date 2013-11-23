@@ -78,25 +78,21 @@ namespace Tac
                 RespawnDelay = Utilities.GetValue(settingsNode, "RespawnDelay", RespawnDelay);
 
                 knownCrew.Clear();
-                var crewNodes = settingsNode.GetNodes("CrewMemberInfo");
+                var crewNodes = settingsNode.GetNodes(CrewMemberInfo.ConfigNodeName);
                 foreach (ConfigNode crewNode in crewNodes)
                 {
-                    CrewMemberInfo crewMemberInfo = new CrewMemberInfo(crewNode);
+                    CrewMemberInfo crewMemberInfo = CrewMemberInfo.Load(crewNode);
                     knownCrew[crewMemberInfo.name] = crewMemberInfo;
                 }
 
                 knownVessels.Clear();
-                var vesselNodes = settingsNode.GetNodes("VesselInfo");
+                var vesselNodes = settingsNode.GetNodes(VesselInfo.ConfigNodeName);
                 foreach (ConfigNode vesselNode in vesselNodes)
                 {
-                    if (node.HasValue("Guid"))
+                    if (vesselNode.HasValue("Guid"))
                     {
-                        Guid id = new Guid(node.GetValue("Guid"));
-
-                        double lastUpdate = Utilities.GetValue(vesselNode, "lastUpdate", 0.0);
-                        VesselInfo vesselInfo = new VesselInfo(lastUpdate);
-                        vesselInfo.lastElectricity = Utilities.GetValue(vesselNode, "lastElectricity", lastUpdate);
-
+                        Guid id = new Guid(vesselNode.GetValue("Guid"));
+                        VesselInfo vesselInfo = VesselInfo.Load(vesselNode);
                         knownVessels[id] = vesselInfo;
                     }
                 }
@@ -127,11 +123,8 @@ namespace Tac
 
             foreach (var entry in knownVessels)
             {
-                ConfigNode vesselNode = new ConfigNode("VesselInfo");
+                ConfigNode vesselNode = entry.Value.Save(settingsNode);
                 vesselNode.AddValue("Guid", entry.Key);
-                vesselNode.AddValue("lastUpdate", entry.Value.lastUpdate);
-                vesselNode.AddValue("lastElectricity", entry.Value.lastElectricity);
-                settingsNode.AddNode(vesselNode);
             }
         }
     }

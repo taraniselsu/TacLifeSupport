@@ -1,7 +1,6 @@
 ﻿/**
- * LifeSupportMonitoringWindow.cs
- * 
- * Thunder Aerospace Corporation's Life Support for the Kerbal Space Program, by Taranis Elsu
+ * Thunder Aerospace Corporation's Life Support for Kerbal Space Program.
+ * Written by Taranis Elsu.
  * 
  * (C) Copyright 2013, Taranis Elsu
  * 
@@ -35,8 +34,6 @@ namespace Tac
 {
     class LifeSupportMonitoringWindow : Window<LifeSupportMonitoringWindow>
     {
-        private readonly LifeSupportController controller;
-        private readonly GlobalSettings globalSettings;
         private readonly GameSettings gameSettings;
         private readonly RosterWindow rosterWindow;
 
@@ -49,12 +46,10 @@ namespace Tac
         public LifeSupportMonitoringWindow(LifeSupportController controller, GlobalSettings globalSettings, GameSettings gameSettings, RosterWindow rosterWindow)
             : base("Life Support Monitoring", 300, 300)
         {
-            this.controller = controller;
-            this.globalSettings = globalSettings;
             this.gameSettings = gameSettings;
             this.rosterWindow = rosterWindow;
 
-            windowPos.y = 20;
+            windowPos.y = 50;
         }
 
         public override void SetVisible(bool newValue)
@@ -95,133 +90,57 @@ namespace Tac
 
         protected override void DrawWindowContents(int windowId)
         {
-            scrollPosition = GUILayout.BeginScrollView(scrollPosition);
-            GUILayout.BeginVertical();
-            GUILayout.Space(4);
-
             if (FlightGlobals.ready)
             {
+                scrollPosition = GUILayout.BeginScrollView(scrollPosition);
+                GUILayout.BeginVertical();
+                GUILayout.Space(4);
+
                 double currentTime = Planetarium.GetUniversalTime();
 
                 foreach (var entry in gameSettings.knownVessels)
                 {
-                    Vessel vessel = FlightGlobals.Vessels.FirstOrDefault(v => v.id.Equals(entry.Key));
+                    Guid vesselId = entry.Key;
                     VesselInfo vesselInfo = entry.Value;
 
-                    if (vessel == null || vesselInfo.numCrew < 1)
+                    GUILayout.Label(vesselInfo.vesselName + " (" + vesselInfo.numCrew + " crew) [" + vesselInfo.vesselType + "]", headerStyle);
+                    GUILayout.Label("  Last updated:          " + Utilities.FormatTime(currentTime - vesselInfo.lastUpdate), labelStyle);
+                    if (vesselInfo.numCrew > 0)
                     {
-                        continue;
+                        GUILayout.Label("  Food remaining:        " + Utilities.FormatTime(vesselInfo.estimatedTimeFoodDepleted - currentTime), getStyle(vesselInfo.foodStatus));
+                        GUILayout.Label("  Water remaining:       " + Utilities.FormatTime(vesselInfo.estimatedTimeWaterDepleted - currentTime), getStyle(vesselInfo.waterStatus));
+                        GUILayout.Label("  Oxygen remaining:      " + Utilities.FormatTime(vesselInfo.estimatedTimeOxygenDepleted - currentTime), getStyle(vesselInfo.oxygenStatus));
+                        GUILayout.Label("  Electricity remaining: " + Utilities.FormatTime(vesselInfo.estimatedTimeElecticityDepleted - currentTime), getStyle(vesselInfo.electricityStatus));
                     }
 
-                    GUILayout.Label("Vessel: " + vessel.vesselName + " (" + vessel.vesselType + ")", headerStyle);
-                    GUILayout.Label("Crew: " + vesselInfo.numCrew, headerStyle);
-
-                    var crew = vessel.GetVesselCrew().Select(crewMember => gameSettings.knownCrew[crewMember.name]);
-                    foreach (CrewMemberInfo crewMemberInfo in crew)
-                    {
-                        GUIStyle style = labelStyle;
-                        StringBuilder text = new StringBuilder(crewMemberInfo.name);
-                        if ((currentTime - crewMemberInfo.lastFood) > 1)
-                        {
-                            text.Append("  Food=").Append(Utilities.FormatTime(currentTime - crewMemberInfo.lastFood));
-                            style = criticalStyle;
-                        }
-                        if ((currentTime - crewMemberInfo.lastWater) > 1)
-                        {
-                            text.Append("  Water=").Append(Utilities.FormatTime(currentTime - crewMemberInfo.lastWater));
-                            style = criticalStyle;
-                        }
-                        if ((currentTime - crewMemberInfo.lastOxygen) > 1)
-                        {
-                            text.Append("  Oxygen=").Append(Utilities.FormatTime(currentTime - crewMemberInfo.lastOxygen));
-                            style = criticalStyle;
-                        }
-
-                        GUILayout.Label(text.ToString(), style);
-                    }
-
-                    GUILayout.Space(5);
-
-                    // Electricity
-                    if (vesselInfo.electricityStatus == VesselInfo.Status.CRITICAL)
-                    {
-                        GUILayout.Label("Electric Charge depleted!  " + Utilities.FormatTime(vesselInfo.lastElectricity - currentTime), criticalStyle);
-                    }
-                    else
-                    {
-                        GUIStyle style = labelStyle;
-                        if (vesselInfo.electricityStatus == VesselInfo.Status.LOW)
-                        {
-                            style = warningStyle;
-                        }
-
-                        double electricityConsumptionRate = controller.CalculateElectricityConsumptionRate(vessel, vesselInfo);
-                        GUILayout.Label("Remaining Electricity: " + Utilities.FormatTime(vesselInfo.remainingElectricity / electricityConsumptionRate)/* + " (" + vesselInfo.remainingElectricity.ToString("0.000000") + ")"*/, style);
-                    }
-
-                    // Food
-                    if (vesselInfo.foodStatus == VesselInfo.Status.CRITICAL)
-                    {
-                        CrewMemberInfo crewMemberInfo = crew.OrderBy(cmi => cmi.lastFood).First();
-                        GUILayout.Label("Food depleted! " + Utilities.FormatTime(crewMemberInfo.lastFood - currentTime), criticalStyle);
-                    }
-                    else
-                    {
-                        GUIStyle style = labelStyle;
-                        if (vesselInfo.foodStatus == VesselInfo.Status.LOW)
-                        {
-                            style = warningStyle;
-                        }
-
-                        GUILayout.Label("Remaining Food: " + Utilities.FormatTime(vesselInfo.remainingFood / globalSettings.FoodConsumptionRate / vesselInfo.numCrew)/* + " (" + vesselInfo.remainingFood.ToString("0.000000") + ")"*/, style);
-                    }
-
-                    // Water
-                    if (vesselInfo.waterStatus == VesselInfo.Status.CRITICAL)
-                    {
-                        CrewMemberInfo crewMemberInfo = crew.OrderBy(cmi => cmi.lastWater).First();
-                        GUILayout.Label("Water depleted! " + Utilities.FormatTime(crewMemberInfo.lastWater - currentTime), criticalStyle);
-                    }
-                    else
-                    {
-                        GUIStyle style = labelStyle;
-                        if (vesselInfo.waterStatus == VesselInfo.Status.LOW)
-                        {
-                            style = warningStyle;
-                        }
-
-                        GUILayout.Label("Remaining Water: " + Utilities.FormatTime(vesselInfo.remainingWater / globalSettings.WaterConsumptionRate / vesselInfo.numCrew)/* + " (" + vesselInfo.remainingWater.ToString("0.000000") + ")"*/, style);
-                    }
-
-                    // Oxygen
-                    if (vesselInfo.oxygenStatus == VesselInfo.Status.CRITICAL)
-                    {
-                        CrewMemberInfo crewMemberInfo = crew.OrderBy(cmi => cmi.lastOxygen).First();
-                        GUILayout.Label("Oxygen depleted! " + Utilities.FormatTime(crewMemberInfo.lastOxygen - currentTime), criticalStyle);
-                    }
-                    else
-                    {
-                        GUIStyle style = labelStyle;
-                        if (vesselInfo.oxygenStatus == VesselInfo.Status.LOW)
-                        {
-                            style = warningStyle;
-                        }
-
-                        GUILayout.Label("Remaining Oxygen: " + Utilities.FormatTime(vesselInfo.remainingOxygen / globalSettings.OxygenConsumptionRate / vesselInfo.numCrew)/* + " (" + vesselInfo.remainingOxygen.ToString("0.000000") + ")"*/, style);
-                    }
-
-                    GUILayout.Space(20);
+                    GUILayout.Space(10);
                 }
-            }
 
-            GUILayout.EndVertical();
-            GUILayout.EndScrollView();
+                GUILayout.EndVertical();
+                GUILayout.EndScrollView();
+            }
 
             GUILayout.Space(8);
 
             if (GUI.Button(new Rect(windowPos.width - 46, 4, 20, 20), "R", closeButtonStyle))
             {
                 rosterWindow.SetVisible(true);
+            }
+        }
+
+        private GUIStyle getStyle(VesselInfo.Status status)
+        {
+            if (status == VesselInfo.Status.CRITICAL)
+            {
+                return criticalStyle;
+            }
+            else if (status == VesselInfo.Status.LOW)
+            {
+                return warningStyle;
+            }
+            else
+            {
+                return labelStyle;
             }
         }
     }

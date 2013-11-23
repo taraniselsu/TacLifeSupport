@@ -40,7 +40,7 @@ namespace Tac
 
         public AddLifeSupport(GlobalSettings globalSettings)
         {
-            Debug.Log("TAC Life Support (AddLifeSupport) [" + this.GetHashCode().ToString("X") + "][" + Time.time + "]: Constructor");
+            this.Log("Constructor");
             this.globalSettings = globalSettings;
         }
 
@@ -48,7 +48,7 @@ namespace Tac
         {
             if (!initialized)
             {
-                Debug.Log("TAC Life Support (AddLifeSupport) [" + this.GetHashCode().ToString("X") + "][" + Time.time + "]: run");
+                this.Log("run");
                 initialized = true;
 
                 var parts = PartLoader.LoadedPartsList.Where(p => p.partPrefab != null && p.partPrefab.CrewCapacity > 0);
@@ -64,8 +64,7 @@ namespace Tac
                         {
                             Part prefabPart = part.partPrefab;
 
-                            Debug.Log("TAC Life Support (AddLifeSupport) [" + this.GetHashCode().ToString("X") + "][" + Time.time
-                                + "]: Adding Life Support to " + part.name + "/" + prefabPart.partName + "/" + prefabPart.partInfo.title);
+                            this.Log("Adding Life Support to " + part.name + "/" + prefabPart.partInfo.title);
 
                             AddPartModule(prefabPart);
 
@@ -79,8 +78,7 @@ namespace Tac
                     }
                     catch (Exception ex)
                     {
-                        Debug.LogError("TAC Life Support (AddLifeSupport) [" + this.GetHashCode().ToString("X") + "][" + Time.time
-                            + "]: Failed to add Life Support to " + part.name + ":\n" + ex.Message + "\n" + ex.StackTrace);
+                        this.LogError("Failed to add Life Support to " + part.name + ":\n" + ex.Message + "\n" + ex.StackTrace);
                     }
                 }
             }
@@ -92,7 +90,7 @@ namespace Tac
             {
                 if (!part.Modules.Contains("LifeSupportModule"))
                 {
-                    Debug.Log("TAC missing!");
+                    this.Log("The LifeSupportModule is missing!");
 
                     ConfigNode node = new ConfigNode("MODULE");
                     node.AddValue("name", "LifeSupportModule");
@@ -101,13 +99,12 @@ namespace Tac
                 }
                 else
                 {
-                    Debug.Log("TAC already there!");
+                    this.Log("The LifeSupportModule is already there.");
                 }
             }
             catch (Exception ex)
             {
-                Debug.LogError("TAC Life Support (AddLifeSupport) [" + this.GetHashCode().ToString("X") + "][" + Time.time
-                    + "]: Error adding the Part Module (expected?): " + ex.Message + "\n" + ex.StackTrace);
+                this.LogError("Error adding the Part Module (expected?): " + ex.Message + "\n" + ex.StackTrace);
             }
         }
 
@@ -136,8 +133,7 @@ namespace Tac
             }
             catch (Exception ex)
             {
-                Debug.LogError("TAC Life Support (AddLifeSupport) [" + this.GetHashCode().ToString("X") + "][" + Time.time
-                    + "]: Failed to add resource " + name + " to " + part.name + ": " + ex.Message + "\n" + ex.StackTrace);
+                this.LogError("Failed to add resource " + name + " to " + part.name + ": " + ex.Message + "\n" + ex.StackTrace);
             }
         }
 
@@ -145,8 +141,7 @@ namespace Tac
         {
             Part prefabPart = part.partPrefab;
 
-            Debug.Log("TAC Life Support (AddLifeSupport) [" + this.GetHashCode().ToString("X") + "][" + Time.time
-                + "]: Adding resources to " + part.name + "/" + prefabPart.partName + "/" + prefabPart.partInfo.title);
+            this.Log("Adding resources to " + part.name + "/" + prefabPart.partInfo.title);
 
             EvaAddPartModule(prefabPart);
 
@@ -167,14 +162,11 @@ namespace Tac
                 node.AddValue("name", "LifeSupportModule");
 
                 part.AddModule(node);
-
             }
             catch (Exception ex)
             {
-                Debug.LogError("TAC Life Support (AddLifeSupport) [" + this.GetHashCode().ToString("X") + "][" + Time.time
-                    + "]: Error adding the part module to EVA (expected?): " + ex.Message + "\n" + ex.StackTrace);
+                this.LogError("Error adding the part module to EVA (expected?): " + ex.Message + "\n" + ex.StackTrace);
             }
-
         }
 
         private void EvaAddResource(Part part, double rate, string name, bool full)
@@ -199,12 +191,10 @@ namespace Tac
                 }
 
                 part.Resources.list.Add(resource);
-
             }
             catch (Exception ex)
             {
-                Debug.LogError("TAC Life Support (AddLifeSupport) [" + this.GetHashCode().ToString("X") + "][" + Time.time
-                    + "]: Failed to add resource " + name + " to EVA: " + ex.Message + "\n" + ex.StackTrace);
+                this.LogError("Failed to add resource " + name + " to EVA: " + ex.Message + "\n" + ex.StackTrace);
             }
         }
     }

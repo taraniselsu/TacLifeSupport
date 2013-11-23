@@ -55,6 +55,9 @@
     <Compile Include="..\..\TacLib\Source\Icon.cs">
       <Link>Icon.cs</Link>
     </Compile>
+    <Compile Include="..\..\TacLib\Source\Logging.cs">
+      <Link>Logging.cs</Link>
+    </Compile>
     <Compile Include="..\..\TacLib\Source\PartExtensions.cs">
       <Link>PartExtensions.cs</Link>
     </Compile>
@@ -86,7 +89,7 @@
   <Import Project="..\..\TacLib\Source\CommonProperties.proj" />
   <PropertyGroup>
     <AssemblyMajorVersion>0</AssemblyMajorVersion>
-    <AssemblyMinorVersion>5</AssemblyMinorVersion>
+    <AssemblyMinorVersion>6</AssemblyMinorVersion>
     <AssemblyFileMajorVersion>$(AssemblyMajorVersion)</AssemblyFileMajorVersion>
     <AssemblyFileMinorVersion>$(AssemblyMinorVersion)</AssemblyFileMinorVersion>
   </PropertyGroup>

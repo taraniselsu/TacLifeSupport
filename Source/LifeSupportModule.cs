@@ -1,7 +1,6 @@
 ﻿/**
- * LifeSupportModule.cs
- * 
- * Thunder Aerospace Corporation's Life Support for the Kerbal Space Program, by Taranis Elsu
+ * Thunder Aerospace Corporation's Life Support for Kerbal Space Program.
+ * Written by Taranis Elsu.
  * 
  * (C) Copyright 2013, Taranis Elsu
  * 
@@ -37,13 +36,13 @@ namespace Tac
     {
         public override void OnAwake()
         {
-            Debug.Log("TAC Life Support (LifeSupportModule) [" + this.GetInstanceID().ToString("X") + "][" + Time.time + "]: OnAwake");
+            this.Log("OnAwake");
             base.OnAwake();
         }
 
         public override void OnStart(PartModule.StartState state)
         {
-            Debug.Log("TAC Life Support (LifeSupportModule) [" + this.GetInstanceID().ToString("X") + "][" + Time.time + "]: OnStart: " + state);
+            this.Log("OnStart: " + state);
             base.OnStart(state);
         }
 

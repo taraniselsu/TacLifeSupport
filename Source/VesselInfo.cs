@@ -1,7 +1,6 @@
 ﻿/**
- * VesselInfo.cs
- * 
- * Thunder Aerospace Corporation's Life Support for the Kerbal Space Program, by Taranis Elsu
+ * Thunder Aerospace Corporation's Life Support for Kerbal Space Program.
+ * Written by Taranis Elsu.
  * 
  * (C) Copyright 2013, Taranis Elsu
  * 
@@ -34,12 +33,23 @@ namespace Tac
 {
     public class VesselInfo
     {
+        public const string ConfigNodeName = "VesselInfo";
+
+        public string vesselName;
+        public string vesselType;
+        public int numCrew;
+        public int numOccupiedParts;
+
+        public double lastUpdate;
+        public double lastFood;
+        public double lastWater;
+        public double lastOxygen;
+        public double lastElectricity;
+
         public Status foodStatus = Status.GOOD;
         public Status waterStatus = Status.GOOD;
         public Status oxygenStatus = Status.GOOD;
         public Status electricityStatus = Status.GOOD;
-
-        public int numCrew;
 
         public double remainingFood;
         public double remainingWater;
@@ -54,18 +64,98 @@ namespace Tac
         public double maxOxygen;
         public double maxElectricity;
 
-        public double lastElectricity;
-        public double lastUpdate;
+        public double estimatedTimeFoodDepleted;
+        public double estimatedTimeWaterDepleted;
+        public double estimatedTimeOxygenDepleted;
+        public double estimatedTimeElecticityDepleted;
 
-        public VesselInfo(double currentTime)
+        public double estimatedElectricityConsumptionRate;
+        public bool hibernating;
+
+        public VesselInfo(string vesselName, double currentTime)
         {
-            lastElectricity = currentTime;
+            this.vesselName = vesselName;
             lastUpdate = currentTime;
+            lastFood = currentTime;
+            lastWater = currentTime;
+            lastOxygen = currentTime;
+            lastElectricity = currentTime;
+            hibernating = false;
+        }
+
+        public static VesselInfo Load(ConfigNode node)
+        {
+            string vesselName = Utilities.GetValue(node, "vesselName", "Unknown");
+            double lastUpdate = Utilities.GetValue(node, "lastUpdate", 0.0);
+
+            VesselInfo info = new VesselInfo(vesselName, lastUpdate);
+            info.vesselType = Utilities.GetValue(node, "vesselType", "Unknown");
+            info.numCrew = Utilities.GetValue(node, "numCrew", 0);
+            info.numOccupiedParts = Utilities.GetValue(node, "numOccupiedParts", 0);
+
+            info.lastFood = Utilities.GetValue(node, "lastFood", lastUpdate);
+            info.lastWater = Utilities.GetValue(node, "lastWater", lastUpdate);
+            info.lastOxygen = Utilities.GetValue(node, "lastOxygen", lastUpdate);
+            info.lastElectricity = Utilities.GetValue(node, "lastElectricity", lastUpdate);
+
+            info.remainingFood = Utilities.GetValue(node, "remainingFood", 0.0);
+            info.remainingWater = Utilities.GetValue(node, "remainingWater", 0.0);
+            info.remainingOxygen = Utilities.GetValue(node, "remainingOxygen", 0.0);
+            info.remainingElectricity = Utilities.GetValue(node, "remainingElectricity", 0.0);
+            info.remainingCO2 = Utilities.GetValue(node, "remainingCO2", 0.0);
+            info.remainingWaste = Utilities.GetValue(node, "remainingWaste", 0.0);
+            info.remainingWasteWater = Utilities.GetValue(node, "remainingWasteWater", 0.0);
+
+            info.maxFood = Utilities.GetValue(node, "maxFood", 0.0);
+            info.maxWater = Utilities.GetValue(node, "maxWater", 0.0);
+            info.maxOxygen = Utilities.GetValue(node, "maxOxygen", 0.0);
+            info.maxElectricity = Utilities.GetValue(node, "maxElectricity", 0.0);
+
+            info.estimatedElectricityConsumptionRate = Utilities.GetValue(node, "estimatedElectricityConsumptionRate", 0.0);
+
+            info.hibernating = Utilities.GetValue(node, "hibernating", false);
+
+            return info;
+        }
+
+        public ConfigNode Save(ConfigNode config)
+        {
+            ConfigNode node = config.AddNode(ConfigNodeName);
+            node.AddValue("vesselName", vesselName);
+            node.AddValue("vesselType", vesselType);
+            node.AddValue("numCrew", numCrew);
+            node.AddValue("numOccupiedParts", numOccupiedParts);
+
+            node.AddValue("lastUpdate", lastUpdate);
+            node.AddValue("lastFood", lastFood);
+            node.AddValue("lastWater", lastWater);
+            node.AddValue("lastOxygen", lastOxygen);
+            node.AddValue("lastElectricity", lastElectricity);
+
+            node.AddValue("remainingFood", remainingFood);
+            node.AddValue("remainingWater", remainingWater);
+            node.AddValue("remainingOxygen", remainingOxygen);
+            node.AddValue("remainingElectricity", remainingElectricity);
+            node.AddValue("remainingCO2", remainingCO2);
+            node.AddValue("remainingWaste", remainingWaste);
+            node.AddValue("remainingWasteWater", remainingWasteWater);
+
+            node.AddValue("maxFood", maxFood);
+            node.AddValue("maxWater", maxWater);
+            node.AddValue("maxOxygen", maxOxygen);
+            node.AddValue("maxElectricity", maxElectricity);
+
+            node.AddValue("estimatedElectricityConsumptionRate", estimatedElectricityConsumptionRate);
+
+            node.AddValue("hibernating", hibernating);
+
+            return node;
         }
 
         public void ClearAmounts()
         {
             numCrew = 0;
+            numOccupiedParts = 0;
             remainingFood = 0.0;
             remainingWater = 0.0;
             remainingOxygen = 0.0;

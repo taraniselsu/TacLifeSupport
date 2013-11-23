@@ -46,7 +46,7 @@ namespace Tac
             var game = HighLogic.CurrentGame;
             if (!game.scenarios.Any(s => s.moduleName == typeof(TacLifeSupport).Name))
             {
-                Debug.Log("TAC Life Support (AddScenarioModules) [" + this.GetInstanceID().ToString("X") + "][" + Time.time.ToString("0.00") + "]: Adding the scenario module.");
+                this.Log("Adding the scenario module.");
                 var psm = game.AddProtoScenarioModule(typeof(TacLifeSupport), GameScenes.SPACECENTER, GameScenes.FLIGHT);
             }
         }
@@ -66,7 +66,7 @@ namespace Tac
 
         public TacLifeSupport()
         {
-            Debug.Log("TAC Life Support (TacLifeSupport) [" + this.GetInstanceID().ToString("X") + "][" + Time.time.ToString("0.00") + "]: Constructor");
+            this.Log("Constructor");
             Instance = this;
             gameSettings = new GameSettings();
             globalSettings = new GlobalSettings();
@@ -76,18 +76,18 @@ namespace Tac
 
         public override void OnAwake()
         {
-            Debug.Log("TAC Life Support (TacLifeSupport) [" + this.GetInstanceID().ToString("X") + "][" + Time.time.ToString("0.00") + "]: OnAwake in " + HighLogic.LoadedScene);
+            this.Log("OnAwake in " + HighLogic.LoadedScene);
             base.OnAwake();
 
             if (HighLogic.LoadedScene == GameScenes.SPACECENTER)
             {
-                Debug.Log("TAC Life Support (TacLifeSupport) [" + this.GetInstanceID().ToString("X") + "][" + Time.time.ToString("0.00") + "]: Adding SpaceCenterManager");
+                this.Log("Adding SpaceCenterManager");
                 var c = gameObject.AddComponent<SpaceCenterManager>();
                 children.Add(c);
             }
             else if (HighLogic.LoadedScene == GameScenes.FLIGHT)
             {
-                Debug.Log("TAC Life Support (TacLifeSupport) [" + this.GetInstanceID().ToString("X") + "][" + Time.time.ToString("0.00") + "]: Adding LifeSupportController");
+                this.Log("Adding LifeSupportController");
                 var c = gameObject.AddComponent<LifeSupportController>();
                 children.Add(c);
             }
@@ -109,7 +109,7 @@ namespace Tac
                 }
             }
 
-            Debug.Log("TAC Life Support (TacLifeSupport) [" + this.GetInstanceID().ToString("X") + "][" + Time.time.ToString("0.00") + "]: OnLoad: " + gameNode + "\n" + globalNode);
+            this.Log("OnLoad: " + gameNode + "\n" + globalNode);
         }
 
         public override void OnSave(ConfigNode gameNode)
@@ -125,12 +125,12 @@ namespace Tac
             }
             globalNode.Save(globalConfigFilename);
 
-            Debug.Log("TAC Life Support (TacLifeSupport) [" + this.GetInstanceID().ToString("X") + "][" + Time.time.ToString("0.00") + "]: OnSave: " + gameNode + "\n" + globalNode);
+            this.Log("OnSave: " + gameNode + "\n" + globalNode);
         }
 
         void OnDestroy()
         {
-            Debug.Log("TAC Life Support (TacLifeSupport) [" + this.GetInstanceID().ToString("X") + "][" + Time.time.ToString("0.00") + "]: OnDestroy");
+            this.Log("OnDestroy");
             foreach (Component c in children)
             {
                 Destroy(c);

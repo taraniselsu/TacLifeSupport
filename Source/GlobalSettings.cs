@@ -38,6 +38,8 @@ namespace Tac
         private const int SECONDS_PER_HOUR = 60 * SECONDS_PER_MINUTE;
         private const int SECONDS_PER_DAY = 24 * SECONDS_PER_HOUR;
 
+        public int MaxDeltaTime { get; set; }
+
         public string Food { get; private set; }
         public string Water { get; private set; }
         public string Oxygen { get; private set; }
@@ -116,6 +118,8 @@ namespace Tac
 
         public GlobalSettings()
         {
+            MaxDeltaTime = SECONDS_PER_DAY; // max 1 day (24 hour) per physics update, or 50 days (4,320,000 seconds) per second
+
             Food = "Food";
             Water = "Water";
             Oxygen = "Oxygen";
@@ -152,6 +156,8 @@ namespace Tac
             if (node.HasNode(configNodeName))
             {
                 ConfigNode settingsNode = node.GetNode(configNodeName);
+
+                MaxDeltaTime = Utilities.GetValue(settingsNode, "MaxDeltaTime", SECONDS_PER_DAY);
 
                 Food = Utilities.GetValue(settingsNode, "FoodResource", Food);
                 Water = Utilities.GetValue(settingsNode, "WaterResource", Water);
@@ -192,6 +198,8 @@ namespace Tac
             {
                 settingsNode = node.AddNode(configNodeName);
             }
+
+            settingsNode.AddValue("MaxDeltaTime", MaxDeltaTime);
 
             settingsNode.AddValue("FoodResource", Food);
             settingsNode.AddValue("WaterResource", Water);

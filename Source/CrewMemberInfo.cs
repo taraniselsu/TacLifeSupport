@@ -1,7 +1,6 @@
 ﻿/**
- * CrewMemberInfo.cs
- * 
- * Thunder Aerospace Corporation's Life Support for the Kerbal Space Program, by Taranis Elsu
+ * Thunder Aerospace Corporation's Life Support for Kerbal Space Program.
+ * Written by Taranis Elsu.
  * 
  * (C) Copyright 2013, Taranis Elsu
  * 
@@ -34,49 +33,62 @@ namespace Tac
 {
     public class CrewMemberInfo
     {
-        public string name;
-        public Guid vesselId;
+        public const string ConfigNodeName = "CrewMemberInfo";
+
+        public readonly string name;
         public double lastUpdate;
         public double lastFood;
         public double lastWater;
-        public double lastOxygen;
-        public readonly double respite = UnityEngine.Random.Range(30, 150);
+        public string vesselName;
+        public Guid vesselId;
+        public bool hibernating;
+        public readonly double respite = UnityEngine.Random.Range(60, 600);
 
-        public CrewMemberInfo(string crewMemberName, Guid vesselId, double currentTime)
+        public CrewMemberInfo(string crewMemberName, string vesselName, Guid vesselId, double currentTime)
         {
             name = crewMemberName;
-            this.vesselId = vesselId;
             lastUpdate = currentTime;
             lastFood = currentTime;
             lastWater = currentTime;
-            lastOxygen = currentTime;
+            this.vesselName = vesselName;
+            this.vesselId = vesselId;
+            hibernating = false;
         }
 
-        public CrewMemberInfo(ConfigNode node)
+        public static CrewMemberInfo Load(ConfigNode node)
         {
-            name = Utilities.GetValue(node, "name", name);
-
+            string name = Utilities.GetValue(node, "name", "Unknown");
+            double lastUpdate = Utilities.GetValue(node, "lastUpdate", 0.0);
+            string vesselName = Utilities.GetValue(node, "vesselName", "Unknown");
+            Guid vesselId;
             if (node.HasValue("vesselId"))
             {
                 vesselId = new Guid(node.GetValue("vesselId"));
             }
+            else
+            {
+                vesselId = Guid.Empty;
+            }
 
-            lastUpdate = Utilities.GetValue(node, "lastUpdate", lastUpdate);
-            lastFood = Utilities.GetValue(node, "lastFood", lastFood);
-            lastWater = Utilities.GetValue(node, "lastWater", lastWater);
-            lastOxygen = Utilities.GetValue(node, "lastOxygen", lastOxygen);
+            CrewMemberInfo info = new CrewMemberInfo(name, vesselName, vesselId, lastUpdate);
+            info.lastFood = Utilities.GetValue(node, "lastFood", lastUpdate);
+            info.lastWater = Utilities.GetValue(node, "lastWater", lastUpdate);
+            info.hibernating = Utilities.GetValue(node, "hibernating", false);
+
+            return info;
         }
 
-        public void Save(ConfigNode config)
+        public ConfigNode Save(ConfigNode config)
         {
-            ConfigNode node = new ConfigNode("CrewMemberInfo");
+            ConfigNode node = config.AddNode(ConfigNodeName);
             node.AddValue("name", name);
-            node.AddValue("vesselId", vesselId);
             node.AddValue("lastUpdate", lastUpdate);
             node.AddValue("lastFood", lastFood);
             node.AddValue("lastWater", lastWater);
-            node.AddValue("lastOxygen", lastOxygen);
-            config.AddNode(node);
+            node.AddValue("vesselName", vesselName);
+            node.AddValue("vesselId", vesselId);
+            node.AddValue("hibernating", hibernating);
+            return node;
         }
     }
 }

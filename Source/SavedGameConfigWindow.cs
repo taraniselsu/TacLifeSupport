@@ -93,7 +93,27 @@ namespace Tac
             if (gameSettings.Enabled)
             {
                 GUILayout.Space(10);
-                HibernateOrKill();
+
+                string[] killOptions = { "Die", "Hibernate" };
+                int oldValue = (gameSettings.HibernateInsteadOfKill) ? 1 : 0;
+
+                GUILayout.BeginHorizontal();
+                GUILayout.Label("When resources run out, Kerbals ", labelStyle);
+                int newValue = GUILayout.SelectionGrid(oldValue, killOptions, 2);
+                GUILayout.EndHorizontal();
+                gameSettings.HibernateInsteadOfKill = (newValue == 1);
+
+                if (!gameSettings.HibernateInsteadOfKill)
+                {
+                    gameSettings.AllowCrewRespawn = Utilities.ShowToggle("Allow Respawn", labelStyle, gameSettings.AllowCrewRespawn);
+
+                    if (gameSettings.AllowCrewRespawn)
+                    {
+                        gameSettings.RespawnDelay = Utilities.ShowTextField("Respawn delay (seconds)", labelStyle,
+                            gameSettings.RespawnDelay, 30, editStyle, GUILayout.MinWidth(100));
+                    }
+                }
+
                 GUILayout.Space(10);
                 ConsumptionRates();
                 GUILayout.Space(10);
@@ -143,6 +163,12 @@ namespace Tac
                     globalSettings.WasteProductionRate * SECONDS_PER_DAY, 30, editStyle, GUILayout.MinWidth(150)) / SECONDS_PER_DAY;
                 globalSettings.WasteWaterProductionRate = Utilities.ShowTextField("Waste Water Production Rate", labelStyle,
                     globalSettings.WasteWaterProductionRate * SECONDS_PER_DAY, 30, editStyle, GUILayout.MinWidth(150)) / SECONDS_PER_DAY;
+
+                GUILayout.Space(5);
+
+                globalSettings.MaxDeltaTime = (int)Utilities.ShowTextField("Max Delta Time", labelStyle, globalSettings.MaxDeltaTime,
+                    30, editStyle, GUILayout.MinWidth(150));
+
                 GUILayout.EndVertical();
             }
         }
@@ -167,29 +193,6 @@ namespace Tac
                     globalSettings.MaxTimeWithoutElectricity, 20, editStyle, GUILayout.MinWidth(150));
                 GUILayout.EndVertical();
             }
-        }
-
-        private void HibernateOrKill()
-        {
-            //string[] killOptions = { "Die", "Hibernate" };
-            //int oldValue = (gameSettings.HibernateInsteadOfKill) ? 1 : 0;
-
-            GUILayout.BeginVertical();
-
-            //GUILayout.BeginHorizontal();
-            //GUILayout.Label("When resources run out, Kerbals ", labelStyle);
-            //int newValue = GUILayout.SelectionGrid(oldValue, killOptions, 2);
-            //GUILayout.EndHorizontal();
-
-            //gameSettings.HibernateInsteadOfKill = (newValue == 1);
-
-            if (!gameSettings.HibernateInsteadOfKill)
-            {
-                gameSettings.AllowCrewRespawn = Utilities.ShowToggle("Allow Respawn", labelStyle, gameSettings.AllowCrewRespawn);
-                gameSettings.RespawnDelay = Utilities.ShowTextField("Respawn delay (seconds)", labelStyle, gameSettings.RespawnDelay, 30, editStyle, GUILayout.MinWidth(100));
-            }
-
-            GUILayout.EndVertical();
         }
 
         private void DefaultResourceAmounts()
