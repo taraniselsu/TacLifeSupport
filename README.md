@@ -1,5 +1,5 @@
 TacLifeSupport
-===
+==============
 
 A Life Support system from Thunder Aerospace Corporation (TAC), designed by Taranis Elsu.
 
@@ -10,14 +10,12 @@ BY-NC-SA 3.0) creative commons license. See the LICENSE.txt file.
 
 Source code is available from: https://github.com/taraniselsu/TacLifeSupport
 
-
 Includes HexCan parts from Greys, licensed CC-BY 3.0. Used with permission. See
 Readme-HexCans.txt and LICENSE-HexCans.txt in the HexCans directory.
 Forum thread: http://forum.kerbalspaceprogram.com/showthread.php/33754
 
 
-Features
-===
+### Features
 
 - Kerbals require resources to survive whether in a vessel or on EVA: Food, Water, Oxygen, Electricity (for air quality and climate control)
 - They produce waste resources: CarbonDioxide, Waste, WasteWater
@@ -29,8 +27,7 @@ Features
 - Includes Hex Can containers for Food, Water, and Oxygen.
 
 
-How to use
-===
+### How to use
 
 Add the following lines to any part that you want to have the Life Support functionality:
 
@@ -42,7 +39,6 @@ Add the following lines to any part that you want to have the Life Support funct
 And add the resources.
 
 
-Installation procedure
-===
+### Installation procedure
 
 1. Copy everything in the GameData directory to the {KSP}/GameData directory.
