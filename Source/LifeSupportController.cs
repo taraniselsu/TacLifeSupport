@@ -114,15 +114,25 @@ namespace Tac
 
                 if (vesselInfo.numCrew > 0)
                 {
-                    ShowWarnings(vessel, vesselInfo.remainingFood, vesselInfo.maxFood, globalSettings.FoodConsumptionRate * vesselInfo.numCrew, "Food", ref vesselInfo.foodStatus);
-                    ShowWarnings(vessel, vesselInfo.remainingWater, vesselInfo.maxWater, globalSettings.WaterConsumptionRate * vesselInfo.numCrew, "Water", ref vesselInfo.waterStatus);
-                    ShowWarnings(vessel, vesselInfo.remainingOxygen, vesselInfo.maxOxygen, globalSettings.OxygenConsumptionRate * vesselInfo.numCrew, "Oxygen", ref vesselInfo.oxygenStatus);
-                    ShowWarnings(vessel, vesselInfo.remainingElectricity, vesselInfo.maxElectricity, CalculateElectricityConsumptionRate(vessel, vesselInfo), "Electric Charge", ref vesselInfo.electricityStatus);
+                    double foodRate = globalSettings.FoodConsumptionRate * vesselInfo.numCrew;
+                    vesselInfo.estimatedTimeFoodDepleted = vesselInfo.lastFood + (vesselInfo.remainingFood / foodRate);
+                    double estimatedFood = vesselInfo.remainingFood - ((currentTime - vesselInfo.lastFood) * foodRate);
+                    ShowWarnings(vessel, estimatedFood, vesselInfo.maxFood, globalSettings.Food, ref vesselInfo.foodStatus);
 
-                    vesselInfo.estimatedTimeFoodDepleted = vesselInfo.lastFood + (vesselInfo.remainingFood / (globalSettings.FoodConsumptionRate * vesselInfo.numCrew));
-                    vesselInfo.estimatedTimeWaterDepleted = vesselInfo.lastWater + (vesselInfo.remainingWater / (globalSettings.WaterConsumptionRate * vesselInfo.numCrew));
-                    vesselInfo.estimatedTimeOxygenDepleted = vesselInfo.lastOxygen + (vesselInfo.remainingOxygen / (globalSettings.OxygenConsumptionRate * vesselInfo.numCrew));
-                    vesselInfo.estimatedTimeElecticityDepleted = vesselInfo.lastElectricity + (vesselInfo.remainingElectricity / vesselInfo.estimatedElectricityConsumptionRate);
+                    double waterRate = globalSettings.WaterConsumptionRate * vesselInfo.numCrew;
+                    vesselInfo.estimatedTimeWaterDepleted = vesselInfo.lastWater + (vesselInfo.remainingWater / waterRate);
+                    double estimatedWater = vesselInfo.remainingWater - ((currentTime - vesselInfo.lastWater) * waterRate);
+                    ShowWarnings(vessel, estimatedWater, vesselInfo.maxWater, globalSettings.Water, ref vesselInfo.waterStatus);
+
+                    double oxygenRate = globalSettings.OxygenConsumptionRate * vesselInfo.numCrew;
+                    vesselInfo.estimatedTimeOxygenDepleted = vesselInfo.lastOxygen + (vesselInfo.remainingOxygen / oxygenRate);
+                    double estimatedOxygen = vesselInfo.remainingOxygen - ((currentTime - vesselInfo.lastOxygen) * oxygenRate);
+                    ShowWarnings(vessel, estimatedOxygen, vesselInfo.maxOxygen, globalSettings.Oxygen, ref vesselInfo.oxygenStatus);
+
+                    double electricityRate = globalSettings.ElectricityConsumptionRate * vesselInfo.numCrew;
+                    vesselInfo.estimatedTimeElectricityDepleted = vesselInfo.lastElectricity + (vesselInfo.remainingElectricity / electricityRate);
+                    double estimatedElectricity = vesselInfo.remainingElectricity - ((currentTime - vesselInfo.lastElectricity) * electricityRate);
+                    ShowWarnings(vessel, vesselInfo.remainingElectricity, vesselInfo.maxElectricity, globalSettings.Electricity, ref vesselInfo.electricityStatus);
                 }
 
                 ConsumeResources(currentTime, vessel, vesselInfo);
@@ -377,10 +387,10 @@ namespace Tac
             }
         }
 
-        private void ShowWarnings(Vessel vessel, double resourceRemaining, double max, double consumptionRate, string resourceName, ref VesselInfo.Status status)
+        private void ShowWarnings(Vessel vessel, double resourceRemaining, double max, string resourceName, ref VesselInfo.Status status)
         {
-            double criticalLevel = consumptionRate; // 1 second
-            double warningLevel = max * 0.10; // 10%
+            double criticalLevel = max * 0.01; // 1% full
+            double warningLevel = max * 0.10; // 10% full
 
             if (resourceRemaining < criticalLevel)
             {

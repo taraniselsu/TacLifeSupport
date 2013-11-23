@@ -67,7 +67,7 @@ namespace Tac
         public double estimatedTimeFoodDepleted;
         public double estimatedTimeWaterDepleted;
         public double estimatedTimeOxygenDepleted;
-        public double estimatedTimeElecticityDepleted;
+        public double estimatedTimeElectricityDepleted;
 
         public double estimatedElectricityConsumptionRate;
         public bool hibernating;

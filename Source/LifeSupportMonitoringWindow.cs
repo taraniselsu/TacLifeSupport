@@ -110,7 +110,7 @@ namespace Tac
                         GUILayout.Label("  Food remaining:        " + Utilities.FormatTime(vesselInfo.estimatedTimeFoodDepleted - currentTime), getStyle(vesselInfo.foodStatus));
                         GUILayout.Label("  Water remaining:       " + Utilities.FormatTime(vesselInfo.estimatedTimeWaterDepleted - currentTime), getStyle(vesselInfo.waterStatus));
                         GUILayout.Label("  Oxygen remaining:      " + Utilities.FormatTime(vesselInfo.estimatedTimeOxygenDepleted - currentTime), getStyle(vesselInfo.oxygenStatus));
-                        GUILayout.Label("  Electricity remaining: " + Utilities.FormatTime(vesselInfo.estimatedTimeElecticityDepleted - currentTime), getStyle(vesselInfo.electricityStatus));
+                        GUILayout.Label("  Electricity remaining: " + Utilities.FormatTime(vesselInfo.estimatedTimeElectricityDepleted - currentTime), getStyle(vesselInfo.electricityStatus));
                     }
 
                     GUILayout.Space(10);
