@@ -104,13 +104,16 @@ namespace Tac
                 VesselInfo vesselInfo = entry.Value;
                 Vessel vessel = allVessels.Find(v => v.id == vesselId);
 
-                if (vessel == null)
+                if (vessel == null || !vessel.parts.Any(p => p.CrewCapacity > 0))
                 {
                     vesselsToDelete.Add(vesselId);
                     continue;
                 }
 
-                UpdateVesselInfo(vesselInfo, vessel);
+                if (vessel.loaded)
+                {
+                    UpdateVesselInfo(vesselInfo, vessel);
+                }
 
                 if (vesselInfo.numCrew > 0)
                 {
@@ -129,13 +132,18 @@ namespace Tac
                     double estimatedOxygen = vesselInfo.remainingOxygen - ((currentTime - vesselInfo.lastOxygen) * oxygenRate);
                     ShowWarnings(vessel, estimatedOxygen, vesselInfo.maxOxygen, globalSettings.Oxygen, ref vesselInfo.oxygenStatus);
 
-                    double electricityRate = globalSettings.ElectricityConsumptionRate * vesselInfo.numCrew;
-                    vesselInfo.estimatedTimeElectricityDepleted = vesselInfo.lastElectricity + (vesselInfo.remainingElectricity / electricityRate);
-                    double estimatedElectricity = vesselInfo.remainingElectricity - ((currentTime - vesselInfo.lastElectricity) * electricityRate);
-                    ShowWarnings(vessel, vesselInfo.remainingElectricity, vesselInfo.maxElectricity, globalSettings.Electricity, ref vesselInfo.electricityStatus);
+                    vesselInfo.estimatedTimeElectricityDepleted = vesselInfo.lastElectricity + (vesselInfo.remainingElectricity / vesselInfo.estimatedElectricityConsumptionRate);
+                    double estimatedElectricity = vesselInfo.remainingElectricity - ((currentTime - vesselInfo.lastElectricity) * vesselInfo.estimatedElectricityConsumptionRate);
+                    if (vessel.loaded)
+                    {
+                        ShowWarnings(vessel, vesselInfo.remainingElectricity, vesselInfo.maxElectricity, globalSettings.Electricity, ref vesselInfo.electricityStatus);
+                    }
                 }
 
-                ConsumeResources(currentTime, vessel, vesselInfo);
+                if (vessel.loaded)
+                {
+                    ConsumeResources(currentTime, vessel, vesselInfo);
+                }
             }
 
             if (vesselsToDelete.Any())
