@@ -449,15 +449,14 @@ namespace Tac
             double desiredOxygen = globalSettings.OxygenConsumptionRate * globalSettings.EvaDefaultResourceAmount;
             double desiredElectricity = globalSettings.EvaElectricityConsumptionRate * globalSettings.EvaDefaultResourceAmount;
 
-            VesselInfo lastVesselInfo = gameSettings.knownVessels[oldPart.vessel.id];
-            if (lastVesselInfo == null)
+            Vessel lastVessel = oldPart.vessel;
+            VesselInfo lastVesselInfo;
+            if (!gameSettings.knownVessels.TryGetValue(lastVessel.id, out lastVesselInfo))
             {
-                ScreenMessages.PostScreenMessage("Error - FillEvaSuit - Cannot find VesselInfo for " + oldPart.vessel.id, 10.0f, ScreenMessageStyle.UPPER_CENTER);
-                this.LogError("FillEvaSuit - Cannot find VesselInfo for " + oldPart.vessel.id);
-                return;
+                lastVesselInfo = new VesselInfo(lastVessel.vesselName, Planetarium.GetUniversalTime());
             }
 
-            UpdateVesselInfo(lastVesselInfo, oldPart.vessel);
+            UpdateVesselInfo(lastVesselInfo, lastVessel);
             int numCrew = lastVesselInfo.numCrew + 1;
 
             double foodObtained = oldPart.TakeResource(globalSettings.FoodId, Math.Min(desiredFood, lastVesselInfo.remainingFood / numCrew));
@@ -473,7 +472,9 @@ namespace Tac
 
         private void EmptyEvaSuit(Part oldPart, Part newPart)
         {
-            VesselInfo lastVesselInfo = gameSettings.knownVessels[oldPart.vessel.id]; if (lastVesselInfo == null)
+            Vessel lastVessel = oldPart.vessel;
+            VesselInfo lastVesselInfo;
+            if (!gameSettings.knownVessels.TryGetValue(lastVessel.id, out lastVesselInfo))
             {
                 ScreenMessages.PostScreenMessage("Error - EmptyEvaSuit - Cannot find VesselInfo for " + oldPart.vessel.id, 10.0f, ScreenMessageStyle.UPPER_CENTER);
                 this.LogError("EmptyEvaSuit - Cannot find VesselInfo for " + oldPart.vessel.id);
