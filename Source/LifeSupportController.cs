@@ -136,7 +136,7 @@ namespace Tac
                     double estimatedElectricity = vesselInfo.remainingElectricity - ((currentTime - vesselInfo.lastElectricity) * vesselInfo.estimatedElectricityConsumptionRate);
                     if (vessel.loaded)
                     {
-                        ShowWarnings(vessel, vesselInfo.remainingElectricity, vesselInfo.maxElectricity, globalSettings.Electricity, ref vesselInfo.electricityStatus);
+                        ShowWarnings(vessel, estimatedElectricity, vesselInfo.maxElectricity, globalSettings.Electricity, ref vesselInfo.electricityStatus);
                     }
                 }
 
@@ -359,37 +359,40 @@ namespace Tac
 
                 foreach (PartResource resource in part.Resources)
                 {
-                    if (resource.info.id == globalSettings.FoodId)
+                    if (resource.flowState)
                     {
-                        vesselInfo.remainingFood += resource.amount;
-                        vesselInfo.maxFood += resource.maxAmount;
-                    }
-                    else if (resource.info.id == globalSettings.WaterId)
-                    {
-                        vesselInfo.remainingWater += resource.amount;
-                        vesselInfo.maxWater += resource.maxAmount;
-                    }
-                    else if (resource.info.id == globalSettings.OxygenId)
-                    {
-                        vesselInfo.remainingOxygen += resource.amount;
-                        vesselInfo.maxOxygen += resource.maxAmount;
-                    }
-                    else if (resource.info.id == globalSettings.ElectricityId)
-                    {
-                        vesselInfo.remainingElectricity += resource.amount;
-                        vesselInfo.maxElectricity += resource.maxAmount;
-                    }
-                    else if (resource.info.id == globalSettings.CO2Id)
-                    {
-                        vesselInfo.remainingCO2 += resource.amount;
-                    }
-                    else if (resource.info.id == globalSettings.WasteId)
-                    {
-                        vesselInfo.remainingWaste += resource.amount;
-                    }
-                    else if (resource.info.id == globalSettings.WasteWaterId)
-                    {
-                        vesselInfo.remainingWasteWater += resource.amount;
+                        if (resource.info.id == globalSettings.FoodId)
+                        {
+                            vesselInfo.remainingFood += resource.amount;
+                            vesselInfo.maxFood += resource.maxAmount;
+                        }
+                        else if (resource.info.id == globalSettings.WaterId)
+                        {
+                            vesselInfo.remainingWater += resource.amount;
+                            vesselInfo.maxWater += resource.maxAmount;
+                        }
+                        else if (resource.info.id == globalSettings.OxygenId)
+                        {
+                            vesselInfo.remainingOxygen += resource.amount;
+                            vesselInfo.maxOxygen += resource.maxAmount;
+                        }
+                        else if (resource.info.id == globalSettings.ElectricityId)
+                        {
+                            vesselInfo.remainingElectricity += resource.amount;
+                            vesselInfo.maxElectricity += resource.maxAmount;
+                        }
+                        else if (resource.info.id == globalSettings.CO2Id)
+                        {
+                            vesselInfo.remainingCO2 += resource.amount;
+                        }
+                        else if (resource.info.id == globalSettings.WasteId)
+                        {
+                            vesselInfo.remainingWaste += resource.amount;
+                        }
+                        else if (resource.info.id == globalSettings.WasteWaterId)
+                        {
+                            vesselInfo.remainingWasteWater += resource.amount;
+                        }
                     }
                 }
             }
