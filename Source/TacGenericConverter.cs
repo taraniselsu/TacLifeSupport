@@ -87,6 +87,9 @@ namespace Tac
         [KSPField]
         public string outputResources = "";
 
+        [KSPField]
+        public bool requiresOxygenAtmo = false;
+
         private double lastUpdateTime = 0.0f;
         private int maxDeltaTime;
 
@@ -132,6 +135,12 @@ namespace Tac
 
             if (converterEnabled)
             {
+                if (requiresOxygenAtmo && !vessel.mainBody.atmosphereContainsOxygen)
+                {
+                    converterStatus = "Atmo lacks oxygen.";
+                    return;
+                }
+
                 double desiredAmount = conversionRate / SECONDS_PER_DAY * deltaTime;
 
                 // Limit the resource amounts so that we do not produce more than we have room for, nor consume more than is available
@@ -208,10 +217,23 @@ namespace Tac
 
         public override string GetInfo()
         {
-            var inputs = String.Join(", ", inputResourceList.Select(value => value.resource.name + ", " + value.ratio).ToArray());
-            var outputs = String.Join(", ", outputResourceList.Select(value => value.resource.name + ", " + value.ratio).ToArray());
+            StringBuilder sb = new StringBuilder();
+            sb.Append(base.GetInfo());
+            sb.Append("\nContains the ");
+            sb.Append(converterName);
+            sb.Append(" module\n  Inputs: ");
+            sb.Append(String.Join(", ", inputResourceList.Select(value => value.resource.name + ", " + value.ratio).ToArray()));
+            sb.Append("\n  Outputs: ");
+            sb.Append(String.Join(", ", outputResourceList.Select(value => value.resource.name + ", " + value.ratio).ToArray()));
+            sb.Append("\n  Conversion Rate: ");
+            sb.Append(conversionRate);
+            if (requiresOxygenAtmo)
+            {
+                sb.Append("\nRequires an atmosphere containing Oxygen.");
+            }
+            sb.Append("\n");
 
-            return base.GetInfo() + "\nContains the " + converterName + " module\n  Inputs: " + inputs + "\n  Outputs: " + outputs + "\n  Conversion Rate: " + conversionRate + "\n";
+            return sb.ToString();
         }
 
         [KSPEvent(active = false, guiActive = true, guiName = "Activate Converter")]
