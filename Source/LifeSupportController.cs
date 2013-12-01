@@ -104,14 +104,22 @@ namespace Tac
                 VesselInfo vesselInfo = entry.Value;
                 Vessel vessel = allVessels.Find(v => v.id == vesselId);
 
-                if (vessel == null || !vessel.parts.Any(p => p.CrewCapacity > 0))
+                if (vessel == null)
                 {
+                    this.Log("Deleting vessel " + vesselInfo.vesselName + " - vessel does not exist anymore");
                     vesselsToDelete.Add(vesselId);
                     continue;
                 }
 
                 if (vessel.loaded)
                 {
+                    if (!vessel.parts.Any(p => p.CrewCapacity > 0))
+                    {
+                        this.Log("Deleting vessel " + vesselInfo.vesselName + " - no crew parts");
+                        vesselsToDelete.Add(vesselId);
+                        continue;
+                    }
+
                     UpdateVesselInfo(vesselInfo, vessel);
                 }
 
