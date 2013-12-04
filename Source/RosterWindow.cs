@@ -44,7 +44,7 @@ namespace Tac
         private Vector2 scrollPosition;
 
         public RosterWindow(GlobalSettings globalSettings, GameSettings gameSettings)
-            : base("TAC Life Support Crew Roster", 320, 200)
+            : base("Life Support Crew Roster", 320, 200)
         {
             this.globalSettings = globalSettings;
             this.gameSettings = gameSettings;

@@ -67,6 +67,17 @@ namespace Tac
             {
                 icon.SetVisible(true);
 
+                CrewRoster crewRoster = HighLogic.CurrentGame.CrewRoster;
+                var knownCrew = gameSettings.knownCrew;
+                foreach (ProtoCrewMember crewMember in crewRoster)
+                {
+                    if (crewMember.rosterStatus != ProtoCrewMember.RosterStatus.ASSIGNED && knownCrew.ContainsKey(crewMember.name))
+                    {
+                        this.Log("Deleting crew member: " + crewMember.name);
+                        knownCrew.Remove(crewMember.name);
+                    }
+                }
+
                 GameEvents.onCrewOnEva.Add(OnCrewOnEva);
                 GameEvents.onCrewBoardVessel.Add(OnCrewBoardVessel);
             }
@@ -108,19 +119,25 @@ namespace Tac
                 {
                     this.Log("Deleting vessel " + vesselInfo.vesselName + " - vessel does not exist anymore");
                     vesselsToDelete.Add(vesselId);
+                    var crewToDelete = gameSettings.knownCrew.Where(e => e.Value.vesselId == vesselId).Select(e => e.Key).ToList();
+                    foreach (String name in crewToDelete)
+                    {
+                        this.Log("Deleting crew member: " + name);
+                        gameSettings.knownCrew.Remove(name);
+                    }
                     continue;
                 }
 
                 if (vessel.loaded)
                 {
-                    //if (!vessel.parts.Any(p => p.CrewCapacity > 0))
-                    //{
-                    //    this.Log("Deleting vessel " + vesselInfo.vesselName + " - no crew parts");
-                    //    vesselsToDelete.Add(vesselId);
-                    //    continue;
-                    //}
+                    int crewCapacity = UpdateVesselInfo(vesselInfo, vessel);
 
-                    UpdateVesselInfo(vesselInfo, vessel);
+                    if (crewCapacity == 0)
+                    {
+                        this.Log("Deleting vessel " + vesselInfo.vesselName + " - no crew parts anymore");
+                        vesselsToDelete.Add(vesselId);
+                        continue;
+                    }
                 }
 
                 if (vesselInfo.numCrew > 0)
@@ -128,23 +145,23 @@ namespace Tac
                     double foodRate = globalSettings.FoodConsumptionRate * vesselInfo.numCrew;
                     vesselInfo.estimatedTimeFoodDepleted = vesselInfo.lastFood + (vesselInfo.remainingFood / foodRate);
                     double estimatedFood = vesselInfo.remainingFood - ((currentTime - vesselInfo.lastFood) * foodRate);
-                    ShowWarnings(vessel, estimatedFood, vesselInfo.maxFood, globalSettings.Food, ref vesselInfo.foodStatus);
+                    ShowWarnings(vessel, estimatedFood, vesselInfo.maxFood, foodRate, globalSettings.Food, ref vesselInfo.foodStatus);
 
                     double waterRate = globalSettings.WaterConsumptionRate * vesselInfo.numCrew;
                     vesselInfo.estimatedTimeWaterDepleted = vesselInfo.lastWater + (vesselInfo.remainingWater / waterRate);
                     double estimatedWater = vesselInfo.remainingWater - ((currentTime - vesselInfo.lastWater) * waterRate);
-                    ShowWarnings(vessel, estimatedWater, vesselInfo.maxWater, globalSettings.Water, ref vesselInfo.waterStatus);
+                    ShowWarnings(vessel, estimatedWater, vesselInfo.maxWater, waterRate, globalSettings.Water, ref vesselInfo.waterStatus);
 
                     double oxygenRate = globalSettings.OxygenConsumptionRate * vesselInfo.numCrew;
                     vesselInfo.estimatedTimeOxygenDepleted = vesselInfo.lastOxygen + (vesselInfo.remainingOxygen / oxygenRate);
                     double estimatedOxygen = vesselInfo.remainingOxygen - ((currentTime - vesselInfo.lastOxygen) * oxygenRate);
-                    ShowWarnings(vessel, estimatedOxygen, vesselInfo.maxOxygen, globalSettings.Oxygen, ref vesselInfo.oxygenStatus);
+                    ShowWarnings(vessel, estimatedOxygen, vesselInfo.maxOxygen, oxygenRate, globalSettings.Oxygen, ref vesselInfo.oxygenStatus);
 
                     vesselInfo.estimatedTimeElectricityDepleted = vesselInfo.lastElectricity + (vesselInfo.remainingElectricity / vesselInfo.estimatedElectricityConsumptionRate);
                     double estimatedElectricity = vesselInfo.remainingElectricity - ((currentTime - vesselInfo.lastElectricity) * vesselInfo.estimatedElectricityConsumptionRate);
                     if (vessel.loaded)
                     {
-                        ShowWarnings(vessel, estimatedElectricity, vesselInfo.maxElectricity, globalSettings.Electricity, ref vesselInfo.electricityStatus);
+                        ShowWarnings(vessel, estimatedElectricity, vesselInfo.maxElectricity, vesselInfo.estimatedElectricityConsumptionRate, globalSettings.Electricity, ref vesselInfo.electricityStatus);
                     }
                 }
 
@@ -154,14 +171,7 @@ namespace Tac
                 }
             }
 
-            if (vesselsToDelete.Any())
-            {
-                vesselsToDelete.ForEach(id => knownVessels.Remove(id));
-
-                var knownCrew = gameSettings.knownCrew;
-                var crewToDelete = knownCrew.Where(e => vesselsToDelete.Contains(e.Value.vesselId)).Select(e => e.Key).ToList();
-                crewToDelete.ForEach(c => knownCrew.Remove(c));
-            }
+            vesselsToDelete.ForEach(id => knownVessels.Remove(id));
 
             foreach (Vessel vessel in allVessels.Where(v => v.loaded))
             {
@@ -171,6 +181,22 @@ namespace Tac
                     VesselInfo vesselInfo = new VesselInfo(vessel.vesselName, currentTime);
                     knownVessels[vessel.id] = vesselInfo;
                     UpdateVesselInfo(vesselInfo, vessel);
+
+                    var knownCrew = gameSettings.knownCrew;
+                    foreach (ProtoCrewMember crewMember in vessel.GetVesselCrew())
+                    {
+                        if (knownCrew.ContainsKey(crewMember.name))
+                        {
+                            CrewMemberInfo crewMemberInfo = knownCrew[crewMember.name];
+                            crewMemberInfo.vesselId = vessel.id;
+                            crewMemberInfo.vesselName = vessel.vesselName;
+                        }
+                        else
+                        {
+                            this.Log("New crew member: " + crewMember.name);
+                            knownCrew[crewMember.name] = new CrewMemberInfo(crewMember.name, vessel.vesselName, vessel.id, currentTime);
+                        }
+                    }
                 }
             }
         }
@@ -215,7 +241,7 @@ namespace Tac
                 }
                 else
                 {
-                    this.Log("Unknown crew member: " + crewMember.name);
+                    this.LogWarning("Unknown crew member: " + crewMember.name);
                     knownCrew[crewMember.name] = new CrewMemberInfo(crewMember.name, vessel.vesselName, vessel.id, currentTime);
                 }
             }
@@ -353,12 +379,14 @@ namespace Tac
             }
         }
 
-        private void UpdateVesselInfo(VesselInfo vesselInfo, Vessel vessel)
+        private int UpdateVesselInfo(VesselInfo vesselInfo, Vessel vessel)
         {
+            int crewCapacity = 0;
             vesselInfo.ClearAmounts();
 
             foreach (Part part in vessel.parts)
             {
+                crewCapacity += part.CrewCapacity;
                 if (part.protoModuleCrew.Any())
                 {
                     vesselInfo.numCrew += part.protoModuleCrew.Count;
@@ -404,11 +432,13 @@ namespace Tac
                     }
                 }
             }
+
+            return crewCapacity;
         }
 
-        private void ShowWarnings(Vessel vessel, double resourceRemaining, double max, string resourceName, ref VesselInfo.Status status)
+        private void ShowWarnings(Vessel vessel, double resourceRemaining, double max, double rate, string resourceName, ref VesselInfo.Status status)
         {
-            double criticalLevel = max * 0.01; // 1% full
+            double criticalLevel = rate; // 1 second of resources
             double warningLevel = max * 0.10; // 10% full
 
             if (resourceRemaining < criticalLevel)
@@ -541,6 +571,8 @@ namespace Tac
                     crewMember.StartRespawnPeriod(gameSettings.RespawnDelay);
                 }
             }
+
+            gameSettings.knownCrew.Remove(crewMember.name);
         }
 
         public void Load(ConfigNode globalNode)
