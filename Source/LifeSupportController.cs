@@ -113,12 +113,12 @@ namespace Tac
 
                 if (vessel.loaded)
                 {
-                    if (!vessel.parts.Any(p => p.CrewCapacity > 0))
-                    {
-                        this.Log("Deleting vessel " + vesselInfo.vesselName + " - no crew parts");
-                        vesselsToDelete.Add(vesselId);
-                        continue;
-                    }
+                    //if (!vessel.parts.Any(p => p.CrewCapacity > 0))
+                    //{
+                    //    this.Log("Deleting vessel " + vesselInfo.vesselName + " - no crew parts");
+                    //    vesselsToDelete.Add(vesselId);
+                    //    continue;
+                    //}
 
                     UpdateVesselInfo(vesselInfo, vessel);
                 }
