@@ -35,20 +35,17 @@ namespace Tac
 {
     class LifeSupportController : MonoBehaviour, Savable
     {
-        public static LifeSupportController Instance { get; private set; }
-
         private GlobalSettings globalSettings;
         private GameSettings gameSettings;
         private LifeSupportMonitoringWindow monitoringWindow;
         private RosterWindow rosterWindow;
         private Icon<LifeSupportController> icon;
         private string configFilename;
+        private bool loadingNewScene = false;
 
         void Awake()
         {
             this.Log("Awake");
-            Instance = this;
-
             globalSettings = TacLifeSupport.Instance.globalSettings;
             gameSettings = TacLifeSupport.Instance.gameSettings;
             rosterWindow = new RosterWindow(globalSettings, gameSettings);
@@ -80,6 +77,7 @@ namespace Tac
 
                 GameEvents.onCrewOnEva.Add(OnCrewOnEva);
                 GameEvents.onCrewBoardVessel.Add(OnCrewBoardVessel);
+                GameEvents.onGameSceneLoadRequested.Add(OnGameSceneLoadRequested);
             }
             else
             {
@@ -99,7 +97,7 @@ namespace Tac
 
         void FixedUpdate()
         {
-            if (!FlightGlobals.ready)
+            if (Time.timeSinceLevelLoad < 1.0f || !FlightGlobals.ready || loadingNewScene)
             {
                 return;
             }
@@ -158,10 +156,9 @@ namespace Tac
                     ShowWarnings(vessel, estimatedOxygen, vesselInfo.maxOxygen, oxygenRate, globalSettings.Oxygen, ref vesselInfo.oxygenStatus);
 
                     vesselInfo.estimatedTimeElectricityDepleted = vesselInfo.lastElectricity + (vesselInfo.remainingElectricity / vesselInfo.estimatedElectricityConsumptionRate);
-                    double estimatedElectricity = vesselInfo.remainingElectricity - ((currentTime - vesselInfo.lastElectricity) * vesselInfo.estimatedElectricityConsumptionRate);
                     if (vessel.loaded)
                     {
-                        ShowWarnings(vessel, estimatedElectricity, vesselInfo.maxElectricity, vesselInfo.estimatedElectricityConsumptionRate, globalSettings.Electricity, ref vesselInfo.electricityStatus);
+                        ShowWarnings(vessel, vesselInfo.remainingElectricity, vesselInfo.maxElectricity, vesselInfo.estimatedElectricityConsumptionRate, globalSettings.Electricity, ref vesselInfo.electricityStatus);
                     }
                 }
 
@@ -604,6 +601,14 @@ namespace Tac
         {
             this.Log("OnCrewBoardVessel: from=" + action.from.partInfo.title + "(" + action.from.vessel.vesselName + ")" + ", to=" + action.to.partInfo.title + "(" + action.to.vessel.vesselName + ")");
             EmptyEvaSuit(action.from, action.to);
+        }
+
+        private void OnGameSceneLoadRequested(GameScenes gameScene)
+        {
+            this.Log("Game scene load requested: " + gameScene);
+
+            // Disable this instance becuase a new instance will be created after the new scene is loaded
+            loadingNewScene = true;
         }
 
         private bool IsLaunched(Vessel vessel)
