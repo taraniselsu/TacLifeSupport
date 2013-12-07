@@ -93,6 +93,7 @@ namespace Tac
 
             GameEvents.onCrewOnEva.Remove(OnCrewOnEva);
             GameEvents.onCrewBoardVessel.Remove(OnCrewBoardVessel);
+            GameEvents.onGameSceneLoadRequested.Remove(OnGameSceneLoadRequested);
         }
 
         void FixedUpdate()
@@ -330,7 +331,7 @@ namespace Tac
                     }
                     else
                     {
-                        vesselInfo.lastOxygen += deltaTime;
+                        vesselInfo.lastOxygen += currentTime - vesselInfo.lastUpdate;
                     }
                 }
                 else
@@ -355,24 +356,32 @@ namespace Tac
         private void ConsumeElectricity(double currentTime, Vessel vessel, VesselInfo vesselInfo)
         {
             double rate = vesselInfo.estimatedElectricityConsumptionRate = CalculateElectricityConsumptionRate(vessel, vesselInfo);
-            if (vesselInfo.remainingElectricity >= rate)
+            if (rate > 0.0)
             {
-                double desiredElectricity = rate * TimeWarp.fixedDeltaTime;
-                double electricityObtained = vessel.rootPart.TakeResource(globalSettings.ElectricityId, desiredElectricity);
-
-                vesselInfo.lastElectricity = currentTime;
-            }
-            else if (NeedElectricity(vessel, vesselInfo))
-            {
-                double timeWithoutElectricity = currentTime - vesselInfo.lastElectricity;
-                if (timeWithoutElectricity > globalSettings.MaxTimeWithoutElectricity)
+                if (vesselInfo.remainingElectricity >= rate)
                 {
-                    List<ProtoCrewMember> crew = vessel.GetVesselCrew();
-                    int crewMemberIndex = UnityEngine.Random.Range(0, crew.Count - 1);
-                    KillCrewMember(crew[crewMemberIndex], "air toxicity", vessel);
+                    double deltaTime = Math.Min(currentTime - vesselInfo.lastElectricity, globalSettings.ElectricityMaxDeltaTime);
+                    double desiredElectricity = rate * deltaTime;
+                    double electricityObtained = vessel.rootPart.TakeResource(globalSettings.ElectricityId, desiredElectricity);
 
-                    vesselInfo.lastElectricity += UnityEngine.Random.Range(60, 600);
+                    vesselInfo.lastElectricity = currentTime - ((desiredElectricity - electricityObtained) / rate);
                 }
+                else if (NeedElectricity(vessel, vesselInfo))
+                {
+                    double timeWithoutElectricity = currentTime - vesselInfo.lastElectricity;
+                    if (timeWithoutElectricity > globalSettings.MaxTimeWithoutElectricity)
+                    {
+                        List<ProtoCrewMember> crew = vessel.GetVesselCrew();
+                        int crewMemberIndex = UnityEngine.Random.Range(0, crew.Count - 1);
+                        KillCrewMember(crew[crewMemberIndex], "air toxicity", vessel);
+
+                        vesselInfo.lastElectricity += UnityEngine.Random.Range(60, 600);
+                    }
+                }
+            }
+            else
+            {
+                vesselInfo.lastElectricity += currentTime - vesselInfo.lastUpdate;
             }
         }
 

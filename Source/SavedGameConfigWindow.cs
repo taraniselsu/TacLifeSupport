@@ -49,12 +49,16 @@ namespace Tac
         private bool showMaxTimeWithout = false;
         private bool showDefaultResourceAmounts = false;
 
+        private readonly string version;
+
         public SavedGameConfigWindow(GlobalSettings globalSettings, GameSettings gameSettings)
             : base("TAC Life Support Settings", 400, 300)
         {
             base.Resizable = false;
             this.globalSettings = globalSettings;
             this.gameSettings = gameSettings;
+
+            version = Utilities.GetDllVersion(this);
         }
 
         protected override void ConfigureStyles()
@@ -87,6 +91,7 @@ namespace Tac
 
         protected override void DrawWindowContents(int windowId)
         {
+            GUILayout.Label("Version: " + version, labelStyle);
             GUILayout.Label("Configure TAC Life Support for use with this saved game.", headerStyle);
             gameSettings.Enabled = GUILayout.Toggle(gameSettings.Enabled, "Enabled");
 
@@ -168,6 +173,8 @@ namespace Tac
 
                 globalSettings.MaxDeltaTime = (int)Utilities.ShowTextField("Max Delta Time", labelStyle, globalSettings.MaxDeltaTime,
                     30, editStyle, GUILayout.MinWidth(150));
+                globalSettings.ElectricityMaxDeltaTime = (int)Utilities.ShowTextField("Max Delta Time (Electricity)", labelStyle,
+                    globalSettings.ElectricityMaxDeltaTime, 30, editStyle, GUILayout.MinWidth(150));
 
                 GUILayout.EndVertical();
             }

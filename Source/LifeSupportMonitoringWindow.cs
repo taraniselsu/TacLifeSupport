@@ -36,6 +36,7 @@ namespace Tac
     {
         private readonly GameSettings gameSettings;
         private readonly RosterWindow rosterWindow;
+        private readonly string version;
 
         private GUIStyle labelStyle;
         private GUIStyle warningStyle;
@@ -50,6 +51,8 @@ namespace Tac
             this.rosterWindow = rosterWindow;
 
             windowPos.y = 50;
+
+            version = Utilities.GetDllVersion(this);
         }
 
         public override void SetVisible(bool newValue)
@@ -126,6 +129,8 @@ namespace Tac
             {
                 rosterWindow.SetVisible(true);
             }
+
+            GUI.Label(new Rect(4, windowPos.height - 14, windowPos.width - 20, 12), "TAC Life Support v" + version, labelStyle);
         }
 
         private GUIStyle getStyle(VesselInfo.Status status)

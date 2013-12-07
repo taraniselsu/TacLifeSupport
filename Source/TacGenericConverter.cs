@@ -79,7 +79,7 @@ namespace Tac
         public bool converterEnabled = false;
 
         [KSPField]
-        public float conversionRate = 0.001f;
+        public float conversionRate = 1.0f;
 
         [KSPField]
         public string inputResources = "";
@@ -91,7 +91,6 @@ namespace Tac
         public bool requiresOxygenAtmo = false;
 
         private double lastUpdateTime = 0.0f;
-        private int maxDeltaTime;
 
         private List<ResourceRatio> inputResourceList;
         private List<ResourceRatio> outputResourceList;
@@ -111,13 +110,17 @@ namespace Tac
             if (state != StartState.Editor)
             {
                 part.force_activate();
-                maxDeltaTime = TacLifeSupport.Instance.globalSettings.MaxDeltaTime;
             }
         }
 
         public override void OnFixedUpdate()
         {
             base.OnFixedUpdate();
+
+            if (Time.timeSinceLevelLoad < 1.0f || !FlightGlobals.ready)
+            {
+                return;
+            }
 
             if (lastUpdateTime == 0.0f)
             {
@@ -126,11 +129,9 @@ namespace Tac
                 return;
             }
 
-            double deltaTime = Planetarium.GetUniversalTime() - lastUpdateTime;
-            if (deltaTime > maxDeltaTime)
-            {
-                deltaTime = maxDeltaTime;
-            }
+            GlobalSettings globalSettings = TacLifeSupport.Instance.globalSettings;
+
+            double deltaTime = Math.Min(Planetarium.GetUniversalTime() - lastUpdateTime, globalSettings.MaxDeltaTime);
             lastUpdateTime += deltaTime;
 
             if (converterEnabled)
@@ -142,14 +143,25 @@ namespace Tac
                 }
 
                 double desiredAmount = conversionRate / SECONDS_PER_DAY * deltaTime;
+                double maxElectricityDesired = Math.Min(desiredAmount, conversionRate / SECONDS_PER_DAY * globalSettings.ElectricityMaxDeltaTime); // Limit the max electricity consumed when reloading a vessel
 
                 // Limit the resource amounts so that we do not produce more than we have room for, nor consume more than is available
                 foreach (ResourceRatio output in outputResourceList)
                 {
                     if (!output.allowExtra)
                     {
-                        double availableSpace = -part.IsResourceAvailable(output.resource, -desiredAmount * output.ratio);
-                        desiredAmount = availableSpace / output.ratio;
+                        if (output.resource.id == globalSettings.ElectricityId && desiredAmount > maxElectricityDesired)
+                        {
+                            // Special handling for electricity
+                            double desiredElectricity = maxElectricityDesired * output.ratio;
+                            double availableSpace = -part.IsResourceAvailable(output.resource, -desiredElectricity);
+                            desiredAmount = desiredAmount * (availableSpace / desiredElectricity);
+                        }
+                        else
+                        {
+                            double availableSpace = -part.IsResourceAvailable(output.resource, -desiredAmount * output.ratio);
+                            desiredAmount = availableSpace / output.ratio;
+                        }
 
                         if (desiredAmount <= 0.000000001)
                         {
@@ -162,8 +174,18 @@ namespace Tac
 
                 foreach (ResourceRatio input in inputResourceList)
                 {
-                    double amountAvailable = part.IsResourceAvailable(input.resource, desiredAmount * input.ratio);
-                    desiredAmount = amountAvailable / input.ratio;
+                    if (input.resource.id == globalSettings.ElectricityId && desiredAmount > maxElectricityDesired)
+                    {
+                        // Special handling for electricity
+                        double desiredElectricity = maxElectricityDesired * input.ratio;
+                        double amountAvailable = part.IsResourceAvailable(input.resource, desiredElectricity);
+                        desiredAmount = desiredAmount * (amountAvailable / desiredElectricity);
+                    }
+                    else
+                    {
+                        double amountAvailable = part.IsResourceAvailable(input.resource, desiredAmount * input.ratio);
+                        desiredAmount = amountAvailable / input.ratio;
+                    }
 
                     if (desiredAmount <= 0.000000001)
                     {
@@ -175,23 +197,41 @@ namespace Tac
 
                 foreach (ResourceRatio input in inputResourceList)
                 {
-                    double desired = desiredAmount * input.ratio;
+                    double desired;
+                    if (input.resource.id == globalSettings.ElectricityId)
+                    {
+                        desired = Math.Min(desiredAmount, maxElectricityDesired) * input.ratio;
+                    }
+                    else
+                    {
+                        desired = desiredAmount * input.ratio;
+                    }
+
                     double actual = part.TakeResource(input.resource, desired);
 
                     if (actual < (desired * 0.999))
                     {
-                        this.LogWarning("OnFixedUpdate: obtained less " + input.resource.name + " than expected: " + desired.ToString("0.000000") + "/" + actual.ToString("0.000000"));
+                        this.LogWarning("OnFixedUpdate: obtained less " + input.resource.name + " than expected: " + desired.ToString("0.000000000") + "/" + actual.ToString("0.000000000"));
                     }
                 }
 
                 foreach (ResourceRatio output in outputResourceList)
                 {
-                    double desired = desiredAmount * output.ratio;
+                    double desired;
+                    if (output.resource.id == globalSettings.ElectricityId)
+                    {
+                        desired = Math.Min(desiredAmount, maxElectricityDesired) * output.ratio;
+                    }
+                    else
+                    {
+                        desired = desiredAmount * output.ratio;
+                    }
+
                     double actual = -part.TakeResource(output.resource.id, -desired);
 
                     if (actual < (desired * 0.999) && !output.allowExtra)
                     {
-                        this.LogWarning("OnFixedUpdate: put less " + output.resource.name + " than expected: " + desired.ToString("0.000000") + "/" + actual.ToString("0.000000"));
+                        this.LogWarning("OnFixedUpdate: put less " + output.resource.name + " than expected: " + desired.ToString("0.000000000") + "/" + actual.ToString("0.000000000"));
                     }
                 }
 
