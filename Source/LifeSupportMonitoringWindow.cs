@@ -101,22 +101,22 @@ namespace Tac
 
                 double currentTime = Planetarium.GetUniversalTime();
 
+                // Draw the active vessel first
+                Guid activeVesselId = FlightGlobals.ActiveVessel.id;
+                if (gameSettings.knownVessels.ContainsKey(activeVesselId))
+                {
+                    DrawVesselInfo(gameSettings.knownVessels[activeVesselId], currentTime);
+                    GUILayout.Space(10);
+                }
+
                 foreach (var entry in gameSettings.knownVessels)
                 {
-                    Guid vesselId = entry.Key;
-                    VesselInfo vesselInfo = entry.Value;
-
-                    GUILayout.Label(vesselInfo.vesselName + " (" + vesselInfo.numCrew + " crew) [" + vesselInfo.vesselType + "]", headerStyle);
-                    GUILayout.Label("  Last updated:          " + Utilities.FormatTime(currentTime - vesselInfo.lastUpdate), labelStyle);
-                    if (vesselInfo.numCrew > 0)
+                    // The active vessel was already done above
+                    if (entry.Key != activeVesselId)
                     {
-                        GUILayout.Label("  Food remaining:        " + Utilities.FormatTime(vesselInfo.estimatedTimeFoodDepleted - currentTime), getStyle(vesselInfo.foodStatus));
-                        GUILayout.Label("  Water remaining:       " + Utilities.FormatTime(vesselInfo.estimatedTimeWaterDepleted - currentTime), getStyle(vesselInfo.waterStatus));
-                        GUILayout.Label("  Oxygen remaining:      " + Utilities.FormatTime(vesselInfo.estimatedTimeOxygenDepleted - currentTime), getStyle(vesselInfo.oxygenStatus));
-                        GUILayout.Label("  Electricity remaining: " + Utilities.FormatTime(vesselInfo.estimatedTimeElectricityDepleted - currentTime), getStyle(vesselInfo.electricityStatus));
+                        DrawVesselInfo(entry.Value, currentTime);
+                        GUILayout.Space(10);
                     }
-
-                    GUILayout.Space(10);
                 }
 
                 GUILayout.EndVertical();
@@ -131,6 +131,19 @@ namespace Tac
             }
 
             GUI.Label(new Rect(4, windowPos.height - 14, windowPos.width - 20, 12), "TAC Life Support v" + version, labelStyle);
+        }
+
+        private void DrawVesselInfo(VesselInfo vesselInfo, double currentTime)
+        {
+            GUILayout.Label(vesselInfo.vesselName + " (" + vesselInfo.numCrew + " crew) [" + vesselInfo.vesselType + "]", headerStyle);
+            GUILayout.Label("  Last updated:          " + Utilities.FormatTime(currentTime - vesselInfo.lastUpdate), labelStyle);
+            if (vesselInfo.numCrew > 0)
+            {
+                GUILayout.Label("  Food remaining:        " + Utilities.FormatTime(vesselInfo.estimatedTimeFoodDepleted - currentTime), getStyle(vesselInfo.foodStatus));
+                GUILayout.Label("  Water remaining:       " + Utilities.FormatTime(vesselInfo.estimatedTimeWaterDepleted - currentTime), getStyle(vesselInfo.waterStatus));
+                GUILayout.Label("  Oxygen remaining:      " + Utilities.FormatTime(vesselInfo.estimatedTimeOxygenDepleted - currentTime), getStyle(vesselInfo.oxygenStatus));
+                GUILayout.Label("  Electricity remaining: " + Utilities.FormatTime(vesselInfo.estimatedTimeElectricityDepleted - currentTime), getStyle(vesselInfo.electricityStatus));
+            }
         }
 
         private GUIStyle getStyle(VesselInfo.Status status)
