@@ -90,6 +90,7 @@
   <PropertyGroup>
     <AssemblyMajorVersion>0</AssemblyMajorVersion>
     <AssemblyMinorVersion>6</AssemblyMinorVersion>
+    <AssemblyFileBuildNumber>1</AssemblyFileBuildNumber>
     <AssemblyFileMajorVersion>$(AssemblyMajorVersion)</AssemblyFileMajorVersion>
     <AssemblyFileMinorVersion>$(AssemblyMinorVersion)</AssemblyFileMinorVersion>
   </PropertyGroup>
