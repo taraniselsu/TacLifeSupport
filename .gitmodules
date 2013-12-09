@@ -1,0 +1,3 @@
+[submodule "TacLib"]
+	path = TacLib
+	url = https://github.com/taraniselsu/TacLib.git
