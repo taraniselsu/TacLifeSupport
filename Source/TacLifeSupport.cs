@@ -44,10 +44,32 @@ namespace Tac
         void Start()
         {
             var game = HighLogic.CurrentGame;
-            if (!game.scenarios.Any(s => s.moduleName == typeof(TacLifeSupport).Name))
+
+            ProtoScenarioModule psm = game.scenarios.Find(s => s.moduleName == typeof(TacLifeSupport).Name);
+            if (psm == null)
             {
                 this.Log("Adding the scenario module.");
-                var psm = game.AddProtoScenarioModule(typeof(TacLifeSupport), GameScenes.SPACECENTER, GameScenes.FLIGHT);
+                psm = game.AddProtoScenarioModule(typeof(TacLifeSupport), GameScenes.SPACECENTER,
+                    GameScenes.FLIGHT, GameScenes.EDITOR, GameScenes.SPH);
+            }
+            else
+            {
+                if (!psm.targetScenes.Any(s => s == GameScenes.SPACECENTER))
+                {
+                    psm.targetScenes.Add(GameScenes.SPACECENTER);
+                }
+                if (!psm.targetScenes.Any(s => s == GameScenes.FLIGHT))
+                {
+                    psm.targetScenes.Add(GameScenes.FLIGHT);
+                }
+                if (!psm.targetScenes.Any(s => s == GameScenes.EDITOR))
+                {
+                    psm.targetScenes.Add(GameScenes.EDITOR);
+                }
+                if (!psm.targetScenes.Any(s => s == GameScenes.SPH))
+                {
+                    psm.targetScenes.Add(GameScenes.SPH);
+                }
             }
         }
     }
@@ -89,6 +111,12 @@ namespace Tac
             {
                 this.Log("Adding LifeSupportController");
                 var c = gameObject.AddComponent<LifeSupportController>();
+                children.Add(c);
+            }
+            else if (HighLogic.LoadedScene == GameScenes.EDITOR || HighLogic.LoadedScene == GameScenes.SPH)
+            {
+                this.Log("Adding EditorController");
+                var c = gameObject.AddComponent<EditorController>();
                 children.Add(c);
             }
         }

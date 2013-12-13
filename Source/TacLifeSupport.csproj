@@ -71,7 +71,9 @@
       <Link>Window.cs</Link>
     </Compile>
     <Compile Include="AddLifeSupport.cs" />
+    <Compile Include="BuildAidWindow.cs" />
     <Compile Include="GameSettings.cs" />
+    <Compile Include="EditorController.cs" />
     <Compile Include="SavedGameConfigWindow.cs" />
     <Compile Include="SpaceCenterManager.cs" />
     <Compile Include="TacLifeSupport.cs" />

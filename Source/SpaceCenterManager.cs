@@ -46,7 +46,7 @@ namespace Tac
             globalSettings = TacLifeSupport.Instance.globalSettings;
             gameSettings = TacLifeSupport.Instance.gameSettings;
             icon = new Icon<SpaceCenterManager>(new Rect(Screen.width * 0.75f, 0, 32, 32), "icon.png", "LS",
-                "Click to show the Life Support configuration window", OnIconClicked);
+                "Click to show the Life Support configuration window", OnIconClicked, "SpaceCenterIcon");
             configWindow = new SavedGameConfigWindow(globalSettings, gameSettings);
         }
 

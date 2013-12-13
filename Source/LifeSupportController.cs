@@ -52,7 +52,7 @@ namespace Tac
             monitoringWindow = new LifeSupportMonitoringWindow(this, globalSettings, gameSettings, rosterWindow);
 
             icon = new Icon<LifeSupportController>(new Rect(Screen.width * 0.75f, 0, 32, 32), "icon.png", "LS",
-                "Click to show the Life Support Monitoring Window", OnIconClicked);
+                "Click to show the Life Support Monitoring Window", OnIconClicked, "FlightIcon");
 
             configFilename = IOUtils.GetFilePathFor(this.GetType(), "LifeSupport.cfg");
         }
