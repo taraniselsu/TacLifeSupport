@@ -34,14 +34,14 @@ namespace Tac
 {
     class EditorController : MonoBehaviour, Savable
     {
-        private Icon<EditorController> icon;
+        private ButtonWrapper button;
         private BuildAidWindow window;
 
         void Awake()
         {
             this.Log("Awake");
-            icon = new Icon<EditorController>(new Rect(Screen.width * 0.25f, 0, 32, 32), "icon.png", "LS",
-                "Click to show the Life Support Build Aid", OnIconClicked, "EditorIcon");
+            button = new ButtonWrapper(new Rect(Screen.width * 0.275f, 0, 32, 32), "ThunderAerospace/TacLifeSupport/Textures/greenIcon",
+                "LS", "TAC Life Support Build Aid", OnIconClicked, "EditorIcon");
             window = new BuildAidWindow(TacLifeSupport.Instance.globalSettings);
         }
 
@@ -50,25 +50,31 @@ namespace Tac
             this.Log("Start");
             if (TacLifeSupport.Instance.gameSettings.Enabled)
             {
-                icon.SetVisible(true);
+                button.Visible = true;
             }
             else
             {
-                icon.SetVisible(false);
+                button.Visible = false;
                 window.SetVisible(false);
             }
         }
 
         public void Load(ConfigNode globalNode)
         {
-            icon.Load(globalNode);
+            button.Load(globalNode);
             window.Load(globalNode);
         }
 
         public void Save(ConfigNode globalNode)
         {
-            icon.Save(globalNode);
+            button.Save(globalNode);
             window.Save(globalNode);
+        }
+
+        void OnDestroy()
+        {
+            this.Log("OnDestroy");
+            button.Destroy();
         }
 
         private void OnIconClicked()

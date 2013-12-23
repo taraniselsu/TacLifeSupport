@@ -37,7 +37,7 @@ namespace Tac
     {
         private GlobalSettings globalSettings;
         private GameSettings gameSettings;
-        private Icon<SpaceCenterManager> icon;
+        private ButtonWrapper button;
         private SavedGameConfigWindow configWindow;
 
         public SpaceCenterManager()
@@ -45,15 +45,15 @@ namespace Tac
             this.Log("Constructor");
             globalSettings = TacLifeSupport.Instance.globalSettings;
             gameSettings = TacLifeSupport.Instance.gameSettings;
-            icon = new Icon<SpaceCenterManager>(new Rect(Screen.width * 0.75f, 0, 32, 32), "icon.png", "LS",
-                "Click to show the Life Support configuration window", OnIconClicked, "SpaceCenterIcon");
+            button = new ButtonWrapper(new Rect(Screen.width * 0.75f, 0, 32, 32), "ThunderAerospace/TacLifeSupport/Textures/greenIcon",
+                "LS", "TAC Life Support Configuration Window", OnIconClicked, "SpaceCenterIcon");
             configWindow = new SavedGameConfigWindow(globalSettings, gameSettings);
         }
 
         void Start()
         {
             this.Log("Start, new game = " + gameSettings.IsNewSave);
-            icon.SetVisible(true);
+            button.Visible = true;
 
             if (gameSettings.IsNewSave)
             {
@@ -79,19 +79,20 @@ namespace Tac
 
         public void Load(ConfigNode globalNode)
         {
-            icon.Load(globalNode);
+            button.Load(globalNode);
             configWindow.Load(globalNode);
         }
 
         public void Save(ConfigNode globalNode)
         {
-            icon.Save(globalNode);
+            button.Save(globalNode);
             configWindow.Save(globalNode);
         }
 
         void OnDestroy()
         {
             this.Log("OnDestroy");
+            button.Destroy();
         }
 
         private void OnIconClicked()

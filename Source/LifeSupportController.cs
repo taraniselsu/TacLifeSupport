@@ -39,7 +39,7 @@ namespace Tac
         private GameSettings gameSettings;
         private LifeSupportMonitoringWindow monitoringWindow;
         private RosterWindow rosterWindow;
-        private Icon<LifeSupportController> icon;
+        private ButtonWrapper button;
         private string configFilename;
         private bool loadingNewScene = false;
 
@@ -51,8 +51,8 @@ namespace Tac
             rosterWindow = new RosterWindow(globalSettings, gameSettings);
             monitoringWindow = new LifeSupportMonitoringWindow(this, globalSettings, gameSettings, rosterWindow);
 
-            icon = new Icon<LifeSupportController>(new Rect(Screen.width * 0.75f, 0, 32, 32), "icon.png", "LS",
-                "Click to show the Life Support Monitoring Window", OnIconClicked, "FlightIcon");
+            button = new ButtonWrapper(new Rect(Screen.width * 0.75f, 0, 32, 32), "ThunderAerospace/TacLifeSupport/Textures/greenIcon",
+                "LS", "TAC Life Support Monitoring Window", OnIconClicked, "FlightIcon");
 
             configFilename = IOUtils.GetFilePathFor(this.GetType(), "LifeSupport.cfg");
         }
@@ -62,7 +62,7 @@ namespace Tac
             this.Log("Start");
             if (gameSettings.Enabled)
             {
-                icon.SetVisible(true);
+                button.Visible = true;
 
                 CrewRoster crewRoster = HighLogic.CurrentGame.CrewRoster;
                 var knownCrew = gameSettings.knownCrew;
@@ -81,7 +81,7 @@ namespace Tac
             }
             else
             {
-                icon.SetVisible(false);
+                button.Visible = false;
                 monitoringWindow.SetVisible(false);
                 Destroy(this);
             }
@@ -90,6 +90,7 @@ namespace Tac
         void OnDestroy()
         {
             this.Log("OnDestroy");
+            button.Destroy();
 
             GameEvents.onCrewOnEva.Remove(OnCrewOnEva);
             GameEvents.onCrewBoardVessel.Remove(OnCrewBoardVessel);
@@ -583,14 +584,14 @@ namespace Tac
 
         public void Load(ConfigNode globalNode)
         {
-            icon.Load(globalNode);
+            button.Load(globalNode);
             monitoringWindow.Load(globalNode);
             rosterWindow.Load(globalNode);
         }
 
         public void Save(ConfigNode globalNode)
         {
-            icon.Save(globalNode);
+            button.Save(globalNode);
             monitoringWindow.Save(globalNode);
             rosterWindow.Save(globalNode);
         }
