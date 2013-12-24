@@ -111,6 +111,8 @@ namespace Tac
             {
                 part.force_activate();
             }
+
+            UpdateEvents();
         }
 
         public override void OnFixedUpdate()
@@ -276,14 +278,14 @@ namespace Tac
             return sb.ToString();
         }
 
-        [KSPEvent(active = false, guiActive = true, guiName = "Activate Converter")]
+        [KSPEvent(active = false, guiActive = true, guiActiveEditor = true, guiName = "Activate Converter")]
         public void ActivateConverter()
         {
             converterEnabled = true;
             UpdateEvents();
         }
 
-        [KSPEvent(active = false, guiActive = true, guiName = "Deactivate Converter")]
+        [KSPEvent(active = false, guiActive = true, guiActiveEditor = true, guiName = "Deactivate Converter")]
         public void DeactivateConverter()
         {
             converterEnabled = false;
@@ -319,8 +321,8 @@ namespace Tac
                 outputResourceList = new List<ResourceRatio>();
             }
 
-            parseInputResourceString(inputResources, inputResourceList);
-            parseOutputResourceString(outputResources, outputResourceList);
+            ParseInputResourceString(inputResources, inputResourceList);
+            ParseOutputResourceString(outputResources, outputResourceList);
 
             Events["ActivateConverter"].guiName = "Activate " + converterName;
             Events["DeactivateConverter"].guiName = "Deactivate " + converterName;
@@ -328,7 +330,7 @@ namespace Tac
             Fields["converterStatus"].guiName = converterName;
         }
 
-        private void parseInputResourceString(string resourceString, List<ResourceRatio> resources)
+        private void ParseInputResourceString(string resourceString, List<ResourceRatio> resources)
         {
             resources.Clear();
 
@@ -352,7 +354,7 @@ namespace Tac
             this.Log("Input resources parsed: " + ratios + "\nfrom " + resourceString);
         }
 
-        private void parseOutputResourceString(string resourceString, List<ResourceRatio> resources)
+        private void ParseOutputResourceString(string resourceString, List<ResourceRatio> resources)
         {
             resources.Clear();
 

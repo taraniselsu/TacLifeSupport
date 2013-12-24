@@ -81,6 +81,7 @@
     <Compile Include="EditorController.cs" />
     <Compile Include="SavedGameConfigWindow.cs" />
     <Compile Include="SpaceCenterManager.cs" />
+    <Compile Include="TacGreenhouse.cs" />
     <Compile Include="TacLifeSupport.cs" />
     <Compile Include="TacGenericConverter.cs" />
     <Compile Include="RosterWindow.cs" />
