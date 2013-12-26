@@ -143,7 +143,7 @@ namespace Tac
                 }
 
                 double desiredAmount = conversionRate / SECONDS_PER_DAY * deltaTime;
-                double maxElectricityDesired = Math.Min(desiredAmount, conversionRate / SECONDS_PER_DAY * globalSettings.ElectricityMaxDeltaTime); // Limit the max electricity consumed when reloading a vessel
+                double maxElectricityDesired = Math.Min(desiredAmount, conversionRate / SECONDS_PER_DAY * Math.Max(globalSettings.ElectricityMaxDeltaTime, Time.fixedDeltaTime)); // Limit the max electricity consumed when reloading a vessel
 
                 // Limit the resource amounts so that we do not produce more than we have room for, nor consume more than is available
                 foreach (ResourceRatio output in outputResourceList)

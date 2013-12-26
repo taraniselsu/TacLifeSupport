@@ -361,7 +361,7 @@ namespace Tac
             {
                 if (vesselInfo.remainingElectricity >= rate)
                 {
-                    double deltaTime = Math.Min(currentTime - vesselInfo.lastElectricity, globalSettings.ElectricityMaxDeltaTime);
+                    double deltaTime = Math.Min(currentTime - vesselInfo.lastElectricity, Math.Max(globalSettings.ElectricityMaxDeltaTime, Time.fixedDeltaTime));
                     double desiredElectricity = rate * deltaTime;
                     double electricityObtained = vessel.rootPart.TakeResource(globalSettings.ElectricityId, desiredElectricity);
 
@@ -452,7 +452,7 @@ namespace Tac
             {
                 if (status != VesselInfo.Status.CRITICAL)
                 {
-                    ScreenMessages.PostScreenMessage(vessel.vesselName + " - " + resourceName + " depleted!", 15.0f, ScreenMessageStyle.UPPER_CENTER);
+                    ScreenMessages.PostScreenMessage(vessel.vesselName + " - " + resourceName + " depleted!", 10.0f, ScreenMessageStyle.UPPER_CENTER);
                     this.Log(vessel.vesselName + " - " + resourceName + " depleted!");
                     status = VesselInfo.Status.CRITICAL;
                     TimeWarp.SetRate(0, false);
@@ -466,7 +466,7 @@ namespace Tac
                 }
                 else if (status != VesselInfo.Status.LOW)
                 {
-                    ScreenMessages.PostScreenMessage(vessel.vesselName + " - " + resourceName + " is running out!", 15.0f, ScreenMessageStyle.UPPER_CENTER);
+                    ScreenMessages.PostScreenMessage(vessel.vesselName + " - " + resourceName + " is running out!", 10.0f, ScreenMessageStyle.UPPER_CENTER);
                     this.Log(vessel.vesselName + " - " + resourceName + " is running out!");
                     status = VesselInfo.Status.LOW;
                     TimeWarp.SetRate(0, false);
@@ -552,7 +552,7 @@ namespace Tac
             }
 
             string vesselName = (!vessel.isEVA) ? vessel.vesselName + " - " : "";
-            ScreenMessages.PostScreenMessage(vesselName + crewMember.name + " died of " + causeOfDeath + "!", 30.0f, ScreenMessageStyle.UPPER_CENTER);
+            ScreenMessages.PostScreenMessage(vesselName + crewMember.name + " died of " + causeOfDeath + "!", 15.0f, ScreenMessageStyle.UPPER_CENTER);
             this.Log(vessel.vesselName + " - " + crewMember.name + " died of " + causeOfDeath + "!");
 
             if (!vessel.isEVA)
