@@ -41,13 +41,43 @@ namespace Tac
         public int MaxDeltaTime { get; set; }
         public int ElectricityMaxDeltaTime { get; set; }
 
-        public string Food { get; private set; }
-        public string Water { get; private set; }
-        public string Oxygen { get; private set; }
-        public string Electricity { get { return "ElectricCharge"; } }
-        public string CO2 { get; private set; }
-        public string Waste { get; private set; }
-        public string WasteWater { get; private set; }
+        private string FoodStr, WaterStr, OxygenStr, ElectricityStr, CO2Str, WasteStr, WasteWaterStr;
+
+        public string Food
+        {
+            get { return FoodStr; }
+            private set { FoodId = PartResourceLibrary.Instance.GetDefinition(FoodStr = value).id; }
+        }
+        public string Water
+        {
+            get { return WaterStr; }
+            private set { WaterId = PartResourceLibrary.Instance.GetDefinition(WaterStr = value).id; }
+        }
+        public string Oxygen
+        {
+            get { return OxygenStr; }
+            private set { OxygenId = PartResourceLibrary.Instance.GetDefinition(OxygenStr = value).id; }
+        }
+        public string Electricity
+        {
+            get { return ElectricityStr; }
+            private set { ElectricityId = PartResourceLibrary.Instance.GetDefinition(ElectricityStr = value).id; }
+        }
+        public string CO2
+        {
+            get { return CO2Str; }
+            private set { CO2Id = PartResourceLibrary.Instance.GetDefinition(CO2Str = value).id; }
+        }
+        public string Waste
+        {
+            get { return WasteStr; }
+            private set { WasteId = PartResourceLibrary.Instance.GetDefinition(WasteStr = value).id; }
+        }
+        public string WasteWater
+        {
+            get { return WasteWaterStr; }
+            private set { WasteWaterId = PartResourceLibrary.Instance.GetDefinition(WasteWaterStr = value).id; }
+        }
 
         public double FoodConsumptionRate { get; set; }
         public double WaterConsumptionRate { get; set; }
@@ -67,55 +97,13 @@ namespace Tac
         public double MaxTimeWithoutOxygen { get; set; }
         public double MaxTimeWithoutElectricity { get; set; }
 
-        public int FoodId
-        {
-            get
-            {
-                return PartResourceLibrary.Instance.GetDefinition(Food).id;
-            }
-        }
-        public int WaterId
-        {
-            get
-            {
-                return PartResourceLibrary.Instance.GetDefinition(Water).id;
-            }
-        }
-        public int OxygenId
-        {
-            get
-            {
-                return PartResourceLibrary.Instance.GetDefinition(Oxygen).id;
-            }
-        }
-        public int ElectricityId
-        {
-            get
-            {
-                return PartResourceLibrary.Instance.GetDefinition(Electricity).id;
-            }
-        }
-        public int CO2Id
-        {
-            get
-            {
-                return PartResourceLibrary.Instance.GetDefinition(CO2).id;
-            }
-        }
-        public int WasteId
-        {
-            get
-            {
-                return PartResourceLibrary.Instance.GetDefinition(Waste).id;
-            }
-        }
-        public int WasteWaterId
-        {
-            get
-            {
-                return PartResourceLibrary.Instance.GetDefinition(WasteWater).id;
-            }
-        }
+        public int FoodId { get; private set; }
+        public int WaterId { get; private set; }
+        public int OxygenId { get; private set; }
+        public int ElectricityId { get; private set; }
+        public int CO2Id { get; private set; }
+        public int WasteId { get; private set; }
+        public int WasteWaterId { get; private set; }
 
         public GlobalSettings()
         {
@@ -125,6 +113,7 @@ namespace Tac
             Food = "Food";
             Water = "Water";
             Oxygen = "Oxygen";
+            Electricity = "ElectricCharge";
             CO2 = "CarbonDioxide";
             Waste = "Waste";
             WasteWater = "WasteWater";
