@@ -501,6 +501,7 @@ namespace Tac
             VesselInfo lastVesselInfo;
             if (!gameSettings.knownVessels.TryGetValue(lastVessel.id, out lastVesselInfo))
             {
+                this.Log("Unknown vessel: " + lastVessel.vesselName + " (" + lastVessel.id + ")");
                 lastVesselInfo = new VesselInfo(lastVessel.vesselName, Planetarium.GetUniversalTime());
             }
 
