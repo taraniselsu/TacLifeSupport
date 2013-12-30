@@ -36,7 +36,7 @@ namespace Tac
         public const string ConfigNodeName = "VesselInfo";
 
         public string vesselName;
-        public string vesselType;
+        public VesselType vesselType = VesselType.Unknown;
         public int numCrew;
         public int numOccupiedParts;
 
@@ -89,7 +89,7 @@ namespace Tac
             double lastUpdate = Utilities.GetValue(node, "lastUpdate", 0.0);
 
             VesselInfo info = new VesselInfo(vesselName, lastUpdate);
-            info.vesselType = Utilities.GetValue(node, "vesselType", "Unknown");
+            info.vesselType = Utilities.GetValue(node, "vesselType", VesselType.Unknown);
             info.numCrew = Utilities.GetValue(node, "numCrew", 0);
             info.numOccupiedParts = Utilities.GetValue(node, "numOccupiedParts", 0);
 
@@ -122,7 +122,7 @@ namespace Tac
         {
             ConfigNode node = config.AddNode(ConfigNodeName);
             node.AddValue("vesselName", vesselName);
-            node.AddValue("vesselType", vesselType);
+            node.AddValue("vesselType", vesselType.ToString());
             node.AddValue("numCrew", numCrew);
             node.AddValue("numOccupiedParts", numOccupiedParts);
 

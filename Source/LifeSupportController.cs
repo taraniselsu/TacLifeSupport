@@ -247,7 +247,7 @@ namespace Tac
 
             vesselInfo.lastUpdate = currentTime;
             vesselInfo.vesselName = vessel.vesselName;
-            vesselInfo.vesselType = vessel.vesselType.ToString();
+            vesselInfo.vesselType = vessel.vesselType;
         }
 
         private void ConsumeFood(double currentTime, Vessel vessel, VesselInfo vesselInfo, ProtoCrewMember crewMember, CrewMemberInfo crewMemberInfo, Part part)
@@ -394,7 +394,7 @@ namespace Tac
             foreach (Part part in vessel.parts)
             {
                 crewCapacity += part.CrewCapacity;
-                if (part.protoModuleCrew.Any())
+                if (part.protoModuleCrew.Count > 0)
                 {
                     vesselInfo.numCrew += part.protoModuleCrew.Count;
                     ++vesselInfo.numOccupiedParts;
