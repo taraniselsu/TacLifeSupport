@@ -102,17 +102,33 @@ namespace Tac
                 double currentTime = Planetarium.GetUniversalTime();
 
                 // Draw the active vessel first
-                Guid activeVesselId = FlightGlobals.ActiveVessel.id;
-                if (gameSettings.knownVessels.ContainsKey(activeVesselId))
+                Vessel activeVessel = FlightGlobals.ActiveVessel;
+                if (activeVessel != null)
                 {
-                    DrawVesselInfo(gameSettings.knownVessels[activeVesselId], currentTime);
+                    if (gameSettings.knownVessels.ContainsKey(activeVessel.id))
+                    {
+                        DrawVesselInfo(gameSettings.knownVessels[activeVessel.id], currentTime);
+                    }
+                    else
+                    {
+                        int numCrew = activeVessel.GetCrewCount();
+                        GUILayout.Label(activeVessel.vesselName + " (" + numCrew + " crew) [" + activeVessel.vesselType + "]", headerStyle);
+                        if (numCrew > 0)
+                        {
+                            GUILayout.Label("  Prelaunch", labelStyle);
+                        }
+                        else
+                        {
+                            GUILayout.Label("  No Crew", labelStyle);
+                        }
+                    }
                     GUILayout.Space(10);
                 }
 
                 foreach (var entry in gameSettings.knownVessels)
                 {
                     // The active vessel was already done above
-                    if (entry.Key != activeVesselId)
+                    if (entry.Key != activeVessel.id)
                     {
                         DrawVesselInfo(entry.Value, currentTime);
                         GUILayout.Space(10);
