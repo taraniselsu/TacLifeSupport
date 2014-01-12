@@ -41,42 +41,76 @@ namespace Tac
         public int MaxDeltaTime { get; set; }
         public int ElectricityMaxDeltaTime { get; set; }
 
-        private string FoodStr, WaterStr, OxygenStr, ElectricityStr, CO2Str, WasteStr, WasteWaterStr;
+        private string food;
+        private string water;
+        private string oxygen;
+        private string electricity;
+        private string co2;
+        private string waste;
+        private string wasteWater;
 
         public string Food
         {
-            get { return FoodStr; }
-            private set { FoodId = PartResourceLibrary.Instance.GetDefinition(FoodStr = value).id; }
+            get { return food; }
+            private set
+            {
+                food = value;
+                FoodId = PartResourceLibrary.Instance.GetDefinition(food).id;
+            }
         }
         public string Water
         {
-            get { return WaterStr; }
-            private set { WaterId = PartResourceLibrary.Instance.GetDefinition(WaterStr = value).id; }
+            get { return water; }
+            private set
+            {
+                water = value;
+                WaterId = PartResourceLibrary.Instance.GetDefinition(water).id;
+            }
         }
         public string Oxygen
         {
-            get { return OxygenStr; }
-            private set { OxygenId = PartResourceLibrary.Instance.GetDefinition(OxygenStr = value).id; }
+            get { return oxygen; }
+            private set
+            {
+                oxygen = value;
+                OxygenId = PartResourceLibrary.Instance.GetDefinition(oxygen).id;
+            }
         }
         public string Electricity
         {
-            get { return ElectricityStr; }
-            private set { ElectricityId = PartResourceLibrary.Instance.GetDefinition(ElectricityStr = value).id; }
+            get { return electricity; }
+            private set
+            {
+                electricity = value;
+                ElectricityId = PartResourceLibrary.Instance.GetDefinition(electricity).id;
+            }
         }
         public string CO2
         {
-            get { return CO2Str; }
-            private set { CO2Id = PartResourceLibrary.Instance.GetDefinition(CO2Str = value).id; }
+            get { return co2; }
+            private set
+            {
+                co2 = value;
+                CO2Id = PartResourceLibrary.Instance.GetDefinition(co2).id;
+            }
         }
         public string Waste
         {
-            get { return WasteStr; }
-            private set { WasteId = PartResourceLibrary.Instance.GetDefinition(WasteStr = value).id; }
+            get { return waste; }
+            private set
+            {
+                waste = value;
+                WasteId = PartResourceLibrary.Instance.GetDefinition(waste).id;
+            }
         }
         public string WasteWater
         {
-            get { return WasteWaterStr; }
-            private set { WasteWaterId = PartResourceLibrary.Instance.GetDefinition(WasteWaterStr = value).id; }
+            get { return wasteWater; }
+            private set
+            {
+                wasteWater = value;
+                WasteWaterId = PartResourceLibrary.Instance.GetDefinition(wasteWater).id;
+            }
         }
 
         public double FoodConsumptionRate { get; set; }

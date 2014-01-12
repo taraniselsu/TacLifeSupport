@@ -174,7 +174,7 @@ namespace Tac
 
             foreach (Vessel vessel in allVessels.Where(v => v.loaded))
             {
-                if (!knownVessels.ContainsKey(vessel.id) && vessel.parts.Any(p => p.protoModuleCrew.Any()) && IsLaunched(vessel))
+                if (!knownVessels.ContainsKey(vessel.id) && vessel.parts.Any(p => p.protoModuleCrew.Count > 0) && IsLaunched(vessel))
                 {
                     this.Log("New vessel: " + vessel.vesselName + " (" + vessel.id + ")");
                     VesselInfo vesselInfo = new VesselInfo(vessel.vesselName, currentTime);
