@@ -42,17 +42,18 @@ namespace Tac
         private GUIStyle warningStyle;
         private GUIStyle criticalStyle;
         private GUIStyle headerStyle;
-        private Vector2 scrollPosition;
+        private GUIStyle versionStyle;
+        private Vector2 scrollPosition = Vector2.zero;
 
         public LifeSupportMonitoringWindow(LifeSupportController controller, GlobalSettings globalSettings, GameSettings gameSettings, RosterWindow rosterWindow)
             : base("Life Support Monitoring", 300, 300)
         {
             this.gameSettings = gameSettings;
             this.rosterWindow = rosterWindow;
-
-            windowPos.y = 50;
-
             version = Utilities.GetDllVersion(this);
+
+            windowPos.y = 75;
+            SetVisible(true);
         }
 
         public override void SetVisible(bool newValue)
@@ -88,6 +89,8 @@ namespace Tac
 
                 headerStyle = new GUIStyle(labelStyle);
                 headerStyle.fontStyle = FontStyle.Bold;
+
+                versionStyle = Utilities.GetVersionStyle();
             }
         }
 
@@ -146,7 +149,7 @@ namespace Tac
                 rosterWindow.SetVisible(true);
             }
 
-            GUI.Label(new Rect(4, windowPos.height - 14, windowPos.width - 20, 12), "TAC Life Support v" + version, labelStyle);
+            GUI.Label(new Rect(4, windowPos.height - 13, windowPos.width - 20, 12), "TAC Life Support v" + version, versionStyle);
         }
 
         private void DrawVesselInfo(VesselInfo vesselInfo, double currentTime)
