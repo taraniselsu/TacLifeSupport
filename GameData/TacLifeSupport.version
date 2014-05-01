@@ -1,0 +1,14 @@
+{
+  "NAME": "TacLifeSupport",
+  "URL": "https://raw.githubusercontent.com/taraniselsu/TacLifeSupport/master/TacLifeSupport.version",
+  "VERSION": {
+    "MAJOR": 0,
+    "MINOR": 8,
+    "PATCH": 0
+  },
+  "KSP_VERSION": {
+    "MAJOR": 0,
+    "MINOR": 23,
+    "PATCH": 5
+  }
+}
