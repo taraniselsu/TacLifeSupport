@@ -44,14 +44,27 @@ namespace Tac
 
         private int numCrew;
         private int maxCrew;
+        private string food = "";
+        private string water = "";
+        private string oxygen = "";
+        private string electricity = "";
+        private string maxWaste = "";
+        private string maxWasteWater = "";
+        private string maxCarbonDioxide = "";
         private string foodDuration = "";
         private string waterDuration = "";
         private string oxygenDuration = "";
         private string electricityDuration = "";
+        private string wasteRoom = "";
+        private string wasteWaterRoom = "";
+        private string carbonDioxideRoom = "";
         private string foodDurationMaxCrew = "";
         private string waterDurationMaxCrew = "";
         private string oxygenDurationMaxCrew = "";
         private string electricityDurationMaxCrew = "";
+        private string wasteRoomMaxCrew = "";
+        private string wasteWaterRoomMaxCrew = "";
+        private string carbonDioxideRoomMaxCrew = "";
 
         public BuildAidWindow(GlobalSettings globalSettings)
             : base("Life Support Build Aid", 300, 180)
@@ -115,6 +128,22 @@ namespace Tac
             GUILayout.Label("Water", labelStyle);
             GUILayout.Label("Oxygen", labelStyle);
             GUILayout.Label("Electricity", labelStyle);
+            GUILayout.Space(10f);
+            GUILayout.Label("Waste", labelStyle);
+            GUILayout.Label("Waste Water", labelStyle);
+            GUILayout.Label("Carbon Dioxide", labelStyle);
+            GUILayout.EndVertical();
+
+            GUILayout.BeginVertical();
+            GUILayout.Label("", valueStyle);
+            GUILayout.Label(food, valueStyle);
+            GUILayout.Label(water, valueStyle);
+            GUILayout.Label(oxygen, valueStyle);
+            GUILayout.Label(electricity, valueStyle);
+            GUILayout.Space(10f);
+            GUILayout.Label(maxWaste, valueStyle);
+            GUILayout.Label(maxWasteWater, valueStyle);
+            GUILayout.Label(maxCarbonDioxide, valueStyle);
             GUILayout.EndVertical();
 
             GUILayout.BeginVertical();
@@ -123,6 +152,10 @@ namespace Tac
             GUILayout.Label(waterDuration, valueStyle);
             GUILayout.Label(oxygenDuration, valueStyle);
             GUILayout.Label(electricityDuration, valueStyle);
+            GUILayout.Space(10f);
+            GUILayout.Label(wasteRoom, valueStyle);
+            GUILayout.Label(wasteWaterRoom, valueStyle);
+            GUILayout.Label(carbonDioxideRoom, valueStyle);
             GUILayout.EndVertical();
 
             GUILayout.BeginVertical();
@@ -131,6 +164,10 @@ namespace Tac
             GUILayout.Label(waterDurationMaxCrew, valueStyle);
             GUILayout.Label(oxygenDurationMaxCrew, valueStyle);
             GUILayout.Label(electricityDurationMaxCrew, valueStyle);
+            GUILayout.Space(10f);
+            GUILayout.Label(wasteRoomMaxCrew, valueStyle);
+            GUILayout.Label(wasteWaterRoomMaxCrew, valueStyle);
+            GUILayout.Label(carbonDioxideRoomMaxCrew, valueStyle);
             GUILayout.EndVertical();
 
             GUILayout.EndHorizontal();
@@ -146,10 +183,13 @@ namespace Tac
                 maxCrew = 0;
                 int numOccupiedParts = 0;
                 int numOccupiableParts = 0;
-                double food = 0;
-                double water = 0;
-                double oxygen = 0;
-                double electricity = 0;
+                double foodValue = 0;
+                double waterValue = 0;
+                double oxygenValue = 0;
+                double electricityValue = 0;
+                double wasteValue = 0;
+                double wasteWaterValue = 0;
+                double carbonDioxideValue = 0;
 
                 foreach (Part part in EditorLogic.fetch.ship.parts)
                 {
@@ -163,19 +203,31 @@ namespace Tac
                     {
                         if (partResource.info.id == globalSettings.FoodId)
                         {
-                            food += partResource.amount;
+                            foodValue += partResource.amount;
                         }
                         else if (partResource.info.id == globalSettings.WaterId)
                         {
-                            water += partResource.amount;
+                            waterValue += partResource.amount;
                         }
                         else if (partResource.info.id == globalSettings.OxygenId)
                         {
-                            oxygen += partResource.amount;
+                            oxygenValue += partResource.amount;
                         }
                         else if (partResource.info.id == globalSettings.ElectricityId)
                         {
-                            electricity += partResource.amount;
+                            electricityValue += partResource.amount;
+                        }
+                        else if (partResource.info.id == globalSettings.WasteId)
+                        {
+                            wasteValue += partResource.maxAmount;
+                        }
+                        else if (partResource.info.id == globalSettings.WasteWaterId)
+                        {
+                            wasteWaterValue += partResource.maxAmount;
+                        }
+                        else if (partResource.info.id == globalSettings.CO2Id)
+                        {
+                            carbonDioxideValue += partResource.maxAmount;
                         }
                     }
                 }
@@ -198,12 +250,23 @@ namespace Tac
                     }
                 }
 
+                food = foodValue.ToString("#,##0.00");
+                water = waterValue.ToString("#,##0.00");
+                oxygen = oxygenValue.ToString("#,##0.00");
+                electricity = electricityValue.ToString("#,##0.00");
+                maxWaste = wasteValue.ToString("#,##0.00");
+                maxWasteWater = wasteWaterValue.ToString("#,##0.00");
+                maxCarbonDioxide = carbonDioxideValue.ToString("#,##0.00");
+
                 if (numCrew > 0)
                 {
-                    foodDuration = Utilities.FormatTime(food / globalSettings.FoodConsumptionRate / numCrew);
-                    waterDuration = Utilities.FormatTime(water / globalSettings.WaterConsumptionRate / numCrew);
-                    oxygenDuration = Utilities.FormatTime(oxygen / globalSettings.OxygenConsumptionRate / numCrew);
-                    electricityDuration = Utilities.FormatTime(electricity / CalculateElectricityConsumptionRate(numCrew, numOccupiedParts));
+                    foodDuration = Utilities.FormatTime(foodValue / globalSettings.FoodConsumptionRate / numCrew);
+                    waterDuration = Utilities.FormatTime(waterValue / globalSettings.WaterConsumptionRate / numCrew);
+                    oxygenDuration = Utilities.FormatTime(oxygenValue / globalSettings.OxygenConsumptionRate / numCrew);
+                    electricityDuration = Utilities.FormatTime(electricityValue / CalculateElectricityConsumptionRate(numCrew, numOccupiedParts));
+                    wasteRoom = Utilities.FormatTime(wasteValue / globalSettings.WasteProductionRate / numCrew);
+                    wasteWaterRoom = Utilities.FormatTime(wasteWaterValue / globalSettings.WasteWaterProductionRate / numCrew);
+                    carbonDioxideRoom = Utilities.FormatTime(carbonDioxideValue / globalSettings.CO2ProductionRate / numCrew);
                 }
                 else
                 {
@@ -211,14 +274,20 @@ namespace Tac
                     waterDuration = "-";
                     oxygenDuration = "-";
                     electricityDuration = "-";
+                    wasteRoom = "-";
+                    wasteWaterRoom = "-";
+                    carbonDioxideRoom = "-";
                 }
 
                 if (maxCrew > 0)
                 {
-                    foodDurationMaxCrew = Utilities.FormatTime(food / globalSettings.FoodConsumptionRate / maxCrew);
-                    waterDurationMaxCrew = Utilities.FormatTime(water / globalSettings.WaterConsumptionRate / maxCrew);
-                    oxygenDurationMaxCrew = Utilities.FormatTime(oxygen / globalSettings.OxygenConsumptionRate / maxCrew);
-                    electricityDurationMaxCrew = Utilities.FormatTime(electricity / CalculateElectricityConsumptionRate(maxCrew, numOccupiableParts));
+                    foodDurationMaxCrew = Utilities.FormatTime(foodValue / globalSettings.FoodConsumptionRate / maxCrew);
+                    waterDurationMaxCrew = Utilities.FormatTime(waterValue / globalSettings.WaterConsumptionRate / maxCrew);
+                    oxygenDurationMaxCrew = Utilities.FormatTime(oxygenValue / globalSettings.OxygenConsumptionRate / maxCrew);
+                    electricityDurationMaxCrew = Utilities.FormatTime(electricityValue / CalculateElectricityConsumptionRate(maxCrew, numOccupiableParts));
+                    wasteRoomMaxCrew = Utilities.FormatTime(wasteValue / globalSettings.WasteProductionRate / maxCrew);
+                    wasteWaterRoomMaxCrew = Utilities.FormatTime(wasteWaterValue / globalSettings.WasteWaterProductionRate / maxCrew);
+                    carbonDioxideRoomMaxCrew = Utilities.FormatTime(carbonDioxideValue / globalSettings.CO2ProductionRate / maxCrew);
                 }
                 else
                 {
@@ -226,6 +295,9 @@ namespace Tac
                     waterDurationMaxCrew = "-";
                     oxygenDurationMaxCrew = "-";
                     electricityDurationMaxCrew = "-";
+                    wasteRoomMaxCrew = "-";
+                    wasteWaterRoomMaxCrew = "-";
+                    carbonDioxideRoomMaxCrew = "-";
                 }
             }
         }

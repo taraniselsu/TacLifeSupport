@@ -34,9 +34,6 @@ namespace Tac
     public class GlobalSettings
     {
         private const string configNodeName = "GlobalSettings";
-        private const int SECONDS_PER_MINUTE = 60;
-        private const int SECONDS_PER_HOUR = 60 * SECONDS_PER_MINUTE;
-        private const int SECONDS_PER_DAY = 24 * SECONDS_PER_HOUR;
 
         public int MaxDeltaTime { get; set; }
         public int ElectricityMaxDeltaTime { get; set; }
@@ -141,7 +138,11 @@ namespace Tac
 
         public GlobalSettings()
         {
-            MaxDeltaTime = SECONDS_PER_DAY; // max 1 day (24 hour) per physics update, or 50 days (4,320,000 seconds) per second
+            const int SECONDS_PER_MINUTE = 60;
+            const int SECONDS_PER_HOUR = 60 * SECONDS_PER_MINUTE;
+            const int SECONDS_PER_KERBIN_DAY = 6 * SECONDS_PER_HOUR;
+
+            MaxDeltaTime = SECONDS_PER_HOUR * 24; // max 24 hours (86,400 seconds) per physics update, or 2,160,000 seconds per second (for the default of 0.04 seconds per physics update)
             ElectricityMaxDeltaTime = 1; // max 1 second per physics update
 
             Food = "Food";
@@ -155,23 +156,25 @@ namespace Tac
             // Consumption rates in units per Earth second
             // See the TacResources.cfg for conversions between units and metric tons.
             // Defaults are based on 50% of NASA's numbers for Human consumption
-            FoodConsumptionRate = 1.0 / SECONDS_PER_DAY;
-            WaterConsumptionRate = 1.0 / SECONDS_PER_DAY;
-            OxygenConsumptionRate = 1.0 / SECONDS_PER_DAY;
-            ElectricityConsumptionRate = 1200.0 / SECONDS_PER_DAY;
-            BaseElectricityConsumptionRate = 2400.0 / SECONDS_PER_DAY;
-            EvaElectricityConsumptionRate = 100.0 / (SECONDS_PER_DAY / 2.0); // 100 per 12 hours (1/2 day)
-            CO2ProductionRate = 1.0 / SECONDS_PER_DAY;
-            WasteProductionRate = 1.0 / SECONDS_PER_DAY;
-            WasteWaterProductionRate = 1.0 / SECONDS_PER_DAY;
+            // For the math behind the numbers, see
+            // https://docs.google.com/spreadsheet/ccc?key=0Aioc9ek3XAvwdGNsRlh3OVhlbTFBR3M4RW0zLUNTRFE&usp=sharing
+            FoodConsumptionRate = 0.000042560952886;
+            WaterConsumptionRate = 0.000020807576966;
+            OxygenConsumptionRate = 0.003521591846326;
+            BaseElectricityConsumptionRate = 100.0 / SECONDS_PER_HOUR; // 100 per hour or 0.02777778 per second, same as a stock probe core
+            ElectricityConsumptionRate = BaseElectricityConsumptionRate / 2.0; // 0.01388889 per second, half as much as a stock probe core
+            EvaElectricityConsumptionRate = 20.0 / 6.0 / SECONDS_PER_HOUR; // 20 per 6 hours (1 Kerbin day), 0.000925 per second
+            CO2ProductionRate = 0.003029853129847;
+            WasteProductionRate = 0.000076255040587;
+            WasteWaterProductionRate = 0.000022876512176;
 
             // Amount of resources to load crewable parts with, in seconds
-            DefaultResourceAmount = 1.0 * SECONDS_PER_DAY; // 1 day (24 hours)
-            EvaDefaultResourceAmount = 0.5 * SECONDS_PER_DAY; // 1/2 day (12 hours)
+            DefaultResourceAmount = 3.0 * SECONDS_PER_KERBIN_DAY; // 3 Kerbin days, 18 hours
+            EvaDefaultResourceAmount = 1.0 * SECONDS_PER_KERBIN_DAY; // 1 Kerbin day, 6 hours
 
             // Maximum amount of time in seconds that a Kerbal can go without the resource
-            MaxTimeWithoutFood = 30.0 * SECONDS_PER_DAY; // 30 days
-            MaxTimeWithoutWater = 3.0 * SECONDS_PER_DAY; // 3 days
+            MaxTimeWithoutFood = 30.0 * SECONDS_PER_KERBIN_DAY; // 30 Kerbin days, 180 hours
+            MaxTimeWithoutWater = 3.0 * SECONDS_PER_KERBIN_DAY; // 3 Kerbin days, 18 hours
             MaxTimeWithoutOxygen = 2.0 * SECONDS_PER_HOUR; // 2 hours
             MaxTimeWithoutElectricity = 2.0 * SECONDS_PER_HOUR; // 2 hours
         }
@@ -192,15 +195,15 @@ namespace Tac
                 Waste = Utilities.GetValue(settingsNode, "WasteResource", Waste);
                 WasteWater = Utilities.GetValue(settingsNode, "WasteWaterResource", WasteWater);
 
-                FoodConsumptionRate = Utilities.GetValue(settingsNode, "FoodConsumptionRate", FoodConsumptionRate) / SECONDS_PER_DAY;
-                WaterConsumptionRate = Utilities.GetValue(settingsNode, "WaterConsumptionRate", WaterConsumptionRate) / SECONDS_PER_DAY;
-                OxygenConsumptionRate = Utilities.GetValue(settingsNode, "OxygenConsumptionRate", OxygenConsumptionRate) / SECONDS_PER_DAY;
-                ElectricityConsumptionRate = Utilities.GetValue(settingsNode, "ElectricityConsumptionRate", ElectricityConsumptionRate) / SECONDS_PER_DAY;
-                BaseElectricityConsumptionRate = Utilities.GetValue(settingsNode, "BaseElectricityConsumptionRate", BaseElectricityConsumptionRate) / SECONDS_PER_DAY;
-                EvaElectricityConsumptionRate = Utilities.GetValue(settingsNode, "EvaElectricityConsumptionRate", EvaElectricityConsumptionRate) / SECONDS_PER_DAY;
-                CO2ProductionRate = Utilities.GetValue(settingsNode, "CO2ProductionRate", CO2ProductionRate) / SECONDS_PER_DAY;
-                WasteProductionRate = Utilities.GetValue(settingsNode, "WasteProductionRate", WasteProductionRate) / SECONDS_PER_DAY;
-                WasteWaterProductionRate = Utilities.GetValue(settingsNode, "WasteWaterProductionRate", WasteWaterProductionRate) / SECONDS_PER_DAY;
+                FoodConsumptionRate = Utilities.GetValue(settingsNode, "FoodConsumptionRate", FoodConsumptionRate);
+                WaterConsumptionRate = Utilities.GetValue(settingsNode, "WaterConsumptionRate", WaterConsumptionRate);
+                OxygenConsumptionRate = Utilities.GetValue(settingsNode, "OxygenConsumptionRate", OxygenConsumptionRate);
+                ElectricityConsumptionRate = Utilities.GetValue(settingsNode, "ElectricityConsumptionRate", ElectricityConsumptionRate);
+                BaseElectricityConsumptionRate = Utilities.GetValue(settingsNode, "BaseElectricityConsumptionRate", BaseElectricityConsumptionRate);
+                EvaElectricityConsumptionRate = Utilities.GetValue(settingsNode, "EvaElectricityConsumptionRate", EvaElectricityConsumptionRate);
+                CO2ProductionRate = Utilities.GetValue(settingsNode, "CO2ProductionRate", CO2ProductionRate);
+                WasteProductionRate = Utilities.GetValue(settingsNode, "WasteProductionRate", WasteProductionRate);
+                WasteWaterProductionRate = Utilities.GetValue(settingsNode, "WasteWaterProductionRate", WasteWaterProductionRate);
 
                 DefaultResourceAmount = Utilities.GetValue(settingsNode, "DefaultResourceAmount", DefaultResourceAmount);
                 EvaDefaultResourceAmount = Utilities.GetValue(settingsNode, "EvaDefaultResourceAmount", EvaDefaultResourceAmount);
@@ -235,15 +238,15 @@ namespace Tac
             settingsNode.AddValue("WasteResource", Waste);
             settingsNode.AddValue("WasteWaterResource", WasteWater);
 
-            settingsNode.AddValue("FoodConsumptionRate", FoodConsumptionRate * SECONDS_PER_DAY);
-            settingsNode.AddValue("WaterConsumptionRate", WaterConsumptionRate * SECONDS_PER_DAY);
-            settingsNode.AddValue("OxygenConsumptionRate", OxygenConsumptionRate * SECONDS_PER_DAY);
-            settingsNode.AddValue("ElectricityConsumptionRate", ElectricityConsumptionRate * SECONDS_PER_DAY);
-            settingsNode.AddValue("BaseElectricityConsumptionRate", BaseElectricityConsumptionRate * SECONDS_PER_DAY);
-            settingsNode.AddValue("EvaElectricityConsumptionRate", EvaElectricityConsumptionRate * SECONDS_PER_DAY);
-            settingsNode.AddValue("CO2ProductionRate", CO2ProductionRate * SECONDS_PER_DAY);
-            settingsNode.AddValue("WasteProductionRate", WasteProductionRate * SECONDS_PER_DAY);
-            settingsNode.AddValue("WasteWaterProductionRate", WasteWaterProductionRate * SECONDS_PER_DAY);
+            settingsNode.AddValue("FoodConsumptionRate", FoodConsumptionRate);
+            settingsNode.AddValue("WaterConsumptionRate", WaterConsumptionRate);
+            settingsNode.AddValue("OxygenConsumptionRate", OxygenConsumptionRate);
+            settingsNode.AddValue("ElectricityConsumptionRate", ElectricityConsumptionRate);
+            settingsNode.AddValue("BaseElectricityConsumptionRate", BaseElectricityConsumptionRate);
+            settingsNode.AddValue("EvaElectricityConsumptionRate", EvaElectricityConsumptionRate);
+            settingsNode.AddValue("CO2ProductionRate", CO2ProductionRate);
+            settingsNode.AddValue("WasteProductionRate", WasteProductionRate);
+            settingsNode.AddValue("WasteWaterProductionRate", WasteWaterProductionRate);
 
             settingsNode.AddValue("DefaultResourceAmount", DefaultResourceAmount);
             settingsNode.AddValue("EvaDefaultResourceAmount", EvaDefaultResourceAmount);
