@@ -51,89 +51,15 @@ namespace Tac
                 this.Log("run");
                 initialized = true;
 
-                var parts = PartLoader.LoadedPartsList.Where(p => p.partPrefab != null && p.partPrefab.CrewCapacity > 0);
-                foreach (AvailablePart part in parts)
+                try
                 {
-                    try
-                    {
-                        if (part.name.Equals("kerbalEVA"))
-                        {
-                            EvaAddLifeSupport(part);
-                        }
-                        else
-                        {
-                            Part prefabPart = part.partPrefab;
-
-                            this.Log("Adding Life Support to " + part.name + "/" + prefabPart.partInfo.title);
-
-                            AddPartModule(prefabPart);
-
-                            AddResource(prefabPart, globalSettings.FoodId, globalSettings.Food, globalSettings.FoodConsumptionRate, true);
-                            AddResource(prefabPart, globalSettings.WaterId, globalSettings.Water, globalSettings.WaterConsumptionRate, true);
-                            AddResource(prefabPart, globalSettings.OxygenId, globalSettings.Oxygen, globalSettings.OxygenConsumptionRate, true);
-                            AddResource(prefabPart, globalSettings.CO2Id, globalSettings.CO2, globalSettings.CO2ProductionRate, false);
-                            AddResource(prefabPart, globalSettings.WasteId, globalSettings.Waste, globalSettings.WasteProductionRate, false);
-                            AddResource(prefabPart, globalSettings.WasteWaterId, globalSettings.WasteWater, globalSettings.WasteWaterProductionRate, false);
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        this.LogError("Failed to add Life Support to " + part.name + ":\n" + ex.Message + "\n" + ex.StackTrace);
-                    }
+                    AvailablePart part = PartLoader.LoadedPartsList.Find(p => p.name.Equals("kerbalEVA"));
+                    EvaAddLifeSupport(part);
                 }
-            }
-        }
-
-        private void AddPartModule(Part part)
-        {
-            try
-            {
-                if (!part.Modules.Contains("LifeSupportModule"))
+                catch (Exception ex)
                 {
-                    this.Log("The LifeSupportModule is missing!");
-
-                    ConfigNode node = new ConfigNode("MODULE");
-                    node.AddValue("name", "LifeSupportModule");
-
-                    part.AddModule(node);
+                    this.LogError("Failed to add Life Support to the EVA.\n" + ex.Message + "\n" + ex.StackTrace);
                 }
-                else
-                {
-                    this.Log("The LifeSupportModule is already there.");
-                }
-            }
-            catch (Exception ex)
-            {
-                this.LogError("Error adding the Part Module (expected?): " + ex.Message + "\n" + ex.StackTrace);
-            }
-        }
-
-        private void AddResource(Part part, int id, string name, double rate, bool full)
-        {
-            try
-            {
-                if (!part.Resources.Contains(id))
-                {
-                    double max = part.CrewCapacity * rate * globalSettings.DefaultResourceAmount;
-                    ConfigNode node = new ConfigNode("RESOURCE");
-                    node.AddValue("name", name);
-                    node.AddValue("maxAmount", max);
-
-                    if (full)
-                    {
-                        node.AddValue("amount", max);
-                    }
-                    else
-                    {
-                        node.AddValue("amount", 0);
-                    }
-
-                    part.AddResource(node);
-                }
-            }
-            catch (Exception ex)
-            {
-                this.LogError("Failed to add resource " + name + " to " + part.name + ": " + ex.Message + "\n" + ex.StackTrace);
             }
         }
 
@@ -162,10 +88,19 @@ namespace Tac
                 node.AddValue("name", "LifeSupportModule");
 
                 part.AddModule(node);
+
+                this.LogWarning("The expected exception did not happen when adding the Life Support part module to the EVA!");
             }
             catch (Exception ex)
             {
-                this.LogError("Error adding the part module to EVA (expected?): " + ex.Message + "\n" + ex.StackTrace);
+                if (ex.Message.Contains("Object reference not set"))
+                {
+                    this.Log("The expected exception is still happening when adding the Life Support part module to the EVA: " + ex.Message + "\n" + ex.StackTrace);
+                }
+                else
+                {
+                    this.LogError("Unexpected error while adding the Life Support part module to the EVA: " + ex.Message + "\n" + ex.StackTrace);
+                }
             }
         }
 
@@ -194,7 +129,10 @@ namespace Tac
             }
             catch (Exception ex)
             {
-                this.LogError("Failed to add resource " + name + " to EVA: " + ex.Message + "\n" + ex.StackTrace);
+                if (!ex.Message.Contains("Object reference not set"))
+                {
+                    this.LogError("Unexpected error while adding resource " + name + " to the EVA: " + ex.Message + "\n" + ex.StackTrace);
+                }
             }
         }
     }
