@@ -361,7 +361,7 @@ namespace Tac
             {
                 if (vesselInfo.remainingElectricity >= rate)
                 {
-                    double deltaTime = Math.Min(currentTime - vesselInfo.lastElectricity, Math.Max(globalSettings.ElectricityMaxDeltaTime, Time.fixedDeltaTime));
+                    double deltaTime = Math.Min(currentTime - vesselInfo.lastElectricity, Math.Max(globalSettings.ElectricityMaxDeltaTime, TimeWarp.fixedDeltaTime));
                     double desiredElectricity = rate * deltaTime;
                     double electricityObtained = vessel.rootPart.TakeResource(globalSettings.ElectricityId, desiredElectricity);
 
