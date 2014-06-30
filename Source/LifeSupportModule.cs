@@ -32,6 +32,7 @@ using UnityEngine;
 
 namespace Tac
 {
+    [KSPModule("TAC Life Support")]
     class LifeSupportModule : PartModule
     {
         public override void OnAwake()

@@ -64,6 +64,7 @@ namespace Tac
      *       outputResources = Water, 0.9, false, Waste, 6.382, true
      *    }
      */
+    [KSPModule("TAC Converter")]
     public class TacGenericConverter : PartModule
     {
         private static char[] delimiters = { ' ', ',', '\t', ';' };
