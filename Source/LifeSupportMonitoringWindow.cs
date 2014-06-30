@@ -34,7 +34,7 @@ namespace Tac
 {
     class LifeSupportMonitoringWindow : Window<LifeSupportMonitoringWindow>
     {
-        private readonly GameSettings gameSettings;
+        private readonly TacGameSettings gameSettings;
         private readonly RosterWindow rosterWindow;
         private readonly string version;
 
@@ -45,7 +45,7 @@ namespace Tac
         private GUIStyle versionStyle;
         private Vector2 scrollPosition = Vector2.zero;
 
-        public LifeSupportMonitoringWindow(LifeSupportController controller, GlobalSettings globalSettings, GameSettings gameSettings, RosterWindow rosterWindow)
+        public LifeSupportMonitoringWindow(LifeSupportController controller, GlobalSettings globalSettings, TacGameSettings gameSettings, RosterWindow rosterWindow)
             : base("Life Support Monitoring", 300, 300)
         {
             this.gameSettings = gameSettings;

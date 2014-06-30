@@ -35,7 +35,7 @@ namespace Tac
     class RosterWindow : Window<RosterWindow>
     {
         private readonly GlobalSettings globalSettings;
-        private readonly GameSettings gameSettings;
+        private readonly TacGameSettings gameSettings;
 
         private GUIStyle labelStyle;
         private GUIStyle warningStyle;
@@ -43,7 +43,7 @@ namespace Tac
         private GUIStyle headerStyle;
         private Vector2 scrollPosition;
 
-        public RosterWindow(GlobalSettings globalSettings, GameSettings gameSettings)
+        public RosterWindow(GlobalSettings globalSettings, TacGameSettings gameSettings)
             : base("Life Support Crew Roster", 320, 200)
         {
             this.globalSettings = globalSettings;

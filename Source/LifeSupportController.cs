@@ -36,7 +36,7 @@ namespace Tac
     class LifeSupportController : MonoBehaviour, Savable
     {
         private GlobalSettings globalSettings;
-        private GameSettings gameSettings;
+        private TacGameSettings gameSettings;
         private LifeSupportMonitoringWindow monitoringWindow;
         private RosterWindow rosterWindow;
         private ButtonWrapper button;

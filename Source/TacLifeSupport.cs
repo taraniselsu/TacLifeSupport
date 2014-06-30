@@ -78,7 +78,7 @@ namespace Tac
     {
         public static TacLifeSupport Instance { get; private set; }
 
-        public GameSettings gameSettings { get; private set; }
+        public TacGameSettings gameSettings { get; private set; }
         public GlobalSettings globalSettings { get; private set; }
 
         private readonly string globalConfigFilename;
@@ -90,7 +90,7 @@ namespace Tac
         {
             this.Log("Constructor");
             Instance = this;
-            gameSettings = new GameSettings();
+            gameSettings = new TacGameSettings();
             globalSettings = new GlobalSettings();
 
             globalConfigFilename = IOUtils.GetFilePathFor(this.GetType(), "LifeSupport.cfg");

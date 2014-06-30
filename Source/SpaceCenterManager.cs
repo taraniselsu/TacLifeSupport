@@ -36,7 +36,7 @@ namespace Tac
     class SpaceCenterManager : MonoBehaviour, Savable
     {
         private GlobalSettings globalSettings;
-        private GameSettings gameSettings;
+        private TacGameSettings gameSettings;
         private ButtonWrapper button;
         private SavedGameConfigWindow configWindow;
 

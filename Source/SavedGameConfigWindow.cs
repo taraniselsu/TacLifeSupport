@@ -37,7 +37,7 @@ namespace Tac
     {
         private const int SECONDS_PER_DAY = 24 * 60 * 60;
         private GlobalSettings globalSettings;
-        private GameSettings gameSettings;
+        private TacGameSettings gameSettings;
         private GUIStyle labelStyle;
         private GUIStyle editStyle;
         private GUIStyle headerStyle;
@@ -51,7 +51,7 @@ namespace Tac
 
         private readonly string version;
 
-        public SavedGameConfigWindow(GlobalSettings globalSettings, GameSettings gameSettings)
+        public SavedGameConfigWindow(GlobalSettings globalSettings, TacGameSettings gameSettings)
             : base("TAC Life Support Settings", 400, 300)
         {
             base.Resizable = false;

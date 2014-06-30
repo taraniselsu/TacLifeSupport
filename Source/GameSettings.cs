@@ -31,7 +31,7 @@ using System.Text;
 
 namespace Tac
 {
-    public class GameSettings
+    public class TacGameSettings
     {
         private const string configNodeName = "SavedGameSettings";
 
@@ -55,7 +55,7 @@ namespace Tac
         public Dictionary<string, CrewMemberInfo> knownCrew { get; private set; }
         public Dictionary<Guid, VesselInfo> knownVessels { get; private set; }
 
-        public GameSettings()
+        public TacGameSettings()
         {
             IsNewSave = true;
             Enabled = true;
