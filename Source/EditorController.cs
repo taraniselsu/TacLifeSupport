@@ -48,15 +48,7 @@ namespace Tac
         void Start()
         {
             this.Log("Start");
-            if (TacLifeSupport.Instance.gameSettings.Enabled)
-            {
-                button.Visible = true;
-            }
-            else
-            {
-                button.Visible = false;
-                window.SetVisible(false);
-            }
+            button.Visible = true;
         }
 
         public void Load(ConfigNode globalNode)

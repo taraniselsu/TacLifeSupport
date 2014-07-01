@@ -135,7 +135,7 @@ namespace Tac
             GUILayout.EndVertical();
 
             GUILayout.BeginVertical();
-            GUILayout.Label("", valueStyle);
+            GUILayout.Label("Amount", valueStyle);
             GUILayout.Label(food, valueStyle);
             GUILayout.Label(water, valueStyle);
             GUILayout.Label(oxygen, valueStyle);
