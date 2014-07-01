@@ -209,10 +209,8 @@ namespace Tac
             {
                 GUILayout.BeginVertical(GUI.skin.box);
                 GUILayout.Label("These settings affect all saves. Restart KSP for changes to take effect.", warningStyle);
-                GUILayout.Label("Will automatically stock crewable parts with the following amounts of resources (in seconds) per crew member, if the part has not previously been configured.", headerStyle2);
+                GUILayout.Label("Will automatically stock EVA suits with the following amount of resources (in seconds).", headerStyle2);
 
-                globalSettings.DefaultResourceAmount = Utilities.ShowTextField("Default amount for crewable parts", labelStyle,
-                    globalSettings.DefaultResourceAmount, 20, editStyle, GUILayout.MinWidth(150));
                 globalSettings.EvaDefaultResourceAmount = Utilities.ShowTextField("Default amount for EVA suits", labelStyle,
                     globalSettings.EvaDefaultResourceAmount, 20, editStyle, GUILayout.MinWidth(150));
                 GUILayout.EndVertical();

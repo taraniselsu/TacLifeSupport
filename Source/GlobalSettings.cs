@@ -120,7 +120,6 @@ namespace Tac
         public double WasteProductionRate { get; set; }
         public double WasteWaterProductionRate { get; set; }
 
-        public double DefaultResourceAmount { get; set; }
         public double EvaDefaultResourceAmount { get; set; }
 
         public double MaxTimeWithoutFood { get; set; }
@@ -169,7 +168,6 @@ namespace Tac
             WasteWaterProductionRate = 0.000022876512176;
 
             // Amount of resources to load crewable parts with, in seconds
-            DefaultResourceAmount = 3.0 * SECONDS_PER_KERBIN_DAY; // 3 Kerbin days, 18 hours
             EvaDefaultResourceAmount = 1.0 * SECONDS_PER_KERBIN_DAY; // 1 Kerbin day, 6 hours
 
             // Maximum amount of time in seconds that a Kerbal can go without the resource
@@ -205,7 +203,6 @@ namespace Tac
                 WasteProductionRate = Utilities.GetValue(settingsNode, "WasteProductionRate", WasteProductionRate);
                 WasteWaterProductionRate = Utilities.GetValue(settingsNode, "WasteWaterProductionRate", WasteWaterProductionRate);
 
-                DefaultResourceAmount = Utilities.GetValue(settingsNode, "DefaultResourceAmount", DefaultResourceAmount);
                 EvaDefaultResourceAmount = Utilities.GetValue(settingsNode, "EvaDefaultResourceAmount", EvaDefaultResourceAmount);
 
                 MaxTimeWithoutFood = Utilities.GetValue(settingsNode, "MaxTimeWithoutFood", MaxTimeWithoutFood);
@@ -248,7 +245,6 @@ namespace Tac
             settingsNode.AddValue("WasteProductionRate", WasteProductionRate);
             settingsNode.AddValue("WasteWaterProductionRate", WasteWaterProductionRate);
 
-            settingsNode.AddValue("DefaultResourceAmount", DefaultResourceAmount);
             settingsNode.AddValue("EvaDefaultResourceAmount", EvaDefaultResourceAmount);
 
             settingsNode.AddValue("MaxTimeWithoutFood", MaxTimeWithoutFood);
