@@ -41,6 +41,15 @@ namespace Tac
      *       // Displayed when right clicking the part
      *       converterName = Carbon Extractor
      *
+     *       // [Optional] Sets the converter so that it is enabled initially
+     *       // so that you do not need to worry about forgeting to turn it on
+     *       // before launching.
+     *       // converterEnabled = false
+     *
+     *       // [Optional] When set to true, the converter cannot be disabled
+     *       // (or turned off)
+     *       // alwaysOn = false
+     *
      *       // Number of units to convert per day (24 hours)
      *       conversionRate = 8
      *
@@ -53,6 +62,11 @@ namespace Tac
      *       // but also specify whether it should keep converting if the
      *       // resource is full (generating excess that will be thrown away).
      *       outputResources = Oxygen, 0.9, false, Waste, 2.218, true
+     *
+     *       // [Optional] When set to true, the converter will not run unless
+     *       // on a planet that has oxygen in the atmosphere (only Kerbin or
+     *       // Laythe).
+     *       requiresOxygenAtmo = false
      *    }
      * or
      *    MODULE
@@ -78,6 +92,9 @@ namespace Tac
 
         [KSPField(isPersistant = true)]
         public bool converterEnabled = false;
+
+        [KSPField]
+        public bool alwaysOn = false;
 
         [KSPField]
         public float conversionRate = 1.0f;
@@ -274,6 +291,10 @@ namespace Tac
             {
                 sb.Append("\nRequires an atmosphere containing Oxygen.");
             }
+            if (alwaysOn)
+            {
+                sb.Append("\nCannot be turned off.");
+            }
             sb.Append("\n");
 
             return sb.ToString();
@@ -302,12 +323,21 @@ namespace Tac
 
         private void UpdateEvents()
         {
-            Events["ActivateConverter"].active = !converterEnabled;
-            Events["DeactivateConverter"].active = converterEnabled;
-
-            if (!converterEnabled)
+            if (alwaysOn)
             {
-                converterStatus = "Inactive";
+                Events["ActivateConverter"].active = false;
+                Events["DeactivateConverter"].active = false;
+                converterEnabled = true;
+            }
+            else
+            {
+                Events["ActivateConverter"].active = !converterEnabled;
+                Events["DeactivateConverter"].active = converterEnabled;
+
+                if (!converterEnabled)
+                {
+                    converterStatus = "Inactive";
+                }
             }
         }
 
