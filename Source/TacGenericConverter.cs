@@ -82,7 +82,6 @@ namespace Tac
     public class TacGenericConverter : PartModule
     {
         private static char[] delimiters = { ' ', ',', '\t', ';' };
-        private const int SECONDS_PER_DAY = 24 * 60 * 60;
 
         [KSPField]
         public string converterName = "TAC Generic Converter";
@@ -162,8 +161,8 @@ namespace Tac
                     return;
                 }
 
-                double desiredAmount = conversionRate / SECONDS_PER_DAY * deltaTime;
-                double maxElectricityDesired = Math.Min(desiredAmount, conversionRate / SECONDS_PER_DAY * Math.Max(globalSettings.ElectricityMaxDeltaTime, TimeWarp.fixedDeltaTime)); // Limit the max electricity consumed when reloading a vessel
+                double desiredAmount = conversionRate * deltaTime;
+                double maxElectricityDesired = Math.Min(desiredAmount, conversionRate * Math.Max(globalSettings.ElectricityMaxDeltaTime, TimeWarp.fixedDeltaTime)); // Limit the max electricity consumed when reloading a vessel
 
                 // Limit the resource amounts so that we do not produce more than we have room for, nor consume more than is available
                 foreach (ResourceRatio output in outputResourceList)
@@ -278,15 +277,20 @@ namespace Tac
         public override string GetInfo()
         {
             StringBuilder sb = new StringBuilder();
-            sb.Append(base.GetInfo());
-            sb.Append("\nContains the ");
             sb.Append(converterName);
-            sb.Append(" module\n  Inputs: ");
-            sb.Append(String.Join(", ", inputResourceList.Select(value => value.resource.name + ", " + value.ratio).ToArray()));
-            sb.Append("\n  Outputs: ");
-            sb.Append(String.Join(", ", outputResourceList.Select(value => value.resource.name + ", " + value.ratio).ToArray()));
-            sb.Append("\n  Conversion Rate: ");
-            sb.Append(conversionRate);
+            sb.Append("\n\nInputs:");
+            foreach (var input in inputResourceList)
+            {
+                double ratio = input.ratio * conversionRate;
+                sb.Append("\n - ").Append(input.resource.name).Append(": ").Append(Utilities.FormatValue(ratio, 3)).Append("U/sec");
+            }
+            sb.Append("\n\nOutputs: ");
+            foreach (var output in outputResourceList)
+            {
+                double ratio = output.ratio * conversionRate;
+                sb.Append("\n - ").Append(output.resource.name).Append(": ").Append(Utilities.FormatValue(ratio, 3)).Append("U/sec");
+            }
+            sb.Append("\n");
             if (requiresOxygenAtmo)
             {
                 sb.Append("\nRequires an atmosphere containing Oxygen.");
@@ -295,7 +299,6 @@ namespace Tac
             {
                 sb.Append("\nCannot be turned off.");
             }
-            sb.Append("\n");
 
             return sb.ToString();
         }
