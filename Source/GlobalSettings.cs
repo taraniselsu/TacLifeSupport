@@ -157,14 +157,14 @@ namespace Tac
             // Defaults are based on 50% of NASA's numbers for Human consumption
             // For the math behind the numbers, see
             // https://docs.google.com/spreadsheet/ccc?key=0Aioc9ek3XAvwdGNsRlh3OVhlbTFBR3M4RW0zLUNTRFE&usp=sharing
-            FoodConsumptionRate = 0.000042560952886;
+            FoodConsumptionRate = 0.000010817575525;
             WaterConsumptionRate = 0.000020807576966;
             OxygenConsumptionRate = 0.003521591846326;
             BaseElectricityConsumptionRate = 100.0 / SECONDS_PER_HOUR; // 100 per hour or 0.02777778 per second, same as a stock probe core
             ElectricityConsumptionRate = BaseElectricityConsumptionRate / 2.0; // 0.01388889 per second, half as much as a stock probe core
-            EvaElectricityConsumptionRate = 20.0 / 6.0 / SECONDS_PER_HOUR; // 20 per 6 hours (1 Kerbin day), 0.000925 per second
+            EvaElectricityConsumptionRate = 40.0 / 6.0 / SECONDS_PER_HOUR; // 40 per 6 hours (1 Kerbin day), 0.000925 per second
             CO2ProductionRate = 0.003029853129847;
-            WasteProductionRate = 0.000076255040587;
+            WasteProductionRate = 0.000007802841362;
             WasteWaterProductionRate = 0.000022876512176;
 
             // Amount of resources to load crewable parts with, in seconds
