@@ -627,22 +627,32 @@ namespace Tac
             return vessel.missionTime > 0.01 || (Time.timeSinceLevelLoad > 5.0f && vessel.srf_velocity.magnitude > 2.0);
         }
 
+        /*
+         * Notes:
+         *  Mt Everest is at 8,848 meters (29,029 ft). The air pressure is ~0.33 atm.
+         *  Everest Base Camp is at ~5,000 m (16,000 ft), with an air pressure of ~0.5 atm.
+         *  0.2 atm is around 12,500 m (41,010.5 ft), close to the maximum altitude most airliners fly.
+         * References:
+         *  http://en.wikipedia.org/wiki/Mount_Everest
+         *  http://en.wikipedia.org/wiki/Effects_of_high_altitude_on_humans
+         *  http://www.altitude.org/air_pressure.php
+         */
         private bool NeedOxygen(Vessel vessel, VesselInfo vesselInfo)
         {
             // Need oxygen unless:
-            // 1) landed or splashed down on Kerbin below a reasonable altitude, so they can open a hatch
+            // 1) on Kerbin below a reasonable altitude, so they can open a hatch or window or vent
             // 2) flying on Kerbin with electricity for the vents, below a reasonable altitude
             if (vessel.mainBody == FlightGlobals.Bodies[1])
             {
                 // On or above Kerbin
-                if (vessel.staticPressure > 0.2 && vesselInfo.remainingElectricity > vesselInfo.estimatedElectricityConsumptionRate)
+                if (vessel.staticPressure > 0.5)
                 {
-                    // air pressure is high enough & have electricity to run vents
+                    // air pressure is high enough so they can open a window
                     return false;
                 }
-                else if (vessel.staticPressure > 0.5 && (vessel.situation == Vessel.Situations.LANDED || vessel.situation == Vessel.Situations.SPLASHED || vessel.situation == Vessel.Situations.PRELAUNCH))
+                else if (vessel.staticPressure > 0.2 && vesselInfo.remainingElectricity > vesselInfo.estimatedElectricityConsumptionRate)
                 {
-                    // air pressure is high enough & landed/spashed so they can open the hatch
+                    // air pressure is high enough & have electricity to run vents
                     return false;
                 }
             }
@@ -653,13 +663,13 @@ namespace Tac
         private bool NeedElectricity(Vessel vessel, VesselInfo vesselInfo)
         {
             // Need electricity to survive unless:
-            // 1) landed or splashed down on Kerbin below a reasonable altitude, so they can open a hatch
+            // 1) on Kerbin below a reasonable altitude, so they can open a hatch or window or vent
             if (vessel.mainBody == FlightGlobals.Bodies[1])
             {
                 // On or above Kerbin
-                if (vessel.staticPressure > 0.5 && (vessel.situation == Vessel.Situations.LANDED || vessel.situation == Vessel.Situations.SPLASHED || vessel.situation == Vessel.Situations.PRELAUNCH))
+                if (vessel.staticPressure > 0.5)
                 {
-                    // air pressure is high enough & landed/spashed so they can open the hatch
+                    // air pressure is high enough so they can open a window
                     return false;
                 }
             }
