@@ -65,11 +65,11 @@ namespace Tac
             AddLifeSupport als = new AddLifeSupport(globalSettings);
             als.run();
 
-            CrewRoster crewRoster = HighLogic.CurrentGame.CrewRoster;
+            var crew = HighLogic.CurrentGame.CrewRoster.Crew;
             var knownCrew = gameSettings.knownCrew;
-            foreach (ProtoCrewMember crewMember in crewRoster)
+            foreach (ProtoCrewMember crewMember in crew)
             {
-                if (crewMember.rosterStatus != ProtoCrewMember.RosterStatus.ASSIGNED && knownCrew.ContainsKey(crewMember.name))
+                if (crewMember.rosterStatus != ProtoCrewMember.RosterStatus.Assigned && knownCrew.ContainsKey(crewMember.name))
                 {
                     this.Log("Deleting crew member: " + crewMember.name);
                     knownCrew.Remove(crewMember.name);
