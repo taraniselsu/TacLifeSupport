@@ -316,11 +316,11 @@ namespace Tac
         {
             if (NeedOxygen(vessel, vesselInfo))
             {
-                if (vesselInfo.remainingOxygen >= globalSettings.OxygenConsumptionRate)
+                if (vesselInfo.numCrew > 0)
                 {
-                    double deltaTime = Math.Min(currentTime - vesselInfo.lastOxygen, globalSettings.MaxDeltaTime);
-                    if (vesselInfo.numCrew > 0)
+                    if (vesselInfo.remainingOxygen >= globalSettings.OxygenConsumptionRate)
                     {
+                        double deltaTime = Math.Min(currentTime - vesselInfo.lastOxygen, globalSettings.MaxDeltaTime);
                         double rate = globalSettings.OxygenConsumptionRate * vesselInfo.numCrew;
                         double desiredOxygen = rate * deltaTime;
                         double oxygenObtained = vessel.rootPart.TakeResource(globalSettings.OxygenId, desiredOxygen);
@@ -332,20 +332,20 @@ namespace Tac
                     }
                     else
                     {
-                        vesselInfo.lastOxygen += currentTime - vesselInfo.lastUpdate;
+                        double timeWithoutOxygen = currentTime - vesselInfo.lastOxygen;
+                        if (timeWithoutOxygen > globalSettings.MaxTimeWithoutOxygen)
+                        {
+                            List<ProtoCrewMember> crew = vessel.GetVesselCrew();
+                            int crewMemberIndex = UnityEngine.Random.Range(0, crew.Count - 1);
+                            KillCrewMember(crew[crewMemberIndex], "oxygen deprivation", vessel);
+
+                            vesselInfo.lastOxygen += UnityEngine.Random.Range(60, 600);
+                        }
                     }
                 }
                 else
                 {
-                    double timeWithoutOxygen = currentTime - vesselInfo.lastOxygen;
-                    if (timeWithoutOxygen > globalSettings.MaxTimeWithoutOxygen)
-                    {
-                        List<ProtoCrewMember> crew = vessel.GetVesselCrew();
-                        int crewMemberIndex = UnityEngine.Random.Range(0, crew.Count - 1);
-                        KillCrewMember(crew[crewMemberIndex], "oxygen deprivation", vessel);
-
-                        vesselInfo.lastOxygen += UnityEngine.Random.Range(60, 600);
-                    }
+                    vesselInfo.lastOxygen += currentTime - vesselInfo.lastUpdate;
                 }
             }
             else
