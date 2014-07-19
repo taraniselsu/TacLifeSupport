@@ -79,6 +79,7 @@
     <Compile Include="BuildAidWindow.cs" />
     <Compile Include="GameSettings.cs" />
     <Compile Include="EditorController.cs" />
+    <Compile Include="InstallChecker.cs" />
     <Compile Include="SavedGameConfigWindow.cs" />
     <Compile Include="SpaceCenterManager.cs" />
     <Compile Include="TacLifeSupport.cs" />
