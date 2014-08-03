@@ -42,5 +42,22 @@ namespace Tac
                     "OK", false, HighLogic.Skin);
             }
         }
+
+        /*
+         * Tries to fix the install if it was installed over the top of a previous version
+         */
+        void CleanupOldVersion()
+        {
+            try
+            {
+                // Upgrading 0.8 -> 0.9
+                // StockPartChanges.cfg was split into multiple files with different names
+                File.Delete(KSPUtil.ApplicationRootPath + "GameData/ThunderAerospace/TacLifeSupport/StockPartChanges.cfg");
+            }
+            catch (Exception ex)
+            {
+                this.LogError("Exception caught while cleaning up old files.\n" + ex.Message + "\n" + ex.StackTrace);
+            }
+        }
     }
 }
