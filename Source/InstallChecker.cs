@@ -41,12 +41,14 @@ namespace Tac
                     modName + " requires the Module Manager mod in order to function properly.\n\nPlease download from http://forum.kerbalspaceprogram.com/threads/55219 and copy to the KSP/GameData/ directory.",
                     "OK", false, HighLogic.Skin);
             }
+
+            CleanupOldVersions();
         }
 
         /*
          * Tries to fix the install if it was installed over the top of a previous version
          */
-        void CleanupOldVersion()
+        void CleanupOldVersions()
         {
             try
             {
