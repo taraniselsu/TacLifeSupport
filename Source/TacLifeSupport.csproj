@@ -102,6 +102,15 @@
     <AssemblyFileMajorVersion>$(AssemblyMajorVersion)</AssemblyFileMajorVersion>
     <AssemblyFileMinorVersion>$(AssemblyMinorVersion)</AssemblyFileMinorVersion>
   </PropertyGroup>
+  <PropertyGroup>
+    <!-- Needed for the WriteAvcVersion build target -->
+    <ModName>TAC Life Support</ModName>
+    <ModUrl>http://ksp-avc.cybutek.net/version.php?id=9</ModUrl>
+    <DownloadUrl>https://github.com/taraniselsu/TacLifeSupport/wiki/Download</DownloadUrl>
+    <KspVersionMajor>0</KspVersionMajor>
+    <KspVersionMinor>24</KspVersionMinor>
+    <KspVersionPatch>2</KspVersionPatch>
+  </PropertyGroup>
   <Target Name="BeforeBuild">
     <CallTarget Targets="GitInfo" />
   </Target>
