@@ -171,8 +171,8 @@ namespace Tac
             EvaDefaultResourceAmount = 1.0 * SECONDS_PER_KERBIN_DAY; // 1 Kerbin day, 6 hours
 
             // Maximum amount of time in seconds that a Kerbal can go without the resource
-            MaxTimeWithoutFood = 30.0 * SECONDS_PER_KERBIN_DAY; // 30 Kerbin days, 180 hours
-            MaxTimeWithoutWater = 3.0 * SECONDS_PER_KERBIN_DAY; // 3 Kerbin days, 18 hours
+            MaxTimeWithoutFood = 360.0 * SECONDS_PER_HOUR; // 360 hours, 60 Kerbin days, 15 Earth days
+            MaxTimeWithoutWater = 36.0 * SECONDS_PER_HOUR; // 36 hours, 6 Kerbin days, 1.5 Earth days
             MaxTimeWithoutOxygen = 2.0 * SECONDS_PER_HOUR; // 2 hours
             MaxTimeWithoutElectricity = 2.0 * SECONDS_PER_HOUR; // 2 hours
         }
