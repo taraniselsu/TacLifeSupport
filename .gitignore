@@ -1,4 +1,5 @@
 GameData/**/*.dll
+!MiniAVC.dll
 GameData/ThunderAerospace/*_*.*.txt
 GameData/ThunderAerospace/**/*.version
 
