@@ -98,9 +98,10 @@
   <PropertyGroup>
     <AssemblyMajorVersion>0</AssemblyMajorVersion>
     <AssemblyMinorVersion>9</AssemblyMinorVersion>
-    <AssemblyFileBuildNumber>0</AssemblyFileBuildNumber>
+    <AssemblyBuildNumber>0</AssemblyBuildNumber>
     <AssemblyFileMajorVersion>$(AssemblyMajorVersion)</AssemblyFileMajorVersion>
     <AssemblyFileMinorVersion>$(AssemblyMinorVersion)</AssemblyFileMinorVersion>
+    <AssemblyFileBuildNumber>$(AssemblyBuildNumber)</AssemblyFileBuildNumber>
   </PropertyGroup>
   <PropertyGroup>
     <!-- Needed for the WriteAvcVersion build target -->
