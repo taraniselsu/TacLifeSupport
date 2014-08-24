@@ -177,11 +177,21 @@ namespace Tac
                 if (!knownVessels.ContainsKey(vessel.id) && vessel.parts.Any(p => p.protoModuleCrew.Count > 0) && IsLaunched(vessel))
                 {
                     this.Log("New vessel: " + vessel.vesselName + " (" + vessel.id + ")");
+                    var knownCrew = gameSettings.knownCrew;
+
+                    if (vessel.isEVA)
+                    {
+                        ProtoCrewMember crewMember = vessel.GetVesselCrew().FirstOrDefault();
+                        if (crewMember != null && !knownCrew.ContainsKey(crewMember.name))
+                        {
+                            FillRescueEvaSuit(vessel);
+                        }
+                    }
+
                     VesselInfo vesselInfo = new VesselInfo(vessel.vesselName, currentTime);
                     knownVessels[vessel.id] = vesselInfo;
                     UpdateVesselInfo(vesselInfo, vessel);
 
-                    var knownCrew = gameSettings.knownCrew;
                     foreach (ProtoCrewMember crewMember in vessel.GetVesselCrew())
                     {
                         if (knownCrew.ContainsKey(crewMember.name))
@@ -519,6 +529,20 @@ namespace Tac
             newPart.TakeResource(globalSettings.ElectricityId, -electricityObtained);
         }
 
+        private void FillRescueEvaSuit(Vessel vessel)
+        {
+            this.Log("Rescue mission EVA: " + vessel.vesselName);
+            Part part = vessel.rootPart;
+
+            // Only fill the suit to 10-90% full
+            double fillAmount = UnityEngine.Random.Range(0.1f, 0.9f);
+
+            part.TakeResource(globalSettings.ElectricityId, -fillAmount * globalSettings.EvaElectricityConsumptionRate * globalSettings.EvaDefaultResourceAmount);
+            part.TakeResource(globalSettings.FoodId, -fillAmount * globalSettings.FoodConsumptionRate * globalSettings.EvaDefaultResourceAmount);
+            part.TakeResource(globalSettings.WaterId, -fillAmount * globalSettings.WaterConsumptionRate * globalSettings.EvaDefaultResourceAmount);
+            part.TakeResource(globalSettings.OxygenId, -fillAmount * globalSettings.OxygenConsumptionRate * globalSettings.EvaDefaultResourceAmount);
+        }
+
         private void EmptyEvaSuit(Part oldPart, Part newPart)
         {
             Vessel lastVessel = oldPart.vessel;
@@ -618,7 +642,7 @@ namespace Tac
         {
             this.Log("Game scene load requested: " + gameScene);
 
-            // Disable this instance becuase a new instance will be created after the new scene is loaded
+            // Disable this instance because a new instance will be created after the new scene is loaded
             loadingNewScene = true;
         }
 
