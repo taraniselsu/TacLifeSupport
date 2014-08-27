@@ -154,18 +154,19 @@ namespace Tac
 
             // Consumption rates in units per Earth second
             // See the TacResources.cfg for conversions between units and metric tons.
-            // Defaults are based on 50% of NASA's numbers for Human consumption
+            // Defaults are scaled from NASA's numbers for Human consumption
             // For the math behind the numbers, see
             // https://docs.google.com/spreadsheet/ccc?key=0Aioc9ek3XAvwdGNsRlh3OVhlbTFBR3M4RW0zLUNTRFE&usp=sharing
-            FoodConsumptionRate = 0.000010817575525;
-            WaterConsumptionRate = 0.000020807576966;
-            OxygenConsumptionRate = 0.003521591846326;
-            BaseElectricityConsumptionRate = 100.0 / SECONDS_PER_HOUR; // 100 per hour or 0.02777778 per second, same as a stock probe core
-            ElectricityConsumptionRate = BaseElectricityConsumptionRate / 2.0; // 0.01388889 per second, half as much as a stock probe core
-            EvaElectricityConsumptionRate = 40.0 / 6.0 / SECONDS_PER_HOUR; // 40 per 6 hours (1 Kerbin day), 0.000925 per second
-            CO2ProductionRate = 0.003029853129847;
-            WasteProductionRate = 0.000007802841362;
-            WasteWaterProductionRate = 0.000022876512176;
+            FoodConsumptionRate = 0.000016927083333;
+            WaterConsumptionRate = 0.000011188078704;
+            OxygenConsumptionRate = 0.001713537562385;
+            CO2ProductionRate = 0.00148012889876;
+            WasteProductionRate = 0.000001539351852;
+            WasteWaterProductionRate = 0.000014247685185;
+
+            BaseElectricityConsumptionRate = 0.02125; // 76.5 per hour or 1.275 per minute, about 75% of a stock probe core's consumption (1.7 per min)
+            ElectricityConsumptionRate = 0.014166666666667; // 51 per hour or 0.85 per minute, about 50% of a stock probe core's consumption
+            EvaElectricityConsumptionRate = 0.00425; // 91.8 per 6 hours (1 Kerbin day), 15.3 per hour, 15% of a probe core or 12% compared to in a pod
 
             // Amount of resources to load crewable parts with, in seconds
             EvaDefaultResourceAmount = 1.0 * SECONDS_PER_KERBIN_DAY; // 1 Kerbin day, 6 hours
