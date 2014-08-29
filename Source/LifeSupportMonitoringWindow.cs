@@ -42,6 +42,7 @@ namespace Tac
         private GUIStyle warningStyle;
         private GUIStyle criticalStyle;
         private GUIStyle headerStyle;
+        private GUIStyle scrollStyle;
         private GUIStyle versionStyle;
         private Vector2 scrollPosition = Vector2.zero;
 
@@ -90,6 +91,8 @@ namespace Tac
                 headerStyle = new GUIStyle(labelStyle);
                 headerStyle.fontStyle = FontStyle.Bold;
 
+                scrollStyle = new GUIStyle(GUI.skin.scrollView);
+
                 versionStyle = Utilities.GetVersionStyle();
             }
         }
@@ -98,7 +101,7 @@ namespace Tac
         {
             if (FlightGlobals.ready)
             {
-                scrollPosition = GUILayout.BeginScrollView(scrollPosition);
+                scrollPosition = GUILayout.BeginScrollView(scrollPosition, scrollStyle);
                 GUILayout.BeginVertical();
                 GUILayout.Space(4);
 
