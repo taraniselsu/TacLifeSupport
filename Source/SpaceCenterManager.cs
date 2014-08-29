@@ -77,6 +77,27 @@ namespace Tac
             }
         }
 
+        void Update()
+        {
+            const string lockName = "TACLS_SpaceCenterLock";
+            const ControlTypes desiredLock = ControlTypes.KSC_FACILITIES;
+
+            if (configWindow.IsVisible() && configWindow.Contains(Event.current.mousePosition))
+            {
+                if (InputLockManager.GetControlLock(lockName) != desiredLock)
+                {
+                    InputLockManager.SetControlLock(desiredLock, lockName);
+                }
+            }
+            else
+            {
+                if (InputLockManager.GetControlLock(lockName) == desiredLock)
+                {
+                    InputLockManager.RemoveControlLock(lockName);
+                }
+            }
+        }
+
         public void Load(ConfigNode globalNode)
         {
             button.Load(globalNode);

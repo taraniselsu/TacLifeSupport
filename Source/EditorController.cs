@@ -51,6 +51,27 @@ namespace Tac
             button.Visible = true;
         }
 
+        void Update()
+        {
+            const string lockName = "TACLS_EditorLock";
+            const ControlTypes desiredLock = ControlTypes.EDITOR_SOFT_LOCK | ControlTypes.EDITOR_UI | ControlTypes.EDITOR_LAUNCH;
+
+            if (window.IsVisible() && window.Contains(Event.current.mousePosition))
+            {
+                if (InputLockManager.GetControlLock(lockName) != desiredLock)
+                {
+                    InputLockManager.SetControlLock(desiredLock, lockName);
+                }
+            }
+            else
+            {
+                if (InputLockManager.GetControlLock(lockName) == desiredLock)
+                {
+                    InputLockManager.RemoveControlLock(lockName);
+                }
+            }
+        }
+
         public void Load(ConfigNode globalNode)
         {
             button.Load(globalNode);
