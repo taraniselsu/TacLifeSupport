@@ -232,7 +232,7 @@ namespace Tac
                     }
                 }
 
-                CMAssignmentDialog dialog = EditorLogic.fetch.CrewAssignmentDialog;
+                CMAssignmentDialog dialog = CMAssignmentDialog.Instance;
                 if (dialog != null)
                 {
                     VesselCrewManifest manifest = dialog.GetManifest();
