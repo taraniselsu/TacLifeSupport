@@ -36,6 +36,8 @@ namespace Tac
     {
         private ButtonWrapper button;
         private BuildAidWindow window;
+        private const string lockName = "TACLS_EditorLock";
+        private const ControlTypes desiredLock = ControlTypes.EDITOR_SOFT_LOCK | ControlTypes.EDITOR_UI | ControlTypes.EDITOR_LAUNCH;
 
         void Awake()
         {
@@ -53,9 +55,6 @@ namespace Tac
 
         void Update()
         {
-            const string lockName = "TACLS_EditorLock";
-            const ControlTypes desiredLock = ControlTypes.EDITOR_SOFT_LOCK | ControlTypes.EDITOR_UI | ControlTypes.EDITOR_LAUNCH;
-
             if (window.IsVisible() && window.Contains(Event.current.mousePosition))
             {
                 if (InputLockManager.GetControlLock(lockName) != desiredLock)
@@ -88,6 +87,12 @@ namespace Tac
         {
             this.Log("OnDestroy");
             button.Destroy();
+
+            // Make sure we remove our locks
+            if (InputLockManager.GetControlLock(lockName) == desiredLock)
+            {
+                InputLockManager.RemoveControlLock(lockName);
+            }
         }
 
         private void OnIconClicked()
