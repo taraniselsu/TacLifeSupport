@@ -107,16 +107,28 @@ namespace Tac
         [KSPField]
         public bool requiresOxygenAtmo = false;
 
-        private double lastUpdateTime = 0.0f;
+        private bool converting;
 
-        private List<ResourceRatio> inputResourceList;
-        private List<ResourceRatio> outputResourceList;
+        public List<ResourceRatio> inputResourceList;
+        public List<ResourceRatio> outputResourceList;
 
         public override void OnAwake()
         {
             this.Log("OnAwake");
             base.OnAwake();
             UpdateResourceLists();
+            if (converterEnabled)
+            {
+                if (requiresOxygenAtmo && !vessel.mainBody.atmosphereContainsOxygen)
+                {
+                    converterStatus = "Atmo lacks oxygen.";
+                    converting = false;
+                }
+                else
+                {
+                    converting = true;
+                }
+            }
         }
 
         public override void OnStart(PartModule.StartState state)
@@ -132,6 +144,60 @@ namespace Tac
             UpdateEvents();
         }
 
+        public void recycle(IDictionary<int, ResourceLimits> resources, double deltaTime)
+        {
+            this.Log(new DateTime() + " calling recycle converting="+converting);
+            if (converting)
+            {
+                double maxEfficiency = 1;
+                double runAmount = conversionRate * deltaTime;
+                foreach (ResourceRatio ratio in inputResourceList)
+                {
+                    double desiredAmount = runAmount * ratio.ratio;
+                    if (!resources.ContainsKey(ratio.resource.id))
+                    {
+                        //We don't have any of that resource
+                        return;
+                    }
+                    double available = resources[ratio.resource.id].available;
+                    maxEfficiency = Math.Min(maxEfficiency, available / desiredAmount);
+                }
+                foreach (ResourceRatio ratio in outputResourceList)
+                {
+                    if (!ratio.allowExtra)
+                    {
+                        double desiredAmount = runAmount * ratio.ratio;
+                        double space = resources[ratio.resource.id].maximum - resources[ratio.resource.id].available;
+                        maxEfficiency = Math.Min(maxEfficiency, space / desiredAmount);
+                    }
+                }
+
+                runAmount*=maxEfficiency;
+
+                if (runAmount < 1e-5)
+                {
+                    //avoid rounding errors
+                    return;
+                }
+
+                foreach (ResourceRatio ratio in inputResourceList)
+                {
+                    double actualAmount = runAmount * ratio.ratio;
+                    resources[ratio.resource.id].add(-actualAmount);
+                }
+                foreach (ResourceRatio ratio in outputResourceList)
+                {
+                    double actualAmount = runAmount * ratio.ratio;
+                    if (!resources.ContainsKey(ratio.resource.id))
+                    {
+                        resources.Add(ratio.resource.id, new ResourceLimits(0, 1e10));//we don't know anything about this resource so assume there is space for it
+                    }
+                    resources[ratio.resource.id].add(actualAmount);
+                }
+
+            }
+        }
+
         public override void OnFixedUpdate()
         {
             base.OnFixedUpdate();
@@ -141,120 +207,21 @@ namespace Tac
                 return;
             }
 
-            if (lastUpdateTime == 0.0f)
-            {
-                // Just started running
-                lastUpdateTime = Planetarium.GetUniversalTime();
-                return;
-            }
-
-            GlobalSettings globalSettings = TacLifeSupport.Instance.globalSettings;
-
-            double deltaTime = Math.Min(Planetarium.GetUniversalTime() - lastUpdateTime, globalSettings.MaxDeltaTime);
-            lastUpdateTime += deltaTime;
-
+            //TODO checking whither this converter is enabled doesn't really need to be done every tick
             if (converterEnabled)
             {
                 if (requiresOxygenAtmo && !vessel.mainBody.atmosphereContainsOxygen)
                 {
                     converterStatus = "Atmo lacks oxygen.";
+                    converting = false;
                     return;
                 }
-
-                double desiredAmount = conversionRate * deltaTime;
-                double maxElectricityDesired = Math.Min(desiredAmount, conversionRate * Math.Max(globalSettings.ElectricityMaxDeltaTime, TimeWarp.fixedDeltaTime)); // Limit the max electricity consumed when reloading a vessel
-
-                // Limit the resource amounts so that we do not produce more than we have room for, nor consume more than is available
-                foreach (ResourceRatio output in outputResourceList)
-                {
-                    if (!output.allowExtra)
-                    {
-                        if (output.resource.id == globalSettings.ElectricityId && desiredAmount > maxElectricityDesired)
-                        {
-                            // Special handling for electricity
-                            double desiredElectricity = maxElectricityDesired * output.ratio;
-                            double availableSpace = -part.IsResourceAvailable(output.resource, -desiredElectricity);
-                            desiredAmount = desiredAmount * (availableSpace / desiredElectricity);
-                        }
-                        else
-                        {
-                            double availableSpace = -part.IsResourceAvailable(output.resource, -desiredAmount * output.ratio);
-                            desiredAmount = availableSpace / output.ratio;
-                        }
-
-                        if (desiredAmount <= 0.000000001)
-                        {
-                            // Out of space, so no need to run
-                            converterStatus = "No space for more " + output.resource.name;
-                            return;
-                        }
-                    }
-                }
-
-                foreach (ResourceRatio input in inputResourceList)
-                {
-                    if (input.resource.id == globalSettings.ElectricityId && desiredAmount > maxElectricityDesired)
-                    {
-                        // Special handling for electricity
-                        double desiredElectricity = maxElectricityDesired * input.ratio;
-                        double amountAvailable = part.IsResourceAvailable(input.resource, desiredElectricity);
-                        desiredAmount = desiredAmount * (amountAvailable / desiredElectricity);
-                    }
-                    else
-                    {
-                        double amountAvailable = part.IsResourceAvailable(input.resource, desiredAmount * input.ratio);
-                        desiredAmount = amountAvailable / input.ratio;
-                    }
-
-                    if (desiredAmount <= 0.000000001)
-                    {
-                        // Not enough input resources
-                        converterStatus = "Not enough " + input.resource.name;
-                        return;
-                    }
-                }
-
-                foreach (ResourceRatio input in inputResourceList)
-                {
-                    double desired;
-                    if (input.resource.id == globalSettings.ElectricityId)
-                    {
-                        desired = Math.Min(desiredAmount, maxElectricityDesired) * input.ratio;
-                    }
-                    else
-                    {
-                        desired = desiredAmount * input.ratio;
-                    }
-
-                    double actual = part.TakeResource(input.resource, desired);
-
-                    if (actual < (desired * 0.999))
-                    {
-                        this.LogWarning("OnFixedUpdate: obtained less " + input.resource.name + " than expected: " + desired.ToString("0.000000000") + "/" + actual.ToString("0.000000000"));
-                    }
-                }
-
-                foreach (ResourceRatio output in outputResourceList)
-                {
-                    double desired;
-                    if (output.resource.id == globalSettings.ElectricityId)
-                    {
-                        desired = Math.Min(desiredAmount, maxElectricityDesired) * output.ratio;
-                    }
-                    else
-                    {
-                        desired = desiredAmount * output.ratio;
-                    }
-
-                    double actual = -part.TakeResource(output.resource.id, -desired);
-
-                    if (actual < (desired * 0.999) && !output.allowExtra)
-                    {
-                        this.LogWarning("OnFixedUpdate: put less " + output.resource.name + " than expected: " + desired.ToString("0.000000000") + "/" + actual.ToString("0.000000000"));
-                    }
-                }
-
+                converting = true;
                 converterStatus = "Running";
+            }
+            else
+            {
+                converting = false;
             }
         }
 
@@ -262,7 +229,7 @@ namespace Tac
         {
             this.Log("OnLoad: " + node);
             base.OnLoad(node);
-            lastUpdateTime = Utilities.GetValue(node, "lastUpdateTime", lastUpdateTime);
+            converting = Utilities.GetValue(node, "converting", false);
 
             UpdateResourceLists();
             UpdateEvents();
@@ -270,7 +237,7 @@ namespace Tac
 
         public override void OnSave(ConfigNode node)
         {
-            node.AddValue("lastUpdateTime", lastUpdateTime);
+            node.AddValue("converting", converting);
             this.Log("OnSave: " + node);
         }
 
@@ -326,6 +293,7 @@ namespace Tac
 
         private void UpdateEvents()
         {
+            if (Events == null) return;
             if (alwaysOn)
             {
                 Events["ActivateConverter"].active = false;
@@ -357,11 +325,18 @@ namespace Tac
 
             ParseInputResourceString(inputResources, inputResourceList);
             ParseOutputResourceString(outputResources, outputResourceList);
-
-            Events["ActivateConverter"].guiName = "Activate " + converterName;
-            Events["DeactivateConverter"].guiName = "Deactivate " + converterName;
-            Actions["ToggleConverter"].guiName = "Toggle " + converterName;
-            Fields["converterStatus"].guiName = converterName;
+            this.Log("parsed OP");
+            
+            if (Events != null)
+            {
+                this.Log("events" + Events);
+                Events["ActivateConverter"].guiName = "Activate " + converterName;
+                Events["DeactivateConverter"].guiName = "Deactivate " + converterName;
+                this.Log("Actions" + Actions);
+                Actions["ToggleConverter"].guiName = "Toggle " + converterName;
+                this.Log("events" + Fields);
+                Fields["converterStatus"].guiName = converterName;
+            }
         }
 
         private void ParseInputResourceString(string resourceString, List<ResourceRatio> resources)
@@ -411,6 +386,19 @@ namespace Tac
 
             var ratios = resources.Aggregate("", (result, value) => result + value.resource.name + ", " + value.ratio + ", ");
             this.Log("Output resources parsed: " + ratios + "\nfrom " + resourceString);
+        }
+
+        internal TacGenericConverter Clone()
+        {
+            TacGenericConverter result =  new TacGenericConverter();
+            result.converterName = converterName;
+            result.converterStatus = converterStatus;
+            result.alwaysOn = alwaysOn;
+            result.conversionRate = conversionRate;
+            result.inputResources = inputResources;
+            result.outputResources = outputResources;
+            result.requiresOxygenAtmo = requiresOxygenAtmo;
+            return result;
         }
     }
 

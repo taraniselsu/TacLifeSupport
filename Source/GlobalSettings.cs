@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Thunder Aerospace Corporation's Life Support for Kerbal Space Program.
  * Written by Taranis Elsu.
  * 
@@ -110,22 +110,19 @@ namespace Tac
             }
         }
 
-        public double FoodConsumptionRate { get; set; }
-        public double WaterConsumptionRate { get; set; }
-        public double OxygenConsumptionRate { get; set; }
-        public double ElectricityConsumptionRate { get; set; }
+
+        //amount of resource produced by 1 kerbal in 1 second - negative means this resource is used
+        public Dictionary<int, double> kerbalProductionRates = new Dictionary<int, double>();
         public double BaseElectricityConsumptionRate { get; set; }
         public double EvaElectricityConsumptionRate { get; set; }
-        public double CO2ProductionRate { get; set; }
-        public double WasteProductionRate { get; set; }
-        public double WasteWaterProductionRate { get; set; }
-
         public double EvaDefaultResourceAmount { get; set; }
 
-        public double MaxTimeWithoutFood { get; set; }
-        public double MaxTimeWithoutWater { get; set; }
-        public double MaxTimeWithoutOxygen { get; set; }
-        public double MaxTimeWithoutElectricity { get; set; }
+        //for each resource, how long can a kerbal go without
+        public Dictionary<int, double> kerbalStarvationTimes = new Dictionary<int, double>();
+        public int[] kerbalRequirements;
+        public int[] kerbalProduction;
+
+        public Dictionary<int, String> deathCauses = new Dictionary<int, string>();
 
         public int FoodId { get; private set; }
         public int WaterId { get; private set; }
@@ -135,15 +132,14 @@ namespace Tac
         public int WasteId { get; private set; }
         public int WasteWaterId { get; private set; }
 
+        const int SECONDS_PER_MINUTE = 60;
+        const int SECONDS_PER_HOUR = 60 * SECONDS_PER_MINUTE;
+        const int SECONDS_PER_KERBIN_DAY = 6 * SECONDS_PER_HOUR;
+
         public GlobalSettings()
         {
-            const int SECONDS_PER_MINUTE = 60;
-            const int SECONDS_PER_HOUR = 60 * SECONDS_PER_MINUTE;
-            const int SECONDS_PER_KERBIN_DAY = 6 * SECONDS_PER_HOUR;
 
-            MaxDeltaTime = SECONDS_PER_HOUR * 24; // max 24 hours (86,400 seconds) per physics update, or 2,160,000 seconds per second (for the default of 0.04 seconds per physics update)
-            ElectricityMaxDeltaTime = 1; // max 1 second per physics update
-
+            
             Food = "Food";
             Water = "Water";
             Oxygen = "Oxygen";
@@ -157,25 +153,25 @@ namespace Tac
             // Defaults are scaled from NASA's numbers for Human consumption
             // For the math behind the numbers, see
             // https://docs.google.com/spreadsheet/ccc?key=0Aioc9ek3XAvwdGNsRlh3OVhlbTFBR3M4RW0zLUNTRFE&usp=sharing
-            FoodConsumptionRate = 0.000016927083333;
-            WaterConsumptionRate = 0.000011188078704;
-            OxygenConsumptionRate = 0.001713537562385;
-            CO2ProductionRate = 0.00148012889876;
-            WasteProductionRate = 0.000001539351852;
-            WasteWaterProductionRate = 0.000014247685185;
+            kerbalProductionRates[FoodId] = -0.000016927083333;
+            kerbalProductionRates[WaterId] = -0.000011188078704;
+            kerbalProductionRates[OxygenId] = -0.001713537562385;
+            kerbalProductionRates[CO2Id] = 0.00148012889876;
+            kerbalProductionRates[WasteId] = 0.000001539351852;
+            kerbalProductionRates[WasteWaterId] = 0.000014247685185;
+            kerbalProductionRates[ElectricityId] = -0.014166666666667;
 
             BaseElectricityConsumptionRate = 0.02125; // 76.5 per hour or 1.275 per minute, about 75% of a stock probe core's consumption (1.7 per min)
-            ElectricityConsumptionRate = 0.014166666666667; // 51 per hour or 0.85 per minute, about 50% of a stock probe core's consumption
             EvaElectricityConsumptionRate = 0.00425; // 91.8 per 6 hours (1 Kerbin day), 15.3 per hour, 15% of a probe core or 12% compared to in a pod
 
-            // Amount of resources to load crewable parts with, in seconds
-            EvaDefaultResourceAmount = 1.0 * SECONDS_PER_KERBIN_DAY; // 1 Kerbin day, 6 hours
 
-            // Maximum amount of time in seconds that a Kerbal can go without the resource
-            MaxTimeWithoutFood = 360.0 * SECONDS_PER_HOUR; // 360 hours, 60 Kerbin days, 15 Earth days
-            MaxTimeWithoutWater = 36.0 * SECONDS_PER_HOUR; // 36 hours, 6 Kerbin days, 1.5 Earth days
-            MaxTimeWithoutOxygen = 2.0 * SECONDS_PER_HOUR; // 2 hours
-            MaxTimeWithoutElectricity = 2.0 * SECONDS_PER_HOUR; // 2 hours
+            kerbalStarvationTimes[FoodId] = 360.0 * SECONDS_PER_HOUR; // 360 hours, 60 Kerbin days, 15 Earth days
+            kerbalStarvationTimes[WaterId] = 36.0 * SECONDS_PER_HOUR; // 36 hours, 6 Kerbin days, 1.5 Earth days
+            kerbalStarvationTimes[OxygenId] = 2.0 * SECONDS_PER_HOUR; // 2 hours
+            kerbalStarvationTimes[ElectricityId] = 2.0 * SECONDS_PER_HOUR; // 2 hours
+            kerbalRequirements = new int[] { FoodId, WaterId, OxygenId, ElectricityId };
+            kerbalProduction = new int[] { CO2Id, WaterId, WasteWaterId };
+            
         }
 
         public void Load(ConfigNode node)
@@ -183,10 +179,13 @@ namespace Tac
             if (node.HasNode(configNodeName))
             {
                 ConfigNode settingsNode = node.GetNode(configNodeName);
+                MaxDeltaTime = SECONDS_PER_HOUR * 24; // max 24 hours (86,400 seconds) per physics update, or 2,160,000 seconds per second (for the default of 0.04 seconds per physics update)
+                ElectricityMaxDeltaTime = 1; // max 1 second per physics update
 
                 MaxDeltaTime = Utilities.GetValue(settingsNode, "MaxDeltaTime", MaxDeltaTime);
                 ElectricityMaxDeltaTime = Utilities.GetValue(settingsNode, "ElectricityMaxDeltaTime", ElectricityMaxDeltaTime);
 
+                //TODO this will get in a bit of a mess if you change the resources - treating the default resources and the new ones seperately
                 Food = Utilities.GetValue(settingsNode, "FoodResource", Food);
                 Water = Utilities.GetValue(settingsNode, "WaterResource", Water);
                 Oxygen = Utilities.GetValue(settingsNode, "OxygenResource", Oxygen);
@@ -194,22 +193,33 @@ namespace Tac
                 Waste = Utilities.GetValue(settingsNode, "WasteResource", Waste);
                 WasteWater = Utilities.GetValue(settingsNode, "WasteWaterResource", WasteWater);
 
-                FoodConsumptionRate = Utilities.GetValue(settingsNode, "FoodConsumptionRate", FoodConsumptionRate);
-                WaterConsumptionRate = Utilities.GetValue(settingsNode, "WaterConsumptionRate", WaterConsumptionRate);
-                OxygenConsumptionRate = Utilities.GetValue(settingsNode, "OxygenConsumptionRate", OxygenConsumptionRate);
-                ElectricityConsumptionRate = Utilities.GetValue(settingsNode, "ElectricityConsumptionRate", ElectricityConsumptionRate);
+                deathCauses[FoodId] = "starvation";
+                deathCauses[WaterId] = "dehydration";
+                deathCauses[OxygenId] = "oxygen deprivation";
+                deathCauses[ElectricityId] = "air toxicity";
+
+
+                kerbalRequirements = new int[] { FoodId, WaterId, OxygenId, ElectricityId };
+
+                // Amount of resources to load crewable parts with, in seconds
+                EvaDefaultResourceAmount = 1.0 * SECONDS_PER_KERBIN_DAY; // 1 Kerbin day, 6 hours
+
+                // Maximum amount of time in seconds that a Kerbal can go without the resource
+
+                foreach (int resource in new int[]{FoodId, WaterId, OxygenId, CO2Id, WasteId, WasteWaterId, ElectricityId}) {
+                    String resourceName =  PartResourceLibrary.Instance.GetDefinition(resource).name;
+                    //Load up either a prodcution or a consumption - consuption rates need to be negated
+                    kerbalProductionRates[resource] =  -Utilities.GetValue(settingsNode, resourceName+"ConsumptionRate", -kerbalProductionRates[resource]);
+                    kerbalProductionRates[resource] = Utilities.GetValue(settingsNode, resourceName + "ProductionRateRate", kerbalProductionRates[resource]);
+                }
                 BaseElectricityConsumptionRate = Utilities.GetValue(settingsNode, "BaseElectricityConsumptionRate", BaseElectricityConsumptionRate);
                 EvaElectricityConsumptionRate = Utilities.GetValue(settingsNode, "EvaElectricityConsumptionRate", EvaElectricityConsumptionRate);
-                CO2ProductionRate = Utilities.GetValue(settingsNode, "CO2ProductionRate", CO2ProductionRate);
-                WasteProductionRate = Utilities.GetValue(settingsNode, "WasteProductionRate", WasteProductionRate);
-                WasteWaterProductionRate = Utilities.GetValue(settingsNode, "WasteWaterProductionRate", WasteWaterProductionRate);
 
                 EvaDefaultResourceAmount = Utilities.GetValue(settingsNode, "EvaDefaultResourceAmount", EvaDefaultResourceAmount);
-
-                MaxTimeWithoutFood = Utilities.GetValue(settingsNode, "MaxTimeWithoutFood", MaxTimeWithoutFood);
-                MaxTimeWithoutWater = Utilities.GetValue(settingsNode, "MaxTimeWithoutWater", MaxTimeWithoutWater);
-                MaxTimeWithoutOxygen = Utilities.GetValue(settingsNode, "MaxTimeWithoutOxygen", MaxTimeWithoutOxygen);
-                MaxTimeWithoutElectricity = Utilities.GetValue(settingsNode, "MaxTimeWithoutElectricity", MaxTimeWithoutElectricity);
+                foreach (int resource in kerbalRequirements) {
+                    String resourceName =  PartResourceLibrary.Instance.GetDefinition(resource).name;
+                    kerbalStarvationTimes[resource] = Utilities.GetValue(settingsNode, "MaxTimeWithout"+resourceName,kerbalStarvationTimes[resource]);
+                }
             }
         }
 
@@ -236,22 +246,21 @@ namespace Tac
             settingsNode.AddValue("WasteResource", Waste);
             settingsNode.AddValue("WasteWaterResource", WasteWater);
 
-            settingsNode.AddValue("FoodConsumptionRate", FoodConsumptionRate);
-            settingsNode.AddValue("WaterConsumptionRate", WaterConsumptionRate);
-            settingsNode.AddValue("OxygenConsumptionRate", OxygenConsumptionRate);
-            settingsNode.AddValue("ElectricityConsumptionRate", ElectricityConsumptionRate);
+            foreach (int resource in new int[] { FoodId, WaterId, OxygenId, CO2Id, WasteId, WasteWaterId, ElectricityId })
+            {
+                String resourceName = PartResourceLibrary.Instance.GetDefinition(resource).name;
+                settingsNode.AddValue(resourceName + "ProductionRateRate", kerbalProductionRates[resource]);
+            }
             settingsNode.AddValue("BaseElectricityConsumptionRate", BaseElectricityConsumptionRate);
             settingsNode.AddValue("EvaElectricityConsumptionRate", EvaElectricityConsumptionRate);
-            settingsNode.AddValue("CO2ProductionRate", CO2ProductionRate);
-            settingsNode.AddValue("WasteProductionRate", WasteProductionRate);
-            settingsNode.AddValue("WasteWaterProductionRate", WasteWaterProductionRate);
 
             settingsNode.AddValue("EvaDefaultResourceAmount", EvaDefaultResourceAmount);
 
-            settingsNode.AddValue("MaxTimeWithoutFood", MaxTimeWithoutFood);
-            settingsNode.AddValue("MaxTimeWithoutWater", MaxTimeWithoutWater);
-            settingsNode.AddValue("MaxTimeWithoutOxygen", MaxTimeWithoutOxygen);
-            settingsNode.AddValue("MaxTimeWithoutElectricity", MaxTimeWithoutElectricity);
+            foreach (int resource in kerbalRequirements)
+            {
+                String resourceName = PartResourceLibrary.Instance.GetDefinition(resource).name;
+                settingsNode.AddValue("MaxTimeWithout" + resourceName, kerbalStarvationTimes[resource]);
+            }
         }
     }
 }

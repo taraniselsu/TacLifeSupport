@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Thunder Aerospace Corporation's Life Support for Kerbal Space Program.
  * Written by Taranis Elsu.
  * 
@@ -157,14 +157,19 @@ namespace Tac
 
         private void DrawVesselInfo(VesselInfo vesselInfo, double currentTime)
         {
-            GUILayout.Label(vesselInfo.vesselName + " (" + vesselInfo.numCrew + " crew) [" + vesselInfo.vesselType + "]", headerStyle);
+            GUILayout.Label(vesselInfo.vesselName + " (" + vesselInfo.crew.Count + " crew) [" + vesselInfo.vesselType + "]", headerStyle);
             GUILayout.Label("  Last updated:          " + Utilities.FormatTime(currentTime - vesselInfo.lastUpdate), labelStyle);
-            if (vesselInfo.numCrew > 0)
+            if (vesselInfo.crew.Count > 0)
             {
-                GUILayout.Label("  Food remaining:        " + Utilities.FormatTime(vesselInfo.estimatedTimeFoodDepleted - currentTime), getStyle(vesselInfo.foodStatus));
-                GUILayout.Label("  Water remaining:       " + Utilities.FormatTime(vesselInfo.estimatedTimeWaterDepleted - currentTime), getStyle(vesselInfo.waterStatus));
-                GUILayout.Label("  Oxygen remaining:      " + Utilities.FormatTime(vesselInfo.estimatedTimeOxygenDepleted - currentTime), getStyle(vesselInfo.oxygenStatus));
-                GUILayout.Label("  Electricity remaining: " + Utilities.FormatTime(vesselInfo.estimatedTimeElectricityDepleted - currentTime), getStyle(vesselInfo.electricityStatus));
+                foreach (var resource in vesselInfo.depletionEstimates)
+                {
+                    String resourceName = PartResourceLibrary.Instance.GetDefinition(resource.Key).name;
+                    VesselInfo.Status status;
+                    vesselInfo.resourceStatuses.TryGetValue(resource.Key, out status);
+                    double timeEstimate = resource.Value - currentTime;
+                    GUILayout.Label("  "+resourceName+" remaining:        " 
+                        + Utilities.FormatTime(timeEstimate), getStyle(status));
+                }
             }
         }
 

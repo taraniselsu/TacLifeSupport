@@ -28,6 +28,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using UnityEngine;
 
 namespace Tac
 {
@@ -37,50 +38,26 @@ namespace Tac
 
         public string vesselName;
         public VesselType vesselType = VesselType.Unknown;
-        public int numCrew;
+
+        public double lastUpdate = 0;
+        public Boolean loaded;
+
+        public Dictionary<int, Status> resourceStatuses = new Dictionary<int, Status>();
+        public Dictionary<int, ResourceLimits> resourceLimits = new Dictionary<int, ResourceLimits>();
+        
+        public Dictionary<String, CrewMemberInfo> crew = new Dictionary<String, CrewMemberInfo>();
         public int numOccupiedParts;
+        public int crewCapacity;
 
-        public double lastUpdate;
-        public double lastFood;
-        public double lastWater;
-        public double lastOxygen;
-        public double lastElectricity;
+        public Dictionary<int, double> depletionEstimates = new Dictionary<int, double>();
 
-        public Status foodStatus = Status.GOOD;
-        public Status waterStatus = Status.GOOD;
-        public Status oxygenStatus = Status.GOOD;
-        public Status electricityStatus = Status.GOOD;
-
-        public double remainingFood;
-        public double remainingWater;
-        public double remainingOxygen;
-        public double remainingElectricity;
-        public double remainingCO2;
-        public double remainingWaste;
-        public double remainingWasteWater;
-
-        public double maxFood;
-        public double maxWater;
-        public double maxOxygen;
-        public double maxElectricity;
-
-        public double estimatedTimeFoodDepleted;
-        public double estimatedTimeWaterDepleted;
-        public double estimatedTimeOxygenDepleted;
-        public double estimatedTimeElectricityDepleted;
-
-        public double estimatedElectricityConsumptionRate;
-        public bool hibernating;
+        public List<TacGenericConverter> converters;
+        public List<IProtoElecComponent> elecProtoComponents;
 
         public VesselInfo(string vesselName, double currentTime)
         {
             this.vesselName = vesselName;
             lastUpdate = currentTime;
-            lastFood = currentTime;
-            lastWater = currentTime;
-            lastOxygen = currentTime;
-            lastElectricity = currentTime;
-            hibernating = false;
         }
 
         public static VesselInfo Load(ConfigNode node)
@@ -90,32 +67,31 @@ namespace Tac
 
             VesselInfo info = new VesselInfo(vesselName, lastUpdate);
             info.vesselType = Utilities.GetValue(node, "vesselType", VesselType.Unknown);
-            info.numCrew = Utilities.GetValue(node, "numCrew", 0);
             info.numOccupiedParts = Utilities.GetValue(node, "numOccupiedParts", 0);
 
-            info.lastFood = Utilities.GetValue(node, "lastFood", lastUpdate);
-            info.lastWater = Utilities.GetValue(node, "lastWater", lastUpdate);
-            info.lastOxygen = Utilities.GetValue(node, "lastOxygen", lastUpdate);
-            info.lastElectricity = Utilities.GetValue(node, "lastElectricity", lastUpdate);
+            //TODO There isn't a better way to get the names and valued that all start with "remaining"?
+            ConfigNode.ValueList values = node.values;
+            foreach (String valueName in values.DistinctNames()) {
+                if (valueName.StartsWith("remaining"))
+                {
+                    String resourceName = valueName.Substring(9);
+                    double remaining = Utilities.GetValue(node, "remaining" + resourceName, 0.0);
+                    double max = Utilities.GetValue(node, "max" + resourceName, 0.0);
 
-            info.remainingFood = Utilities.GetValue(node, "remainingFood", 0.0);
-            info.remainingWater = Utilities.GetValue(node, "remainingWater", 0.0);
-            info.remainingOxygen = Utilities.GetValue(node, "remainingOxygen", 0.0);
-            info.remainingElectricity = Utilities.GetValue(node, "remainingElectricity", 0.0);
-            info.remainingCO2 = Utilities.GetValue(node, "remainingCO2", 0.0);
-            info.remainingWaste = Utilities.GetValue(node, "remainingWaste", 0.0);
-            info.remainingWasteWater = Utilities.GetValue(node, "remainingWasteWater", 0.0);
-
-            info.maxFood = Utilities.GetValue(node, "maxFood", 0.0);
-            info.maxWater = Utilities.GetValue(node, "maxWater", 0.0);
-            info.maxOxygen = Utilities.GetValue(node, "maxOxygen", 0.0);
-            info.maxElectricity = Utilities.GetValue(node, "maxElectricity", 0.0);
-
-            info.estimatedElectricityConsumptionRate = Utilities.GetValue(node, "estimatedElectricityConsumptionRate", 0.0);
-
-            info.hibernating = Utilities.GetValue(node, "hibernating", false);
+                    int resourceId = getResourceId(resourceName);
+                    ResourceLimits loadedLimits = new ResourceLimits(remaining, max);
+                    //info.Log("loaded " + loadedLimits);
+                    info.resourceLimits.Add(resourceId, loadedLimits);
+                }
+            }
 
             return info;
+        }
+
+        private static int getResourceId(String resourceName) {
+            if (resourceName=="Electricity") resourceName = "ElectricCharge";
+            if (resourceName == "CO2") resourceName = "CarbonDioxide";
+            return PartResourceLibrary.Instance.GetDefinition(resourceName).id;
         }
 
         public ConfigNode Save(ConfigNode config)
@@ -123,50 +99,36 @@ namespace Tac
             ConfigNode node = config.AddNode(ConfigNodeName);
             node.AddValue("vesselName", vesselName);
             node.AddValue("vesselType", vesselType.ToString());
-            node.AddValue("numCrew", numCrew);
             node.AddValue("numOccupiedParts", numOccupiedParts);
 
             node.AddValue("lastUpdate", lastUpdate);
-            node.AddValue("lastFood", lastFood);
-            node.AddValue("lastWater", lastWater);
-            node.AddValue("lastOxygen", lastOxygen);
-            node.AddValue("lastElectricity", lastElectricity);
 
-            node.AddValue("remainingFood", remainingFood);
-            node.AddValue("remainingWater", remainingWater);
-            node.AddValue("remainingOxygen", remainingOxygen);
-            node.AddValue("remainingElectricity", remainingElectricity);
-            node.AddValue("remainingCO2", remainingCO2);
-            node.AddValue("remainingWaste", remainingWaste);
-            node.AddValue("remainingWasteWater", remainingWasteWater);
-
-            node.AddValue("maxFood", maxFood);
-            node.AddValue("maxWater", maxWater);
-            node.AddValue("maxOxygen", maxOxygen);
-            node.AddValue("maxElectricity", maxElectricity);
-
-            node.AddValue("estimatedElectricityConsumptionRate", estimatedElectricityConsumptionRate);
-
-            node.AddValue("hibernating", hibernating);
+            foreach (KeyValuePair<int, ResourceLimits> resources in resourceLimits) {
+                String resourceName = PartResourceLibrary.Instance.GetDefinition(resources.Key).name;
+                node.AddValue("remaining" + resourceName, resources.Value.available);
+                node.AddValue("max" + resourceName, resources.Value.maximum); 
+            }
 
             return node;
         }
 
         public void ClearAmounts()
         {
-            numCrew = 0;
             numOccupiedParts = 0;
-            remainingFood = 0.0;
-            remainingWater = 0.0;
-            remainingOxygen = 0.0;
-            remainingElectricity = 0.0;
-            remainingCO2 = 0.0;
-            remainingWaste = 0.0;
-            remainingWasteWater = 0.0;
-            maxFood = 0.0;
-            maxWater = 0.0;
-            maxOxygen = 0.0;
-            maxElectricity = 0.0;
+            resourceLimits.Clear();
+        }
+
+        public static double GetResourceQuantity(Vessel vessel, int resource)
+        {
+            double actualAvailable = 0;
+            foreach (Part part in vessel.parts)
+            {
+                if (part.Resources.Contains(resource))
+                {
+                    actualAvailable += part.Resources.Get(resource).amount;
+                }
+            }
+            return actualAvailable;
         }
 
         public enum Status

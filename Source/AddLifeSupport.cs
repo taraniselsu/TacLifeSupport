@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Thunder Aerospace Corporation's Life Support for Kerbal Space Program.
  * Written by Taranis Elsu.
  * 
@@ -72,12 +72,16 @@ namespace Tac
             EvaAddPartModule(prefabPart);
 
             EvaAddResource(prefabPart, globalSettings.EvaElectricityConsumptionRate, globalSettings.Electricity, false);
-            EvaAddResource(prefabPart, globalSettings.FoodConsumptionRate, globalSettings.Food, false);
-            EvaAddResource(prefabPart, globalSettings.WaterConsumptionRate, globalSettings.Water, false);
-            EvaAddResource(prefabPart, globalSettings.OxygenConsumptionRate, globalSettings.Oxygen, false);
-            EvaAddResource(prefabPart, globalSettings.CO2ProductionRate, globalSettings.CO2, false);
-            EvaAddResource(prefabPart, globalSettings.WasteProductionRate, globalSettings.Waste, false);
-            EvaAddResource(prefabPart, globalSettings.WasteWaterProductionRate, globalSettings.WasteWater, false);
+            foreach (int resourceId in new int[]{globalSettings.FoodId, globalSettings.WaterId, globalSettings.OxygenId})
+            {
+                String resourceName = PartResourceLibrary.Instance.GetDefinition(resourceId).name;
+                EvaAddResource(prefabPart, -globalSettings.kerbalProductionRates[resourceId], resourceName, false);
+            }
+            foreach (int resourceId in new int[] { globalSettings.CO2Id, globalSettings.WasteWaterId, globalSettings.WasteId })
+            {
+                String resourceName = PartResourceLibrary.Instance.GetDefinition(resourceId).name;
+                EvaAddResource(prefabPart, globalSettings.kerbalProductionRates[resourceId], resourceName, false);
+            }
         }
 
         private void EvaAddPartModule(Part part)

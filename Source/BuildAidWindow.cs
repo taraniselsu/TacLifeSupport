@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Thunder Aerospace Corporation's Life Support for Kerbal Space Program.
  * Written by Taranis Elsu.
  * 
@@ -44,27 +44,10 @@ namespace Tac
 
         private int numCrew;
         private int maxCrew;
-        private string food = "";
-        private string water = "";
-        private string oxygen = "";
-        private string electricity = "";
-        private string maxWaste = "";
-        private string maxWasteWater = "";
-        private string maxCarbonDioxide = "";
-        private string foodDuration = "";
-        private string waterDuration = "";
-        private string oxygenDuration = "";
-        private string electricityDuration = "";
-        private string wasteRoom = "";
-        private string wasteWaterRoom = "";
-        private string carbonDioxideRoom = "";
-        private string foodDurationMaxCrew = "";
-        private string waterDurationMaxCrew = "";
-        private string oxygenDurationMaxCrew = "";
-        private string electricityDurationMaxCrew = "";
-        private string wasteRoomMaxCrew = "";
-        private string wasteWaterRoomMaxCrew = "";
-        private string carbonDioxideRoomMaxCrew = "";
+        private Dictionary<int, String> amounts = new Dictionary<int, String>();
+        private Dictionary<int, String> durations = new Dictionary<int,string>();
+        private Dictionary<int, String> maxCrewDurations = new Dictionary<int, string>();
+
 
         public BuildAidWindow(GlobalSettings globalSettings)
             : base("Life Support Build Aid", 300, 180)
@@ -124,50 +107,57 @@ namespace Tac
 
             GUILayout.BeginVertical();
             GUILayout.Label("  ", labelStyle);
-            GUILayout.Label("Food", labelStyle);
-            GUILayout.Label("Water", labelStyle);
-            GUILayout.Label("Oxygen", labelStyle);
-            GUILayout.Label("Electricity", labelStyle);
+            //TODO load resource names
+            foreach (int resource in globalSettings.kerbalRequirements)
+            {
+                String resourceName = PartResourceLibrary.Instance.GetDefinition(resource).name;
+                GUILayout.Label(resourceName, labelStyle);
+            }
             GUILayout.Space(10f);
-            GUILayout.Label("Waste", labelStyle);
-            GUILayout.Label("Waste Water", labelStyle);
-            GUILayout.Label("Carbon Dioxide", labelStyle);
+            foreach (int resource in globalSettings.kerbalProduction)
+            {
+                String resourceName = PartResourceLibrary.Instance.GetDefinition(resource).name;
+                GUILayout.Label(resourceName, labelStyle);
+            }
             GUILayout.EndVertical();
 
             GUILayout.BeginVertical();
             GUILayout.Label("Amount", valueStyle);
-            GUILayout.Label(food, valueStyle);
-            GUILayout.Label(water, valueStyle);
-            GUILayout.Label(oxygen, valueStyle);
-            GUILayout.Label(electricity, valueStyle);
+            foreach (int resource in globalSettings.kerbalRequirements)
+            {
+                GUILayout.Label(amounts[resource], valueStyle);
+            }
             GUILayout.Space(10f);
-            GUILayout.Label(maxWaste, valueStyle);
-            GUILayout.Label(maxWasteWater, valueStyle);
-            GUILayout.Label(maxCarbonDioxide, valueStyle);
+            foreach (int resource in globalSettings.kerbalProduction)
+            {
+                GUILayout.Label(amounts[resource], valueStyle);
+            }
             GUILayout.EndVertical();
 
             GUILayout.BeginVertical();
             GUILayout.Label("With Current Crew", valueStyle);
-            GUILayout.Label(foodDuration, valueStyle);
-            GUILayout.Label(waterDuration, valueStyle);
-            GUILayout.Label(oxygenDuration, valueStyle);
-            GUILayout.Label(electricityDuration, valueStyle);
+            foreach (int resource in globalSettings.kerbalRequirements)
+            {
+                GUILayout.Label(durations[resource], valueStyle);
+            }
             GUILayout.Space(10f);
-            GUILayout.Label(wasteRoom, valueStyle);
-            GUILayout.Label(wasteWaterRoom, valueStyle);
-            GUILayout.Label(carbonDioxideRoom, valueStyle);
+            foreach (int resource in globalSettings.kerbalProduction)
+            {
+                GUILayout.Label(durations[resource], valueStyle);
+            }
             GUILayout.EndVertical();
 
             GUILayout.BeginVertical();
             GUILayout.Label("With Max Crew", valueStyle);
-            GUILayout.Label(foodDurationMaxCrew, valueStyle);
-            GUILayout.Label(waterDurationMaxCrew, valueStyle);
-            GUILayout.Label(oxygenDurationMaxCrew, valueStyle);
-            GUILayout.Label(electricityDurationMaxCrew, valueStyle);
+            foreach (int resource in globalSettings.kerbalRequirements)
+            {
+                GUILayout.Label(maxCrewDurations[resource], valueStyle);
+            }
             GUILayout.Space(10f);
-            GUILayout.Label(wasteRoomMaxCrew, valueStyle);
-            GUILayout.Label(wasteWaterRoomMaxCrew, valueStyle);
-            GUILayout.Label(carbonDioxideRoomMaxCrew, valueStyle);
+            foreach (int resource in globalSettings.kerbalProduction)
+            {
+                GUILayout.Label(maxCrewDurations[resource], valueStyle);
+            }
             GUILayout.EndVertical();
 
             GUILayout.EndHorizontal();
@@ -183,14 +173,12 @@ namespace Tac
                 maxCrew = 0;
                 int numOccupiedParts = 0;
                 int numOccupiableParts = 0;
-                double foodValue = 0;
-                double waterValue = 0;
-                double oxygenValue = 0;
-                double electricityValue = 0;
-                double wasteValue = 0;
-                double wasteWaterValue = 0;
-                double carbonDioxideValue = 0;
+                Dictionary<int, ResourceLimits> resources = new Dictionary<int,ResourceLimits>();
 
+                foreach (int resource in globalSettings.kerbalProductionRates.Keys)
+                {
+                    resources[resource] = new ResourceLimits(0, 0);
+                }
                 foreach (Part part in EditorLogic.fetch.ship.parts)
                 {
                     if (part.CrewCapacity > 0)
@@ -201,34 +189,13 @@ namespace Tac
 
                     foreach (PartResource partResource in part.Resources)
                     {
-                        if (partResource.info.id == globalSettings.FoodId)
+                        if (!resources.ContainsKey(partResource.info.id))
                         {
-                            foodValue += partResource.amount;
+                            resources[partResource.info.id] = new ResourceLimits(0, 0);
                         }
-                        else if (partResource.info.id == globalSettings.WaterId)
-                        {
-                            waterValue += partResource.amount;
-                        }
-                        else if (partResource.info.id == globalSettings.OxygenId)
-                        {
-                            oxygenValue += partResource.amount;
-                        }
-                        else if (partResource.info.id == globalSettings.ElectricityId)
-                        {
-                            electricityValue += partResource.amount;
-                        }
-                        else if (partResource.info.id == globalSettings.WasteId)
-                        {
-                            wasteValue += partResource.maxAmount;
-                        }
-                        else if (partResource.info.id == globalSettings.WasteWaterId)
-                        {
-                            wasteWaterValue += partResource.maxAmount;
-                        }
-                        else if (partResource.info.id == globalSettings.CO2Id)
-                        {
-                            carbonDioxideValue += partResource.maxAmount;
-                        }
+                        ResourceLimits limits = resources[partResource.info.id];
+                        limits.available += partResource.amount;
+                        limits.maximum += partResource.maxAmount;
                     }
                 }
 
@@ -250,61 +217,37 @@ namespace Tac
                     }
                 }
 
-                food = foodValue.ToString("#,##0.00");
-                water = waterValue.ToString("#,##0.00");
-                oxygen = oxygenValue.ToString("#,##0.00");
-                electricity = electricityValue.ToString("#,##0.00");
-                maxWaste = wasteValue.ToString("#,##0.00");
-                maxWasteWater = wasteWaterValue.ToString("#,##0.00");
-                maxCarbonDioxide = carbonDioxideValue.ToString("#,##0.00");
-
-                if (numCrew > 0)
+                foreach (KeyValuePair<int, ResourceLimits> resource in resources)
                 {
-                    foodDuration = Utilities.FormatTime(foodValue / globalSettings.FoodConsumptionRate / numCrew);
-                    waterDuration = Utilities.FormatTime(waterValue / globalSettings.WaterConsumptionRate / numCrew);
-                    oxygenDuration = Utilities.FormatTime(oxygenValue / globalSettings.OxygenConsumptionRate / numCrew);
-                    electricityDuration = Utilities.FormatTime(electricityValue / CalculateElectricityConsumptionRate(numCrew, numOccupiedParts));
-                    wasteRoom = Utilities.FormatTime(wasteValue / globalSettings.WasteProductionRate / numCrew);
-                    wasteWaterRoom = Utilities.FormatTime(wasteWaterValue / globalSettings.WasteWaterProductionRate / numCrew);
-                    carbonDioxideRoom = Utilities.FormatTime(carbonDioxideValue / globalSettings.CO2ProductionRate / numCrew);
-                }
-                else
-                {
-                    foodDuration = "-";
-                    waterDuration = "-";
-                    oxygenDuration = "-";
-                    electricityDuration = "-";
-                    wasteRoom = "-";
-                    wasteWaterRoom = "-";
-                    carbonDioxideRoom = "-";
+                    if (resource.Value.available > 0)
+                    {
+                        amounts[resource.Key] = resource.Value.available.ToString("#,##0.00");
+                    }
+                    else
+                    {
+                        amounts[resource.Key] = (resource.Value.maximum - resource.Value.available).ToString("#,##0.00");
+                    }
                 }
 
-                if (maxCrew > 0)
-                {
-                    foodDurationMaxCrew = Utilities.FormatTime(foodValue / globalSettings.FoodConsumptionRate / maxCrew);
-                    waterDurationMaxCrew = Utilities.FormatTime(waterValue / globalSettings.WaterConsumptionRate / maxCrew);
-                    oxygenDurationMaxCrew = Utilities.FormatTime(oxygenValue / globalSettings.OxygenConsumptionRate / maxCrew);
-                    electricityDurationMaxCrew = Utilities.FormatTime(electricityValue / CalculateElectricityConsumptionRate(maxCrew, numOccupiableParts));
-                    wasteRoomMaxCrew = Utilities.FormatTime(wasteValue / globalSettings.WasteProductionRate / maxCrew);
-                    wasteWaterRoomMaxCrew = Utilities.FormatTime(wasteWaterValue / globalSettings.WasteWaterProductionRate / maxCrew);
-                    carbonDioxideRoomMaxCrew = Utilities.FormatTime(carbonDioxideValue / globalSettings.CO2ProductionRate / maxCrew);
-                }
-                else
-                {
-                    foodDurationMaxCrew = "-";
-                    waterDurationMaxCrew = "-";
-                    oxygenDurationMaxCrew = "-";
-                    electricityDurationMaxCrew = "-";
-                    wasteRoomMaxCrew = "-";
-                    wasteWaterRoomMaxCrew = "-";
-                    carbonDioxideRoomMaxCrew = "-";
+                foreach (KeyValuePair<int, double> rates in globalSettings.kerbalProductionRates) {
+                    if (rates.Value<0)//this resource is used
+                    {
+                        durations[rates.Key] = formatTime(resources[rates.Key].available / -rates.Value, numCrew);
+                        maxCrewDurations[rates.Key] = formatTime(resources[rates.Key].available / -rates.Value, maxCrew);
+                    }
+                    else if (rates.Value>0)//this resource is produced
+                    {
+                        durations[rates.Key] = formatTime((resources[rates.Key].maximum - resources[rates.Key].available) / rates.Value, numCrew);
+                        maxCrewDurations[rates.Key] = formatTime((resources[rates.Key].maximum - resources[rates.Key].available) / rates.Value, maxCrew);
+                    }
                 }
             }
         }
 
-        private double CalculateElectricityConsumptionRate(int numCrew, int numParts)
+        private String formatTime(double time, int crew)
         {
-            return (globalSettings.ElectricityConsumptionRate * numCrew) + (globalSettings.BaseElectricityConsumptionRate * numParts);
+            if (crew == 0) return "-";
+            return Utilities.FormatTime(time/crew);
         }
     }
 }

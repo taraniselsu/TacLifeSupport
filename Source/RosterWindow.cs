@@ -92,8 +92,9 @@ namespace Tac
                 {
                     GUILayout.Label(crewInfo.name + " (" + crewInfo.vesselName + ")", headerStyle);
                     GUILayout.Label("  Last updated: " + Utilities.FormatTime(currentTime - crewInfo.lastUpdate), labelStyle);
-                    GUILayout.Label("  Last food: " + Utilities.FormatTime(currentTime - crewInfo.lastFood), getStyle(crewInfo.lastUpdate, crewInfo.lastFood, globalSettings.MaxTimeWithoutFood));
-                    GUILayout.Label("  Last water: " + Utilities.FormatTime(currentTime - crewInfo.lastWater), getStyle(crewInfo.lastUpdate, crewInfo.lastWater, globalSettings.MaxTimeWithoutWater));
+                    //TODO
+					//GUILayout.Label("  Last food: " + Utilities.FormatTime(currentTime - crewInfo.lastFood), getStyle(crewInfo.lastUpdate, crewInfo.lastFood, globalSettings.MaxTimeWithoutFood));
+                    //GUILayout.Label("  Last water: " + Utilities.FormatTime(currentTime - crewInfo.lastWater), getStyle(crewInfo.lastUpdate, crewInfo.lastWater, globalSettings.MaxTimeWithoutWater));
                     if (gameSettings.HibernateInsteadOfKill)
                     {
                         GUILayout.Label("  Hibernating: " + crewInfo.hibernating, labelStyle);

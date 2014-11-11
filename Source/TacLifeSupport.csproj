@@ -77,6 +77,10 @@
     </Compile>
     <Compile Include="AddLifeSupport.cs" />
     <Compile Include="BuildAidWindow.cs" />
+    <Compile Include="IProtoElecComponent.cs" />
+    <Compile Include="ProtoModuleGenerator.cs" />
+    <Compile Include="ProtoSolarPanel.cs" />
+    <Compile Include="ResourceLimits.cs" />
     <Compile Include="GameSettings.cs" />
     <Compile Include="EditorController.cs" />
     <Compile Include="InstallChecker.cs" />

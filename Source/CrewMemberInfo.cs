@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Thunder Aerospace Corporation's Life Support for Kerbal Space Program.
  * Written by Taranis Elsu.
  * 
@@ -37,8 +37,8 @@ namespace Tac
 
         public readonly string name;
         public double lastUpdate;
-        public double lastFood;
-        public double lastWater;
+
+        public Dictionary<int, ResourceLimits> reserves = new Dictionary<int, ResourceLimits>();
         public string vesselName;
         public Guid vesselId;
         public bool hibernating;
@@ -46,10 +46,13 @@ namespace Tac
 
         public CrewMemberInfo(string crewMemberName, string vesselName, Guid vesselId, double currentTime)
         {
+            GlobalSettings globalSettings = TacLifeSupport.Instance.globalSettings;
             name = crewMemberName;
             lastUpdate = currentTime;
-            lastFood = currentTime;
-            lastWater = currentTime;
+            foreach (int resource in globalSettings.kerbalRequirements) {
+                double maxAmount = - globalSettings.kerbalProductionRates[resource] * globalSettings.kerbalStarvationTimes[resource];
+                reserves[resource] = new ResourceLimits(maxAmount,maxAmount);
+            }
             this.vesselName = vesselName;
             this.vesselId = vesselId;
             hibernating = false;
@@ -60,6 +63,7 @@ namespace Tac
             string name = Utilities.GetValue(node, "name", "Unknown");
             double lastUpdate = Utilities.GetValue(node, "lastUpdate", 0.0);
             string vesselName = Utilities.GetValue(node, "vesselName", "Unknown");
+            GlobalSettings globalSettings = TacLifeSupport.Instance.globalSettings;
             Guid vesselId;
             if (node.HasValue("vesselId"))
             {
@@ -71,8 +75,28 @@ namespace Tac
             }
 
             CrewMemberInfo info = new CrewMemberInfo(name, vesselName, vesselId, lastUpdate);
-            info.lastFood = Utilities.GetValue(node, "lastFood", lastUpdate);
-            info.lastWater = Utilities.GetValue(node, "lastWater", lastUpdate);
+            //load up old style lastfood config
+            if (node.HasValue("lastFood"))
+            {
+                foreach (int resource in globalSettings.kerbalRequirements)
+                {
+                    String resourceName = PartResourceLibrary.Instance.GetDefinition(resource).name;
+                    double timeWithout = lastUpdate - Utilities.GetValue(node, "last"+resourceName, lastUpdate);
+                    double amount = -globalSettings.kerbalProductionRates[resource] * (globalSettings.kerbalStarvationTimes[resource] - timeWithout);
+                    double maxAmount = - globalSettings.kerbalProductionRates[resource] * globalSettings.kerbalStarvationTimes[resource];
+                    info.reserves[resource] = new ResourceLimits(amount, maxAmount);
+                }
+            }
+            else
+            {
+                foreach (int resource in globalSettings.kerbalRequirements)
+                {
+                    String resourceName = PartResourceLibrary.Instance.GetDefinition(resource).name;
+                    double maxAmount = -globalSettings.kerbalProductionRates[resource] * globalSettings.kerbalStarvationTimes[resource];
+                    double amount = Utilities.GetValue(node, resourceName + "Reserves", maxAmount);
+                    info.reserves[resource] = new ResourceLimits(amount, maxAmount);
+                }
+            }
             info.hibernating = Utilities.GetValue(node, "hibernating", false);
 
             return info;
@@ -80,11 +104,16 @@ namespace Tac
 
         public ConfigNode Save(ConfigNode config)
         {
+            this.Log("saving crewinfo for " + name);
+            GlobalSettings globalSettings = TacLifeSupport.Instance.globalSettings;
             ConfigNode node = config.AddNode(ConfigNodeName);
             node.AddValue("name", name);
             node.AddValue("lastUpdate", lastUpdate);
-            node.AddValue("lastFood", lastFood);
-            node.AddValue("lastWater", lastWater);
+            foreach (int resource in globalSettings.kerbalRequirements)
+            {
+                String resourceName = PartResourceLibrary.Instance.GetDefinition(resource).name;
+                node.AddValue(resourceName+"Reserves", reserves[resource].available);
+            }
             node.AddValue("vesselName", vesselName);
             node.AddValue("vesselId", vesselId);
             node.AddValue("hibernating", hibernating);

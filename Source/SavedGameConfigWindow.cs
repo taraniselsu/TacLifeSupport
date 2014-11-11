@@ -143,31 +143,29 @@ namespace Tac
                 GUILayout.Label("The following values are in units per second.", headerStyle);
                 GUILayout.Label("See the TacResources.cfg for conversions between units and metric tons.", headerStyle);
 
-                globalSettings.FoodConsumptionRate = Utilities.ShowTextField("Food Consumption Rate", labelStyle,
-                    globalSettings.FoodConsumptionRate, 30, editStyle, GUILayout.MinWidth(150));
-                globalSettings.WaterConsumptionRate = Utilities.ShowTextField("Water Consumption Rate", labelStyle,
-                    globalSettings.WaterConsumptionRate, 30, editStyle, GUILayout.MinWidth(150));
-                globalSettings.OxygenConsumptionRate = Utilities.ShowTextField("Oxygen Consumption Rate", labelStyle,
-                    globalSettings.OxygenConsumptionRate , 30, editStyle, GUILayout.MinWidth(150));
+                foreach (int resource in globalSettings.kerbalRequirements)
+                {
+                    String resourceName = PartResourceLibrary.Instance.GetDefinition(resource).name;
+                    globalSettings.kerbalProductionRates[resource] = - Utilities.ShowTextField("Kerbal " + resourceName + " Consumption Rate", labelStyle,
+                    - globalSettings.kerbalProductionRates[resource], 30, editStyle, GUILayout.MinWidth(150));
+                }
 
                 GUILayout.Space(5);
 
                 globalSettings.BaseElectricityConsumptionRate = Utilities.ShowTextField("Base Electricity Consumption Rate", labelStyle,
                     globalSettings.BaseElectricityConsumptionRate, 30, editStyle, GUILayout.MinWidth(150));
-                globalSettings.ElectricityConsumptionRate = Utilities.ShowTextField("Per Kerbal Electricity Consumption Rate", labelStyle,
-                    globalSettings.ElectricityConsumptionRate, 30, editStyle, GUILayout.MinWidth(150));
                 globalSettings.EvaElectricityConsumptionRate = Utilities.ShowTextField("EVA Electricity Consumption Rate", labelStyle,
                     globalSettings.EvaElectricityConsumptionRate, 30, editStyle, GUILayout.MinWidth(150));
 
                 GUILayout.Space(5);
 
-                globalSettings.CO2ProductionRate = Utilities.ShowTextField("CarbonDioxide Production Rate", labelStyle,
-                    globalSettings.CO2ProductionRate, 30, editStyle, GUILayout.MinWidth(150));
-                globalSettings.WasteProductionRate = Utilities.ShowTextField("Waste Production Rate", labelStyle,
-                    globalSettings.WasteProductionRate, 30, editStyle, GUILayout.MinWidth(150));
-                globalSettings.WasteWaterProductionRate = Utilities.ShowTextField("Waste Water Production Rate", labelStyle,
-                    globalSettings.WasteWaterProductionRate, 30, editStyle, GUILayout.MinWidth(150));
-
+                foreach (int resource in globalSettings.kerbalProduction)
+                {
+                    String resourceName = PartResourceLibrary.Instance.GetDefinition(resource).name;
+                    globalSettings.kerbalProductionRates[resource] = Utilities.ShowTextField("Kerbal " + resourceName + " Prodcution Rate", labelStyle,
+                    globalSettings.kerbalProductionRates[resource], 30, editStyle, GUILayout.MinWidth(150));
+                }
+                
                 GUILayout.Space(5);
 
                 globalSettings.MaxDeltaTime = (int)Utilities.ShowTextField("Max Delta Time", labelStyle, globalSettings.MaxDeltaTime,
@@ -189,14 +187,13 @@ namespace Tac
                 GUILayout.Label("These settings affect all saves. Restart KSP for changes to take effect.", warningStyle);
                 GUILayout.Label("The following values are in seconds.", headerStyle);
 
-                globalSettings.MaxTimeWithoutFood = Utilities.ShowTextField("Max time without Food", labelStyle,
-                    globalSettings.MaxTimeWithoutFood, 20, editStyle, GUILayout.MinWidth(150));
-                globalSettings.MaxTimeWithoutWater = Utilities.ShowTextField("Max time without Water", labelStyle,
-                    globalSettings.MaxTimeWithoutWater, 20, editStyle, GUILayout.MinWidth(150));
-                globalSettings.MaxTimeWithoutOxygen = Utilities.ShowTextField("Max time without Oxygen", labelStyle,
-                    globalSettings.MaxTimeWithoutOxygen, 20, editStyle, GUILayout.MinWidth(150));
-                globalSettings.MaxTimeWithoutElectricity = Utilities.ShowTextField("Max time without Electricity", labelStyle,
-                    globalSettings.MaxTimeWithoutElectricity, 20, editStyle, GUILayout.MinWidth(150));
+                foreach (int resource in globalSettings.kerbalRequirements)
+                {
+                    String resourceName = PartResourceLibrary.Instance.GetDefinition(resource).name;
+                    globalSettings.kerbalStarvationTimes[resource] = Utilities.ShowTextField("Max time without "+resourceName, labelStyle,
+                    globalSettings.kerbalStarvationTimes[resource], 20, editStyle, GUILayout.MinWidth(150));
+                }
+
                 GUILayout.EndVertical();
             }
         }
