@@ -44,6 +44,7 @@ namespace Tac
 
         public Dictionary<int, Status> resourceStatuses = new Dictionary<int, Status>();
         public Dictionary<int, ResourceLimits> resourceLimits = new Dictionary<int, ResourceLimits>();
+        public Dictionary<int, double> lastKnownAmounts = new Dictionary<int, double>();
         
         public Dictionary<String, CrewMemberInfo> crew = new Dictionary<String, CrewMemberInfo>();
         public int numOccupiedParts;
@@ -77,11 +78,12 @@ namespace Tac
                     String resourceName = valueName.Substring(9);
                     double remaining = Utilities.GetValue(node, "remaining" + resourceName, 0.0);
                     double max = Utilities.GetValue(node, "max" + resourceName, 0.0);
+                    double lastKnown = Utilities.GetValue(node, "lastKnown" + resourceName, remaining);
 
                     int resourceId = getResourceId(resourceName);
                     ResourceLimits loadedLimits = new ResourceLimits(remaining, max);
-                    //info.Log("loaded " + loadedLimits);
                     info.resourceLimits.Add(resourceId, loadedLimits);
+                    info.lastKnownAmounts[resourceId] = lastKnown;
                 }
             }
 
@@ -106,9 +108,9 @@ namespace Tac
             foreach (KeyValuePair<int, ResourceLimits> resources in resourceLimits) {
                 String resourceName = PartResourceLibrary.Instance.GetDefinition(resources.Key).name;
                 node.AddValue("remaining" + resourceName, resources.Value.available);
-                node.AddValue("max" + resourceName, resources.Value.maximum); 
+                node.AddValue("max" + resourceName, resources.Value.maximum);
+                node.AddValue("lastKnown" + resourceName, lastKnownAmounts[resources.Key]);
             }
-
             return node;
         }
 

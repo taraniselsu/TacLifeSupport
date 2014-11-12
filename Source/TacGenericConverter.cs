@@ -146,7 +146,6 @@ namespace Tac
 
         public void recycle(IDictionary<int, ResourceLimits> resources, double deltaTime)
         {
-            this.Log(new DateTime() + " calling recycle converting="+converting);
             if (converting)
             {
                 double maxEfficiency = 1;
@@ -325,16 +324,12 @@ namespace Tac
 
             ParseInputResourceString(inputResources, inputResourceList);
             ParseOutputResourceString(outputResources, outputResourceList);
-            this.Log("parsed OP");
             
             if (Events != null)
             {
-                this.Log("events" + Events);
                 Events["ActivateConverter"].guiName = "Activate " + converterName;
                 Events["DeactivateConverter"].guiName = "Deactivate " + converterName;
-                this.Log("Actions" + Actions);
                 Actions["ToggleConverter"].guiName = "Toggle " + converterName;
-                this.Log("events" + Fields);
                 Fields["converterStatus"].guiName = converterName;
             }
         }

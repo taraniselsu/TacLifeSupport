@@ -108,7 +108,10 @@ namespace Tac
             var allVessels = FlightGlobals.Vessels;
             var knownVessels = gameSettings.knownVessels;
 
-            var vesselsToDelete = new List<Guid>();
+            var vesselsToDelete = new List<Guid>();//vessels that no longer exist
+            var homelessCrew = new List<String>();//Crew who's last know ship was deleted (but could show up elsewhere)
+            List<String> homedCrew = new List<String>();//crew that have a home already
+
             foreach (var entry in knownVessels)
             {
                 Guid vesselId = entry.Key;
@@ -119,18 +122,17 @@ namespace Tac
                 {
                     this.Log("Deleting vessel " + vesselInfo.vesselName + " - vessel does not exist anymore");
                     vesselsToDelete.Add(vesselId);
-                    var crewToDelete = gameSettings.knownCrew.Where(e => e.Value.vesselId == vesselId).Select(e => e.Key).ToList();
-                    foreach (String name in crewToDelete)
-                    {
-                        this.Log("Deleting crew member: " + name);
-                        gameSettings.knownCrew.Remove(name);
-                    }
+                    List<String> crewToDelete = gameSettings.knownCrew.Where(e => e.Value.vesselId == vesselId)
+                        .Select(e => e.Key)
+                        .Where(name => !homedCrew.Contains(name)).ToList();
+                    //If this crewmember is't found in a different vessel he will be deleted
+                    homelessCrew.AddRange(crewToDelete);
                     continue;
                 }
 
                 if (vessel.loaded)
                 {
-                    int crewCapacity = UpdateVesselInfo(vesselInfo, vessel);
+                    int crewCapacity = UpdateVesselInfoLoaded(vesselInfo, vessel);
 
                     if (crewCapacity == 0)
                     {
@@ -138,39 +140,101 @@ namespace Tac
                         vesselsToDelete.Add(vesselId);
                         continue;
                     }
-                }
 
-                if (vesselInfo.numCrew > 0)
-                {
-                    double foodRate = globalSettings.FoodConsumptionRate * vesselInfo.numCrew;
-                    vesselInfo.estimatedTimeFoodDepleted = vesselInfo.lastFood + (vesselInfo.remainingFood / foodRate);
-                    double estimatedFood = vesselInfo.remainingFood - ((currentTime - vesselInfo.lastFood) * foodRate);
-                    ShowWarnings(vessel, estimatedFood, vesselInfo.maxFood, foodRate, globalSettings.Food, ref vesselInfo.foodStatus);
-
-                    double waterRate = globalSettings.WaterConsumptionRate * vesselInfo.numCrew;
-                    vesselInfo.estimatedTimeWaterDepleted = vesselInfo.lastWater + (vesselInfo.remainingWater / waterRate);
-                    double estimatedWater = vesselInfo.remainingWater - ((currentTime - vesselInfo.lastWater) * waterRate);
-                    ShowWarnings(vessel, estimatedWater, vesselInfo.maxWater, waterRate, globalSettings.Water, ref vesselInfo.waterStatus);
-
-                    double oxygenRate = globalSettings.OxygenConsumptionRate * vesselInfo.numCrew;
-                    vesselInfo.estimatedTimeOxygenDepleted = vesselInfo.lastOxygen + (vesselInfo.remainingOxygen / oxygenRate);
-                    double estimatedOxygen = vesselInfo.remainingOxygen - ((currentTime - vesselInfo.lastOxygen) * oxygenRate);
-                    ShowWarnings(vessel, estimatedOxygen, vesselInfo.maxOxygen, oxygenRate, globalSettings.Oxygen, ref vesselInfo.oxygenStatus);
-
-                    vesselInfo.estimatedTimeElectricityDepleted = vesselInfo.lastElectricity + (vesselInfo.remainingElectricity / vesselInfo.estimatedElectricityConsumptionRate);
-                    if (vessel.loaded)
+                    foreach (String crewName in vesselInfo.crew.Keys)
                     {
-                        ShowWarnings(vessel, vesselInfo.remainingElectricity, vesselInfo.maxElectricity, vesselInfo.estimatedElectricityConsumptionRate, globalSettings.Electricity, ref vesselInfo.electricityStatus);
+                        homelessCrew.Remove(crewName);
+                        homedCrew.Add(crewName);
                     }
                 }
+                else
+                {
+                    UpdateVesselInfoUnloaded(vesselInfo, vessel);
+                }
+
+
+
+                //What resources get used theis period?
+                //copy the current resources
+                Dictionary<int, ResourceLimits> resources = new Dictionary<int, ResourceLimits>();
+                foreach (KeyValuePair<int, ResourceLimits> resAvail in vesselInfo.resourceLimits) {
+
+                    String resourceName = PartResourceLibrary.Instance.GetDefinition(resAvail.Key).name;
+                    resources.Add(resAvail.Key, resAvail.Value.clone());
+                }
+
+                //TODO remove MaxDeltaTime?
+                double deltaTime = Math.Min(currentTime - vesselInfo.lastUpdate, globalSettings.MaxDeltaTime);
+
+                //Crew needs come first
+                HashSet<CrewMemberInfo> vesselCrew=new HashSet<CrewMemberInfo>();
+                
+                int numActiveCrew = 0;
+                foreach (ProtoCrewMember crew in vessel.GetVesselCrew()) {
+                    String crewName = crew.name;
+                    CrewMemberInfo info = gameSettings.knownCrew[crewName];
+                    vesselCrew.Add(info);
+                    if (!info.hibernating) numActiveCrew++;
+                }
+
+                //Calculate crew resource consumption
+                crewConsumption(resources, deltaTime, numActiveCrew);
+				//TODO perCapsule and differnt EVA electicity consumption
+
+                //calcuate power generation as best we can when unloaded
+                if (!vessel.loaded)
+                {
+                    calculatePowerGeneration(vessel, vesselInfo, resources, deltaTime);
+                }
+
+
+                //now the converters
+                foreach (TacGenericConverter converter in vesselInfo.converters)
+                {
+                    converter.recycle(resources, deltaTime);
+                }
+
+
+                //If on kerbin atmosphere the crew can get any shortfall of oxygen from the atmosphere
+                if (!NeedOxygen(vessel, vesselInfo))
+                {
+                    resources[globalSettings.OxygenId].available = Math.Max(resources[globalSettings.OxygenId].available, 
+                        vesselInfo.resourceLimits[globalSettings.OxygenId].available);
+                }
+
+                Dictionary<int, double> rates = new Dictionary<int, double>();
+                foreach (int resource in resources.Keys)
+                {
+                    rates[resource] = resources[resource].available - vesselInfo.resourceLimits[resource].available;
+                }
+
+                calculateCrewReserves(vessel, resources, numActiveCrew);
+
+                //Wake up hibernating kerbals that have full reserves
+                wakeUpHibernaters(vessel);
+
+                //update estimates
+                UpdateDepletionEstimates(currentTime, vesselInfo, vessel, resources, deltaTime, rates);
 
                 if (vessel.loaded)
                 {
-                    ConsumeResources(currentTime, vessel, vesselInfo);
+                    ConsumeResources(vessel, vesselInfo, resources);
                 }
+                else
+                {
+                    vesselInfo.loaded = false;
+                }
+                vesselInfo.resourceLimits = resources;
+                vesselInfo.lastUpdate = currentTime;
+
             }
 
             vesselsToDelete.ForEach(id => knownVessels.Remove(id));
+            foreach (String homeless in homelessCrew)
+            {
+                this.Log(homeless + " is homelesss");
+            }
+            homelessCrew.ForEach(crewName => gameSettings.knownCrew.Remove(crewName));
 
             foreach (Vessel vessel in allVessels.Where(v => v.loaded))
             {
@@ -189,8 +253,8 @@ namespace Tac
                     }
 
                     VesselInfo vesselInfo = new VesselInfo(vessel.vesselName, currentTime);
+                    vesselInfo.loaded = true;//true says that the actual resources are corect and we should use real converters
                     knownVessels[vessel.id] = vesselInfo;
-                    UpdateVesselInfo(vesselInfo, vessel);
 
                     foreach (ProtoCrewMember crewMember in vessel.GetVesselCrew())
                     {
@@ -210,286 +274,344 @@ namespace Tac
             }
         }
 
-        private void ConsumeResources(double currentTime, Vessel vessel, VesselInfo vesselInfo)
+        private void UpdateDepletionEstimates(double currentTime, VesselInfo vesselInfo, Vessel vessel, 
+            Dictionary<int, ResourceLimits> resources, double deltaTime, Dictionary<int, double> originalRates)
         {
-            ConsumeElectricity(currentTime, vessel, vesselInfo);
-            ConsumeOxygen(currentTime, vessel, vesselInfo);
-
-            vesselInfo.lastFood = currentTime;
-            vesselInfo.lastWater = currentTime;
-            vesselInfo.hibernating = false;
-
-            List<ProtoCrewMember> crew = vessel.GetVesselCrew();
-            var knownCrew = gameSettings.knownCrew;
-            foreach (ProtoCrewMember crewMember in crew)
+            foreach (int resource in globalSettings.kerbalRequirements)
             {
-                if (knownCrew.ContainsKey(crewMember.name))
+                double produced = originalRates[resource];
+                if (resources[resource].available > 1e-7)
                 {
-                    CrewMemberInfo crewMemberInfo = knownCrew[crewMember.name];
-                    Part part = (crewMember.KerbalRef != null) ? crewMember.KerbalRef.InPart : vessel.rootPart;
-
-                    ConsumeFood(currentTime, vessel, vesselInfo, crewMember, crewMemberInfo, part);
-                    ConsumeWater(currentTime, vessel, vesselInfo, crewMember, crewMemberInfo, part);
-
-                    crewMemberInfo.lastUpdate = currentTime;
-                    crewMemberInfo.vesselId = vessel.id;
-                    crewMemberInfo.vesselName = (!vessel.isEVA) ? vessel.vesselName : "EVA";
-
-                    if (vesselInfo.lastFood > crewMemberInfo.lastFood)
+                    if (produced >= 0)//net production of resource
                     {
-                        vesselInfo.lastFood = crewMemberInfo.lastFood;
+                        vesselInfo.depletionEstimates[resource] = double.PositiveInfinity;
                     }
-                    if (vesselInfo.lastWater > crewMemberInfo.lastWater)
+                    else
                     {
-                        vesselInfo.lastWater = crewMemberInfo.lastWater;
-                    }
-                    if (crewMemberInfo.hibernating)
-                    {
-                        vesselInfo.hibernating = true;
+                        vesselInfo.depletionEstimates[resource] = currentTime + resources[resource].available / (-produced / deltaTime);
                     }
                 }
                 else
                 {
-                    this.LogWarning("Unknown crew member: " + crewMember.name);
-                    knownCrew[crewMember.name] = new CrewMemberInfo(crewMember.name, vessel.vesselName, vessel.id, currentTime);
-                }
-            }
-
-            vesselInfo.lastUpdate = currentTime;
-            vesselInfo.vesselName = vessel.vesselName;
-            vesselInfo.vesselType = vessel.vesselType;
-        }
-
-        private void ConsumeFood(double currentTime, Vessel vessel, VesselInfo vesselInfo, ProtoCrewMember crewMember, CrewMemberInfo crewMemberInfo, Part part)
-        {
-            if (vesselInfo.remainingFood >= globalSettings.FoodConsumptionRate)
-            {
-                double deltaTime = Math.Min(currentTime - crewMemberInfo.lastFood, globalSettings.MaxDeltaTime);
-                double desiredFood = globalSettings.FoodConsumptionRate * deltaTime;
-                double foodObtained = part.TakeResource(globalSettings.FoodId, Math.Min(desiredFood, vesselInfo.remainingFood / vesselInfo.numCrew));
-
-                double wasteProduced = foodObtained * globalSettings.WasteProductionRate / globalSettings.FoodConsumptionRate;
-                part.TakeResource(globalSettings.WasteId, -wasteProduced);
-
-                crewMemberInfo.lastFood += deltaTime - ((desiredFood - foodObtained) / globalSettings.FoodConsumptionRate);
-                crewMemberInfo.hibernating = false;
-            }
-            else
-            {
-                double timeWithoutFood = currentTime - crewMemberInfo.lastFood;
-                if (timeWithoutFood > (globalSettings.MaxTimeWithoutFood + crewMemberInfo.respite))
-                {
-                    if (!gameSettings.HibernateInsteadOfKill)
+                    var activeCrew = vesselInfo.crew.Where(c => !c.Value.hibernating);
+                    double minKerbalReserves = activeCrew.Min(c => c.Value.reserves[resource].available);
+                    int activeCount = activeCrew.Count();
+                    //we are into kerbl reserves
+                    if (produced < 0)
                     {
-                        KillCrewMember(crewMember, "starvation", vessel);
+                        //and the reserves are going down
+                        double timeToLive = minKerbalReserves / -produced * activeCount * deltaTime;
+                        vesselInfo.depletionEstimates[resource] = currentTime + timeToLive - globalSettings.kerbalStarvationTimes[resource];
                     }
                     else
                     {
-                        crewMemberInfo.hibernating = true;
+                        //Reserves are being filled up
+                        double space = globalSettings.kerbalStarvationTimes[resource] * - globalSettings.kerbalProductionRates[resource] - minKerbalReserves;
+                        double timeToFill = space / produced * activeCount * deltaTime;
+                        vesselInfo.depletionEstimates[resource] = currentTime - timeToFill; 
                     }
+                }
+            }
+            ShowWarnings(vessel, vesselInfo, currentTime);
+        }
+
+        private void crewConsumption(Dictionary<int, ResourceLimits> resources, double deltaTime, int numActiveCrew)
+        {
+            if (numActiveCrew > 0)
+            {
+
+                foreach (KeyValuePair<int, double> resourceRate in globalSettings.kerbalProductionRates)
+                {
+                    double amount = resourceRate.Value * numActiveCrew * deltaTime;
+                    resources[resourceRate.Key].add(amount);
                 }
             }
         }
 
-        private void ConsumeWater(double currentTime, Vessel vessel, VesselInfo vesselInfo, ProtoCrewMember crewMember, CrewMemberInfo crewMemberInfo, Part part)
+        private void calculatePowerGeneration(Vessel vessel, VesselInfo vesselInfo, Dictionary<int, ResourceLimits> resources, double deltaTime)
         {
-            if (vesselInfo.remainingWater >= globalSettings.WaterConsumptionRate)
+            foreach (IProtoElecComponent elecComp in vesselInfo.elecProtoComponents)
             {
-                double deltaTime = Math.Min(currentTime - crewMemberInfo.lastWater, globalSettings.MaxDeltaTime);
-                double desiredWater = globalSettings.WaterConsumptionRate * deltaTime;
-                double waterObtained = part.TakeResource(globalSettings.WaterId, Math.Min(desiredWater, vesselInfo.remainingWater / vesselInfo.numCrew));
-
-                double wasteWaterProduced = waterObtained * globalSettings.WasteWaterProductionRate / globalSettings.WaterConsumptionRate;
-                part.TakeResource(globalSettings.WasteWaterId, -wasteWaterProduced);
-
-                crewMemberInfo.lastWater += deltaTime - ((desiredWater - waterObtained) / globalSettings.WaterConsumptionRate);
-                crewMemberInfo.hibernating = false;
-            }
-            else
-            {
-                double timeWithoutWater = currentTime - crewMemberInfo.lastWater;
-                if (timeWithoutWater > (globalSettings.MaxTimeWithoutWater + crewMemberInfo.respite))
-                {
-                    if (!gameSettings.HibernateInsteadOfKill)
-                    {
-                        KillCrewMember(crewMember, "dehydration", vessel);
-                    }
-                    else
-                    {
-                        crewMemberInfo.hibernating = true;
-                    }
-                }
+                elecComp.generate(resources, deltaTime, vessel);
             }
         }
 
-        private void ConsumeOxygen(double currentTime, Vessel vessel, VesselInfo vesselInfo)
+        private void calculateCrewReserves(Vessel vessel, Dictionary<int, ResourceLimits> resources, int numActiveCrew)
         {
-            if (NeedOxygen(vessel, vesselInfo))
+            //Deduct shortfalls from kerbals reserves
+            //kill/hibernate the first kerbal who runs out
+            foreach (int resource in globalSettings.kerbalRequirements)
             {
-                if (vesselInfo.numCrew > 0)
+                if (resources[resource].available < 0)
                 {
-                    if (vesselInfo.remainingOxygen >= globalSettings.OxygenConsumptionRate)
+                    int crewToGo = numActiveCrew;
+                    foreach (ProtoCrewMember crew in vessel.GetVesselCrew())
                     {
-                        double deltaTime = Math.Min(currentTime - vesselInfo.lastOxygen, globalSettings.MaxDeltaTime);
-                        double rate = globalSettings.OxygenConsumptionRate * vesselInfo.numCrew;
-                        double desiredOxygen = rate * deltaTime;
-                        double oxygenObtained = vessel.rootPart.TakeResource(globalSettings.OxygenId, desiredOxygen);
-
-                        double co2Production = oxygenObtained * globalSettings.CO2ProductionRate / globalSettings.OxygenConsumptionRate;
-                        vessel.rootPart.TakeResource(globalSettings.CO2Id, -co2Production);
-
-                        vesselInfo.lastOxygen += deltaTime - ((desiredOxygen - oxygenObtained) / rate);
-                    }
-                    else
-                    {
-                        double timeWithoutOxygen = currentTime - vesselInfo.lastOxygen;
-                        if (timeWithoutOxygen > globalSettings.MaxTimeWithoutOxygen)
+                        CrewMemberInfo crewInfo = gameSettings.knownCrew[crew.name];
+                        if (crewInfo.hibernating)
                         {
-                            List<ProtoCrewMember> crew = vessel.GetVesselCrew();
-                            int crewMemberIndex = UnityEngine.Random.Range(0, crew.Count - 1);
-                            KillCrewMember(crew[crewMemberIndex], "oxygen deprivation", vessel);
-
-                            vesselInfo.lastOxygen += UnityEngine.Random.Range(60, 600);
+                            continue;
+                        }
+                        double share = resources[resource].available / crewToGo--;//this crew members share of the shortfall
+                        ResourceLimits reserve = crewInfo.reserves[resource];
+                        share = Math.Max(share, -reserve.available);//cant remove more that the reserves he has
+                        reserve.available += share;
+                        String name=PartResourceLibrary.Instance.GetDefinition(resource).name;
+                        if (reserve.available <= 0)
+                        {
+                            //reserves has run out - this kerbal dies/hibernates
+                            //they die at the start of the tick and dont use this resource this tick
+                            resources[resource].available -= globalSettings.kerbalProductionRates[resource];
+                            if (gameSettings.HibernateInsteadOfKill)
+                            {
+                                this.Log(crew.name + " is going into hibernation");
+                                crewInfo.hibernating = true;
+                            }
+                            else
+                            {
+                                KillCrewMember(crew, globalSettings.deathCauses[resource], vessel);
+                            }
+                        }
+                        else
+                        {
+                            //a share of the deficit is taken from this kerbal
+                            resources[resource].available += share;
                         }
                     }
                 }
                 else
                 {
-                    vesselInfo.lastOxygen += currentTime - vesselInfo.lastUpdate;
-                }
-            }
-            else
-            {
-                vesselInfo.lastOxygen = currentTime;
-            }
-        }
-
-        private void ConsumeElectricity(double currentTime, Vessel vessel, VesselInfo vesselInfo)
-        {
-            double rate = vesselInfo.estimatedElectricityConsumptionRate = CalculateElectricityConsumptionRate(vessel, vesselInfo);
-            if (rate > 0.0)
-            {
-                if (vesselInfo.remainingElectricity >= rate)
-                {
-                    double deltaTime = Math.Min(currentTime - vesselInfo.lastElectricity, Math.Max(globalSettings.ElectricityMaxDeltaTime, TimeWarp.fixedDeltaTime));
-                    double desiredElectricity = rate * deltaTime;
-                    double electricityObtained = vessel.rootPart.TakeResource(globalSettings.ElectricityId, desiredElectricity);
-
-                    vesselInfo.lastElectricity = currentTime - ((desiredElectricity - electricityObtained) / rate);
-                }
-                else if (NeedElectricity(vessel, vesselInfo))
-                {
-                    double timeWithoutElectricity = currentTime - vesselInfo.lastElectricity;
-                    if (timeWithoutElectricity > globalSettings.MaxTimeWithoutElectricity)
+                    //We have a surplus do any kerbals need topping up?
+                    int crewCount = vessel.GetVesselCrew().Count;
+                    foreach (ProtoCrewMember crew in vessel.GetVesselCrew())
                     {
-                        List<ProtoCrewMember> crew = vessel.GetVesselCrew();
-                        int crewMemberIndex = UnityEngine.Random.Range(0, crew.Count - 1);
-                        KillCrewMember(crew[crewMemberIndex], "air toxicity", vessel);
-
-                        vesselInfo.lastElectricity += UnityEngine.Random.Range(60, 600);
+                        CrewMemberInfo crewInfo = gameSettings.knownCrew[crew.name];
+                        double share = resources[resource].available / (crewCount--);//share remaining reserves between remaining crew
+                        share = Math.Min(share, crewInfo.reserves[resource].getSpace());
+                        crewInfo.reserves[resource].available += share;
+                        resources[resource].available -= share;
                     }
                 }
             }
-            else
+        }
+
+        private void wakeUpHibernaters(Vessel vessel)
+        {
+            foreach (ProtoCrewMember crew in vessel.GetVesselCrew())
             {
-                vesselInfo.lastElectricity += currentTime - vesselInfo.lastUpdate;
+                CrewMemberInfo crewInfo = gameSettings.knownCrew[crew.name];
+                if (crewInfo.hibernating)
+                {
+                    Boolean full = true;
+                    foreach (int resource in globalSettings.kerbalRequirements)
+                    {
+                        if (crewInfo.reserves[resource].available<(crewInfo.reserves[resource].maximum*.5))//wake up again when reserves are half used
+                        {
+                            full = false;
+                        }
+                    }
+                    if (full)
+                    {
+                        this.Log(crew.name + " is waking up!");
+                        crewInfo.hibernating = false;
+                    }
+                }
             }
         }
 
-        private int UpdateVesselInfo(VesselInfo vesselInfo, Vessel vessel)
+        private void ConsumeResources(Vessel vessel, VesselInfo vesselInfo, Dictionary<int, ResourceLimits> after)
         {
-            int crewCapacity = 0;
-            vesselInfo.ClearAmounts();
+            foreach (KeyValuePair<int, ResourceLimits> resource in after)
+            {
+                double produced;
+                /*if (vesselInfo.loaded)
+                    produced = resource.Value.available - vesselInfo.lastKnownAmounts[resource.Key];
+                else
+                {
+                    //This is the first consume after loading - need to take all that was used since last loaded
+                    produced = resource.Value.available - VesselInfo.GetResourceQuantity(vessel, resource.Key);
+                }*/
+                produced = resource.Value.available - vesselInfo.lastKnownAmounts[resource.Key];
+                vesselInfo.lastKnownAmounts[resource.Key] = vesselInfo.resourceLimits[resource.Key].available;
+                if (Math.Abs(produced) > 1e-8)
+                {
+                    //TODO better part target for consumption?
+                    double taken = vessel.rootPart.TakeResource(resource.Key, -produced);
+                }
+            }
 
+            vesselInfo.vesselName = vessel.vesselName;
+            vesselInfo.vesselType = vessel.vesselType;
+            vesselInfo.loaded = true;
+        }    
+            
+
+        private int UpdateVesselInfoLoaded(VesselInfo vesselInfo, Vessel vessel)
+        {
+            if (vesselInfo.loaded)
+            {
+                //if the vessel isn't already loaded then the estimates are more up to date than the actual
+                //otherwise get the actual amounts available
+                vesselInfo.ClearAmounts();
+                foreach (Part part in vessel.parts)
+                {
+                    foreach (PartResource resource in part.Resources)
+                    {
+                        if (resource.flowState)
+                        {
+                            if (!vesselInfo.resourceLimits.ContainsKey(resource.info.id))
+                            {
+                                vesselInfo.resourceLimits[resource.info.id] = new ResourceLimits(0, 0); ;
+                            }
+                            ResourceLimits limits = vesselInfo.resourceLimits[resource.info.id];
+                            limits.available += resource.amount;
+                            limits.maximum += resource.maxAmount;
+                        }
+                    }
+                }
+            }
+            
+            //Refresh converter information - docking might have changed it since last frame
+            vesselInfo.converters=null;
+            vesselInfo.elecProtoComponents = null;
+
+            List<TacGenericConverter> converters = vessel.FindPartModulesImplementing<TacGenericConverter>();
+            vesselInfo.converters = converters;
+
+            //refresh crew informtion
+            int crewCapacity = 0;
+            vesselInfo.crew = new Dictionary<string, CrewMemberInfo>();
             foreach (Part part in vessel.parts)
             {
                 crewCapacity += part.CrewCapacity;
                 if (part.protoModuleCrew.Count > 0)
                 {
-                    vesselInfo.numCrew += part.protoModuleCrew.Count;
+                    foreach (ProtoCrewMember crew in part.protoModuleCrew)
+                    {
+                        if (!vesselInfo.crew.ContainsKey(crew.name))
+                        {
+                            vesselInfo.crew[crew.name] = loadCrewMember(vessel, crew);
+                        }
+                    }
                     ++vesselInfo.numOccupiedParts;
                 }
+            }
+            vesselInfo.crewCapacity = crewCapacity;
+            return crewCapacity;
+        }
 
-                foreach (PartResource resource in part.Resources)
-                {
-                    if (resource.flowState)
+        private CrewMemberInfo loadCrewMember(Vessel vessel, ProtoCrewMember crew)
+        {
+            CrewMemberInfo crewMemberInfo;
+            if (gameSettings.knownCrew.ContainsKey(crew.name))
+            {
+                //a kerbal we already know about - likely has just transfered from another ship
+                crewMemberInfo = gameSettings.knownCrew[crew.name];
+                crewMemberInfo.vesselId = vessel.id;
+                crewMemberInfo.vesselName = vessel.vesselName;
+            }
+            else
+            {
+                crewMemberInfo = new CrewMemberInfo(crew.name, vessel.vesselName, vessel.id, 0);
+            }
+            return crewMemberInfo;
+        }
+
+        private int UpdateVesselInfoUnloaded(VesselInfo vesselInfo, Vessel vessel)
+        {
+            if (vesselInfo.loaded || vesselInfo.converters==null)
+            {
+                generateProxies(vesselInfo, vessel);
+
+            }
+            return vesselInfo.crewCapacity;
+        }
+
+        private void generateProxies(VesselInfo vesselInfo, Vessel vessel)
+        {
+            List<TacGenericConverter> converters = new List<TacGenericConverter>();
+            List<IProtoElecComponent> elecComponents = new List<IProtoElecComponent>();
+            List<ProtoPartSnapshot> parts = vessel.protoVessel.protoPartSnapshots;
+            int crewCapacity = 0;
+            foreach (ProtoPartSnapshot snap in parts)
+            {
+                foreach (ProtoPartModuleSnapshot mod in snap.modules) {
+                    foreach (ProtoCrewMember crew in snap.protoModuleCrew)
                     {
-                        if (resource.info.id == globalSettings.FoodId)
-                        {
-                            vesselInfo.remainingFood += resource.amount;
-                            vesselInfo.maxFood += resource.maxAmount;
-                        }
-                        else if (resource.info.id == globalSettings.WaterId)
-                        {
-                            vesselInfo.remainingWater += resource.amount;
-                            vesselInfo.maxWater += resource.maxAmount;
-                        }
-                        else if (resource.info.id == globalSettings.OxygenId)
-                        {
-                            vesselInfo.remainingOxygen += resource.amount;
-                            vesselInfo.maxOxygen += resource.maxAmount;
-                        }
-                        else if (resource.info.id == globalSettings.ElectricityId)
-                        {
-                            vesselInfo.remainingElectricity += resource.amount;
-                            vesselInfo.maxElectricity += resource.maxAmount;
-                        }
-                        else if (resource.info.id == globalSettings.CO2Id)
-                        {
-                            vesselInfo.remainingCO2 += resource.amount;
-                        }
-                        else if (resource.info.id == globalSettings.WasteId)
-                        {
-                            vesselInfo.remainingWaste += resource.amount;
-                        }
-                        else if (resource.info.id == globalSettings.WasteWaterId)
-                        {
-                            vesselInfo.remainingWasteWater += resource.amount;
-                        }
+                        vesselInfo.crew[crew.name] = loadCrewMember(vessel, crew);
+                    }
+                    Part p = snap.partInfo.partPrefab;
+                    crewCapacity += p.CrewCapacity;
+                    if (mod.moduleName == "TacGenericConverter")
+                    {
+                        TacGenericConverter converter = ((TacGenericConverter)p.Modules["TacGenericConverter"]).Clone();
+                        converter.OnLoad(mod.moduleValues);
+                        converters.Add(converter);
+                    }
+                    else if (mod.moduleName == "ModuleGenerator")
+                    {
+                        ModuleGenerator gen = (ModuleGenerator)p.Modules["ModuleGenerator"];
+                        IProtoElecComponent protoGen = new ProtoModuleGenerator(gen);
+                        protoGen.OnLoad(mod.moduleValues);
+                        elecComponents.Add(protoGen);
+                    }
+                    else if (mod.moduleName == "ModuleDeployableSolarPanel")
+                    {
+                        ModuleDeployableSolarPanel sp = (ModuleDeployableSolarPanel)p.Modules["ModuleDeployableSolarPanel"];
+                        IProtoElecComponent protoPanel = new ProtoSolarPanel(sp);
+                        protoPanel.OnLoad(mod.moduleValues);
+                        elecComponents.Add(protoPanel);
                     }
                 }
             }
 
-            return crewCapacity;
+            vesselInfo.converters = converters;
+            vesselInfo.elecProtoComponents = elecComponents;
+            vesselInfo.crewCapacity = crewCapacity;
+
+
         }
 
-        private void ShowWarnings(Vessel vessel, double resourceRemaining, double max, double rate, string resourceName, ref VesselInfo.Status status)
+        private void ShowWarnings(Vessel vessel, VesselInfo vesselInfo, double currentTime)
         {
-            double criticalLevel = rate; // 1 second of resources
-            double warningLevel = max * 0.10; // 10% full
-
-            if (resourceRemaining < criticalLevel)
+            if (vesselInfo.crew.Count == 0) return;
+            foreach (int resource in globalSettings.kerbalRequirements)
             {
-                if (status != VesselInfo.Status.CRITICAL)
+                double estimatedTime = vesselInfo.depletionEstimates[resource] - currentTime;
+                VesselInfo.Status status;
+                vesselInfo.resourceStatuses.TryGetValue(resource, out status);
+                String resourceName = PartResourceLibrary.Instance.GetDefinition(resource).name;
+                if (estimatedTime<1)//less than 1 second
                 {
-                    ScreenMessages.PostScreenMessage(vessel.vesselName + " - " + resourceName + " depleted!", 10.0f, ScreenMessageStyle.UPPER_CENTER);
-                    this.Log(vessel.vesselName + " - " + resourceName + " depleted!");
-                    status = VesselInfo.Status.CRITICAL;
-                    TimeWarp.SetRate(0, false);
+                    if (status != VesselInfo.Status.CRITICAL)
+                    {
+                        ScreenMessages.PostScreenMessage(vessel.vesselName + " - " + resourceName + " depleted!", 10.0f, ScreenMessageStyle.UPPER_CENTER);
+                        this.Log(vessel.vesselName + " - " + resourceName + " depleted!");
+                        status = VesselInfo.Status.CRITICAL;
+                        TimeWarp.SetRate(0, false);
+                    }
                 }
-            }
-            else if (resourceRemaining < warningLevel)
-            {
-                if (status == VesselInfo.Status.CRITICAL)
+                else if ((vesselInfo.resourceLimits[resource].available / vesselInfo.resourceLimits[resource].maximum) < 0.1)
                 {
+                    if (status != VesselInfo.Status.LOW && status!= VesselInfo.Status.CRITICAL)
+                    {
+                        ScreenMessages.PostScreenMessage(vessel.vesselName + " - " + resourceName + " is running out!", 10.0f, ScreenMessageStyle.UPPER_CENTER);
+                        this.Log(vessel.vesselName + " - " + resourceName + " is running out!");
+                        TimeWarp.SetRate(0, false);
+                    }
                     status = VesselInfo.Status.LOW;
                 }
-                else if (status != VesselInfo.Status.LOW)
+                else
                 {
-                    ScreenMessages.PostScreenMessage(vessel.vesselName + " - " + resourceName + " is running out!", 10.0f, ScreenMessageStyle.UPPER_CENTER);
-                    this.Log(vessel.vesselName + " - " + resourceName + " is running out!");
-                    status = VesselInfo.Status.LOW;
-                    TimeWarp.SetRate(0, false);
+                    status = VesselInfo.Status.GOOD;
                 }
-            }
-            else
-            {
-                status = VesselInfo.Status.GOOD;
+                vesselInfo.resourceStatuses[resource] = status;
             }
         }
 
-        private double CalculateElectricityConsumptionRate(Vessel vessel, VesselInfo vesselInfo)
+        /*private double CalculateElectricityConsumptionRate(Vessel vessel, VesselInfo vesselInfo)
         {
+			//TODO
             if (!vessel.isEVA)
             {
                 return (globalSettings.ElectricityConsumptionRate * vesselInfo.numCrew) + (globalSettings.BaseElectricityConsumptionRate * vesselInfo.numOccupiedParts);
@@ -498,14 +620,16 @@ namespace Tac
             {
                 return globalSettings.EvaElectricityConsumptionRate;
             }
-        }
+        }*/
 
         private void FillEvaSuit(Part oldPart, Part newPart)
         {
-            double desiredFood = globalSettings.FoodConsumptionRate * globalSettings.EvaDefaultResourceAmount;
-            double desiredWater = globalSettings.WaterConsumptionRate * globalSettings.EvaDefaultResourceAmount;
-            double desiredOxygen = globalSettings.OxygenConsumptionRate * globalSettings.EvaDefaultResourceAmount;
-            double desiredElectricity = globalSettings.EvaElectricityConsumptionRate * globalSettings.EvaDefaultResourceAmount;
+            Dictionary<int, double> desired = new Dictionary<int, double>();
+            foreach (int resource in globalSettings.kerbalRequirements) {
+                desired[resource] = -globalSettings.kerbalProductionRates[resource] * globalSettings.EvaDefaultResourceAmount;
+            }
+            //electicity is special
+            desired[globalSettings.ElectricityId] =  globalSettings.EvaElectricityConsumptionRate * globalSettings.EvaDefaultResourceAmount;
 
             Vessel lastVessel = oldPart.vessel;
             VesselInfo lastVesselInfo;
@@ -515,18 +639,17 @@ namespace Tac
                 lastVesselInfo = new VesselInfo(lastVessel.vesselName, Planetarium.GetUniversalTime());
             }
 
-            UpdateVesselInfo(lastVesselInfo, lastVessel);
-            int numCrew = lastVesselInfo.numCrew + 1;
-
-            double foodObtained = oldPart.TakeResource(globalSettings.FoodId, Math.Min(desiredFood, lastVesselInfo.remainingFood / numCrew));
-            double waterObtained = oldPart.TakeResource(globalSettings.WaterId, Math.Min(desiredWater, lastVesselInfo.remainingWater / numCrew));
-            double oxygenObtained = oldPart.TakeResource(globalSettings.OxygenId, Math.Min(desiredOxygen, lastVesselInfo.remainingOxygen / numCrew));
-            double electricityObtained = oldPart.TakeResource(globalSettings.ElectricityId, Math.Min(desiredElectricity, lastVesselInfo.remainingElectricity / numCrew));
-
-            newPart.TakeResource(globalSettings.FoodId, -foodObtained);
-            newPart.TakeResource(globalSettings.WaterId, -waterObtained);
-            newPart.TakeResource(globalSettings.OxygenId, -oxygenObtained);
-            newPart.TakeResource(globalSettings.ElectricityId, -electricityObtained);
+            UpdateVesselInfoLoaded(lastVesselInfo, lastVessel);
+            int numCrew = lastVesselInfo.crew.Count;
+            Dictionary<int, double> obtained = new Dictionary<int,double>();
+            foreach (int resource in globalSettings.kerbalRequirements) {
+                double toTake = Math.Min(desired[resource], lastVesselInfo.resourceLimits[resource].available / numCrew);
+                obtained[resource] = oldPart.TakeResource(resource, toTake);
+                String resourceName = PartResourceLibrary.Instance.GetDefinition(resource).name;
+                double max = newPart.Resources.Get(resource).maxAmount;
+                this.Log("Filling EVA with " + resourceName + " amount " + obtained[resource] + " max="+max);
+                newPart.TakeResource(resource, -obtained[resource]);
+            }
         }
 
         private void FillRescueEvaSuit(Vessel vessel)
@@ -536,11 +659,10 @@ namespace Tac
 
             // Only fill the suit to 10-90% full
             double fillAmount = UnityEngine.Random.Range(0.1f, 0.9f);
-
-            part.TakeResource(globalSettings.ElectricityId, -fillAmount * globalSettings.EvaElectricityConsumptionRate * globalSettings.EvaDefaultResourceAmount);
-            part.TakeResource(globalSettings.FoodId, -fillAmount * globalSettings.FoodConsumptionRate * globalSettings.EvaDefaultResourceAmount);
-            part.TakeResource(globalSettings.WaterId, -fillAmount * globalSettings.WaterConsumptionRate * globalSettings.EvaDefaultResourceAmount);
-            part.TakeResource(globalSettings.OxygenId, -fillAmount * globalSettings.OxygenConsumptionRate * globalSettings.EvaDefaultResourceAmount);
+            foreach (int resource in globalSettings.kerbalRequirements)
+            {
+                part.TakeResource(resource, fillAmount * globalSettings.kerbalProductionRates[resource] * globalSettings.EvaDefaultResourceAmount);
+            }
         }
 
         private void EmptyEvaSuit(Part oldPart, Part newPart)
@@ -553,19 +675,11 @@ namespace Tac
                 this.LogError("EmptyEvaSuit - Cannot find VesselInfo for " + oldPart.vessel.id);
                 return;
             }
+            foreach (int resource in globalSettings.kerbalProductionRates.Keys)
+            {
+                newPart.TakeResource(resource, -lastVesselInfo.resourceLimits[resource].available);
 
-            newPart.TakeResource(globalSettings.FoodId, -lastVesselInfo.remainingFood);
-            newPart.TakeResource(globalSettings.WaterId, -lastVesselInfo.remainingWater);
-            newPart.TakeResource(globalSettings.OxygenId, -lastVesselInfo.remainingOxygen);
-            newPart.TakeResource(globalSettings.ElectricityId, -lastVesselInfo.remainingElectricity);
-            newPart.TakeResource(globalSettings.CO2Id, -lastVesselInfo.remainingCO2);
-            newPart.TakeResource(globalSettings.WasteId, -lastVesselInfo.remainingWaste);
-            newPart.TakeResource(globalSettings.WasteWaterId, -lastVesselInfo.remainingWasteWater);
-        }
-
-        private double RequestResource(string resourceName, double requestedAmount, Part part)
-        {
-            return part.TakeResource(resourceName, requestedAmount);
+            }
         }
 
         private void KillCrewMember(ProtoCrewMember crewMember, string causeOfDeath, Vessel vessel)
@@ -674,11 +788,12 @@ namespace Tac
                     // air pressure is high enough so they can open a window
                     return false;
                 }
-                else if (vessel.staticPressure > 0.2 && vesselInfo.remainingElectricity > vesselInfo.estimatedElectricityConsumptionRate)
+                //TODO re-integrate this
+               /* else if (vessel.staticPressure > 0.2 && vesselInfo.remainingElectricity > vesselInfo.estimatedElectricityConsumptionRate)
                 {
                     // air pressure is high enough & have electricity to run vents
                     return false;
-                }
+                }*/
             }
 
             return true;
@@ -686,6 +801,8 @@ namespace Tac
 
         private bool NeedElectricity(Vessel vessel, VesselInfo vesselInfo)
         {
+            //TODO re-integrate this
+            
             // Need electricity to survive unless:
             // 1) on Kerbin below a reasonable altitude, so they can open a hatch or window or vent
             if (vessel.mainBody == FlightGlobals.Bodies[1])
