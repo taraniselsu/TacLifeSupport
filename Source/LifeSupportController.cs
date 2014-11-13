@@ -158,10 +158,10 @@ namespace Tac
                 //copy the current resources
                 Dictionary<int, ResourceLimits> resources = new Dictionary<int, ResourceLimits>();
                 foreach (KeyValuePair<int, ResourceLimits> resAvail in vesselInfo.resourceLimits) {
-
-                    String resourceName = PartResourceLibrary.Instance.GetDefinition(resAvail.Key).name;
                     resources.Add(resAvail.Key, resAvail.Value.clone());
                 }
+                //LogResources("last known", vesselInfo.lastKnownAmounts);
+                //LogResources("before kerbals", resources);
 
                 //TODO remove MaxDeltaTime?
                 double deltaTime = Math.Min(currentTime - vesselInfo.lastUpdate, globalSettings.MaxDeltaTime);
@@ -180,6 +180,7 @@ namespace Tac
                 //Calculate crew resource consumption
                 crewConsumption(resources, deltaTime, numActiveCrew);
 				//TODO perCapsule and differnt EVA electicity consumption
+                //LogResources("after kerbals", resources);
 
                 //calcuate power generation as best we can when unloaded
                 if (!vessel.loaded)
@@ -194,7 +195,7 @@ namespace Tac
                     converter.recycle(resources, deltaTime);
                 }
 
-
+                //LogResources("after recycle", resources);
                 //If on kerbin atmosphere the crew can get any shortfall of oxygen from the atmosphere
                 if (!NeedOxygen(vessel, vesselInfo))
                 {
@@ -207,6 +208,7 @@ namespace Tac
                 {
                     rates[resource] = resources[resource].available - vesselInfo.resourceLimits[resource].available;
                 }
+                //LogResources("rates", rates);
 
                 calculateCrewReserves(vessel, resources, numActiveCrew);
 
@@ -424,15 +426,8 @@ namespace Tac
             foreach (KeyValuePair<int, ResourceLimits> resource in after)
             {
                 double produced;
-                /*if (vesselInfo.loaded)
-                    produced = resource.Value.available - vesselInfo.lastKnownAmounts[resource.Key];
-                else
-                {
-                    //This is the first consume after loading - need to take all that was used since last loaded
-                    produced = resource.Value.available - VesselInfo.GetResourceQuantity(vessel, resource.Key);
-                }*/
                 produced = resource.Value.available - vesselInfo.lastKnownAmounts[resource.Key];
-                vesselInfo.lastKnownAmounts[resource.Key] = vesselInfo.resourceLimits[resource.Key].available;
+                vesselInfo.lastKnownAmounts[resource.Key] = resource.Value.available;
                 if (Math.Abs(produced) > 1e-8)
                 {
                     //TODO better part target for consumption?
@@ -468,8 +463,13 @@ namespace Tac
                             limits.maximum += resource.maxAmount;
                         }
                     }
+                } 
+                foreach (var resource in vesselInfo.resourceLimits)
+                {
+                    vesselInfo.lastKnownAmounts[resource.Key] = resource.Value.available;
                 }
             }
+            
             
             //Refresh converter information - docking might have changed it since last frame
             vesselInfo.converters=null;
@@ -816,6 +816,34 @@ namespace Tac
             }
 
             return true;
+        }
+
+        private void LogResources(String prefix, Dictionary<int, ResourceLimits> resources)
+        {
+            StringBuilder build = new StringBuilder(prefix+" ");
+            foreach (var resource in resources)
+            {
+                String resourceName = PartResourceLibrary.Instance.GetDefinition(resource.Key).name;
+                build.Append(resourceName);
+                build.Append(":");
+                build.Append(resource.Value.available);
+                build.Append(" ");
+            }
+            this.Log(build.ToString());
+        }
+
+        private void LogResources(String prefix, Dictionary<int, double> resources)
+        {
+            StringBuilder build = new StringBuilder(prefix + " ");
+            foreach (var resource in resources)
+            {
+                String resourceName = PartResourceLibrary.Instance.GetDefinition(resource.Key).name;
+                build.Append(resourceName);
+                build.Append(":");
+                build.Append(resource.Value);
+                build.Append(" ");
+            }
+            this.Log(build.ToString());
         }
     }
 }
