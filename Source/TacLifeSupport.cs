@@ -50,7 +50,7 @@ namespace Tac
             {
                 this.Log("Adding the scenario module.");
                 psm = game.AddProtoScenarioModule(typeof(TacLifeSupport), GameScenes.SPACECENTER,
-                    GameScenes.FLIGHT, GameScenes.EDITOR, GameScenes.SPH);
+                    GameScenes.FLIGHT, GameScenes.EDITOR);
             }
             else
             {
@@ -65,10 +65,6 @@ namespace Tac
                 if (!psm.targetScenes.Any(s => s == GameScenes.EDITOR))
                 {
                     psm.targetScenes.Add(GameScenes.EDITOR);
-                }
-                if (!psm.targetScenes.Any(s => s == GameScenes.SPH))
-                {
-                    psm.targetScenes.Add(GameScenes.SPH);
                 }
             }
         }
@@ -113,7 +109,7 @@ namespace Tac
                 var c = gameObject.AddComponent<LifeSupportController>();
                 children.Add(c);
             }
-            else if (HighLogic.LoadedScene == GameScenes.EDITOR || HighLogic.LoadedScene == GameScenes.SPH)
+            else if (HighLogic.LoadedScene == GameScenes.EDITOR)
             {
                 this.Log("Adding EditorController");
                 var c = gameObject.AddComponent<EditorController>();
