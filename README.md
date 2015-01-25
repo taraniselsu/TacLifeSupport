@@ -10,11 +10,6 @@ BY-NC-SA 3.0) creative commons license. See the LICENSE.txt file.
 
 Source code is available from: https://github.com/taraniselsu/TacLifeSupport
 
-Includes HexCan parts from Greys, licensed CC-BY 3.0. Used with permission. See
-Readme-HexCans.txt and LICENSE-HexCans.txt in the HexCans directory.
-Forum thread: http://forum.kerbalspaceprogram.com/showthread.php/33754
-
-
 ### Features
 
 - Kerbals require resources to survive whether in a vessel or on EVA: Food, Water, Oxygen, Electricity (for air quality and climate control)
@@ -35,3 +30,17 @@ Make sure that you pack enough supplies when sending manned missions. Use recycl
 ### Installation procedure
 
 1. Copy everything in the GameData directory to the {KSP}/GameData directory.
+
+### Thanks
+Includes HexCan parts from Greys, licensed CC-BY 3.0. Used with permission. See
+Readme-HexCans.txt and LICENSE-HexCans.txt in the HexCans directory.
+Forum thread: http://forum.kerbalspaceprogram.com/showthread.php/33754
+
+Includes contributions by:
+- jfjohnny5
+- Ninenium
+- Dominik Hannen
+- Alexander Gavrilov
+- NathanKell
+- NoMrBond
+- Kerbas-ad-astra
