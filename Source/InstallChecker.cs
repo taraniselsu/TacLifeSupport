@@ -53,6 +53,18 @@ namespace Tac
                         "OK", false, HighLogic.Skin);
                 }
 
+                // Is AddonController installed? (It could potentially cause problems.)
+                if (!AssemblyLoader.loadedAssemblies.Any(a => a.assembly.GetName().Name.StartsWith("AddonController") && a.url == ""))
+                {
+                    this.Log("AddonController is installed");
+                }
+
+                // Is Compatibility Popup Blocker installed? (It could potentially cause problems.)
+                if (!AssemblyLoader.loadedAssemblies.Any(a => a.assembly.GetName().Name.StartsWith("popBlock") && a.url == ""))
+                {
+                    this.Log("Compatibility Popup Blocker is installed");
+                }
+
                 CleanupOldVersions();
             }
             catch (Exception ex)
