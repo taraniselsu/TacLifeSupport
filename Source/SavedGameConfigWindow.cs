@@ -107,15 +107,10 @@ namespace Tac
                 //GUILayout.EndHorizontal();
                 //gameSettings.HibernateInsteadOfKill = (newValue == 1);
 
-                if (!gameSettings.HibernateInsteadOfKill)
+                if (!gameSettings.HibernateInsteadOfKill && HighLogic.CurrentGame.Parameters.Difficulty.MissingCrewsRespawn)
                 {
-                    gameSettings.AllowCrewRespawn = Utilities.ShowToggle("Allow Respawn", labelStyle, gameSettings.AllowCrewRespawn);
-
-                    if (gameSettings.AllowCrewRespawn)
-                    {
-                        gameSettings.RespawnDelay = Utilities.ShowTextField("Respawn delay (seconds)", labelStyle,
-                            gameSettings.RespawnDelay, 30, editStyle, GUILayout.MinWidth(100));
-                    }
+                    gameSettings.RespawnDelay = Utilities.ShowTextField("Respawn delay (seconds)", labelStyle,
+                        gameSettings.RespawnDelay, 30, editStyle, GUILayout.MinWidth(100));
                 }
 
                 GUILayout.Space(10);
@@ -148,7 +143,7 @@ namespace Tac
                 globalSettings.WaterConsumptionRate = Utilities.ShowTextField("Water Consumption Rate", labelStyle,
                     globalSettings.WaterConsumptionRate, 30, editStyle, GUILayout.MinWidth(150));
                 globalSettings.OxygenConsumptionRate = Utilities.ShowTextField("Oxygen Consumption Rate", labelStyle,
-                    globalSettings.OxygenConsumptionRate , 30, editStyle, GUILayout.MinWidth(150));
+                    globalSettings.OxygenConsumptionRate, 30, editStyle, GUILayout.MinWidth(150));
 
                 GUILayout.Space(5);
 

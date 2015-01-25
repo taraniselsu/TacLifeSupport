@@ -39,19 +39,6 @@ namespace Tac
         public bool Enabled { get; set; }
         public bool HibernateInsteadOfKill { get; set; }
         public double RespawnDelay { get; set; }
-
-        public bool AllowCrewRespawn
-        {
-            get
-            {
-                return HighLogic.CurrentGame.Parameters.Difficulty.MissingCrewsRespawn;
-            }
-            set
-            {
-                HighLogic.CurrentGame.Parameters.Difficulty.MissingCrewsRespawn = value;
-            }
-        }
-
         public Dictionary<string, CrewMemberInfo> knownCrew { get; private set; }
         public Dictionary<Guid, VesselInfo> knownVessels { get; private set; }
 

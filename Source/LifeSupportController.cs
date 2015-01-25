@@ -588,7 +588,7 @@ namespace Tac
                     part.RemoveCrewmember(crewMember);
                     crewMember.Die();
 
-                    if (gameSettings.AllowCrewRespawn)
+                    if (HighLogic.CurrentGame.Parameters.Difficulty.MissingCrewsRespawn)
                     {
                         crewMember.StartRespawnPeriod(gameSettings.RespawnDelay);
                     }
@@ -598,7 +598,7 @@ namespace Tac
             {
                 vessel.rootPart.Die();
 
-                if (gameSettings.AllowCrewRespawn)
+                if (HighLogic.CurrentGame.Parameters.Difficulty.MissingCrewsRespawn)
                 {
                     crewMember.StartRespawnPeriod(gameSettings.RespawnDelay);
                 }
