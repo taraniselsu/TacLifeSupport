@@ -36,11 +36,12 @@ Includes HexCan parts from Greys, licensed CC-BY 3.0. Used with permission. See
 Readme-HexCans.txt and LICENSE-HexCans.txt in the HexCans directory.
 Forum thread: http://forum.kerbalspaceprogram.com/showthread.php/33754
 
-Includes contributions by:
-- jfjohnny5
-- Ninenium
-- Dominik Hannen
+Includes contributions from (in alphabetical order):
 - Alexander Gavrilov
-- NathanKell
-- NoMrBond
+- Dominik Hannen
+- jfjohnny5
 - Kerbas-ad-astra
+- NathanKell
+- Ninenium
+- NoMrBond
+- Olympic1 (Arne Peirs)
