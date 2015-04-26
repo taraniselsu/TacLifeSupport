@@ -52,6 +52,11 @@ namespace Tac
             configWindow = new SavedGameConfigWindow(globalSettings, gameSettings);
         }
 
+        void Awake()
+        {
+            this.Log("Awake");
+        }
+
         void Start()
         {
             this.Log("Start, new game = " + gameSettings.IsNewSave);
