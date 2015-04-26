@@ -54,13 +54,13 @@ namespace Tac
                 }
 
                 // Is AddonController installed? (It could potentially cause problems.)
-                if (!AssemblyLoader.loadedAssemblies.Any(a => a.assembly.GetName().Name.StartsWith("AddonController") && a.url == ""))
+                if (AssemblyLoader.loadedAssemblies.Any(a => a.assembly.GetName().Name.StartsWith("AddonController")))
                 {
                     this.Log("AddonController is installed");
                 }
 
                 // Is Compatibility Popup Blocker installed? (It could potentially cause problems.)
-                if (!AssemblyLoader.loadedAssemblies.Any(a => a.assembly.GetName().Name.StartsWith("popBlock") && a.url == ""))
+                if (AssemblyLoader.loadedAssemblies.Any(a => a.assembly.GetName().Name.StartsWith("popBlock")))
                 {
                     this.Log("Compatibility Popup Blocker is installed");
                 }
