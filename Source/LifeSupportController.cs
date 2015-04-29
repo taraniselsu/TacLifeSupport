@@ -35,6 +35,8 @@ namespace Tac
 {
     class LifeSupportController : MonoBehaviour, Savable
     {
+        private const double seaLevelPressure = 101.325;
+
         private GlobalSettings globalSettings;
         private TacGameSettings gameSettings;
         private LifeSupportMonitoringWindow monitoringWindow;
@@ -502,6 +504,11 @@ namespace Tac
 
         private void FillEvaSuit(Part oldPart, Part newPart)
         {
+            if (!newPart.Resources.Contains(globalSettings.FoodId))
+            {
+                this.LogError("FillEvaSuit: new part does not have room for a Food resource.");
+            }
+
             double desiredFood = globalSettings.FoodConsumptionRate * globalSettings.EvaDefaultResourceAmount;
             double desiredWater = globalSettings.WaterConsumptionRate * globalSettings.EvaDefaultResourceAmount;
             double desiredOxygen = globalSettings.OxygenConsumptionRate * globalSettings.EvaDefaultResourceAmount;
@@ -511,7 +518,7 @@ namespace Tac
             VesselInfo lastVesselInfo;
             if (!gameSettings.knownVessels.TryGetValue(lastVessel.id, out lastVesselInfo))
             {
-                this.Log("Unknown vessel: " + lastVessel.vesselName + " (" + lastVessel.id + ")");
+                this.Log("FillEvaSuit: Unknown vessel: " + lastVessel.vesselName + " (" + lastVessel.id + ")");
                 lastVesselInfo = new VesselInfo(lastVessel.vesselName, Planetarium.GetUniversalTime());
             }
 
@@ -531,7 +538,7 @@ namespace Tac
 
         private void FillRescueEvaSuit(Vessel vessel)
         {
-            this.Log("Rescue mission EVA: " + vessel.vesselName);
+            this.Log("FillRescueEvaSuit: Rescue mission EVA: " + vessel.vesselName);
             Part part = vessel.rootPart;
 
             // Only fill the suit to 10-90% full
@@ -669,12 +676,12 @@ namespace Tac
             if (vessel.mainBody == FlightGlobals.Bodies[1])
             {
                 // On or above Kerbin
-                if (vessel.staticPressure > 0.5)
+                if (vessel.staticPressurekPa / seaLevelPressure > 0.5)
                 {
                     // air pressure is high enough so they can open a window
                     return false;
                 }
-                else if (vessel.staticPressure > 0.2 && vesselInfo.remainingElectricity > vesselInfo.estimatedElectricityConsumptionRate)
+                else if (vessel.staticPressurekPa / seaLevelPressure > 0.2 && vesselInfo.remainingElectricity > vesselInfo.estimatedElectricityConsumptionRate)
                 {
                     // air pressure is high enough & have electricity to run vents
                     return false;
@@ -691,7 +698,7 @@ namespace Tac
             if (vessel.mainBody == FlightGlobals.Bodies[1])
             {
                 // On or above Kerbin
-                if (vessel.staticPressure > 0.5)
+                if (vessel.staticPressurekPa / seaLevelPressure > 0.5)
                 {
                     // air pressure is high enough so they can open a window
                     return false;

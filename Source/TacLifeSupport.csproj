@@ -77,6 +77,7 @@
     </Compile>
     <Compile Include="AddLifeSupport.cs" />
     <Compile Include="BuildAidWindow.cs" />
+    <Compile Include="EngineersReportLifeSupportTests.cs" />
     <Compile Include="GameSettings.cs" />
     <Compile Include="EditorController.cs" />
     <Compile Include="InstallChecker.cs" />
@@ -97,8 +98,8 @@
   <Import Project="..\TacLib\Source\CommonProperties.proj" />
   <PropertyGroup>
     <AssemblyMajorVersion>0</AssemblyMajorVersion>
-    <AssemblyMinorVersion>10</AssemblyMinorVersion>
-    <AssemblyBuildNumber>3</AssemblyBuildNumber>
+    <AssemblyMinorVersion>11</AssemblyMinorVersion>
+    <AssemblyBuildNumber>0</AssemblyBuildNumber>
     <AssemblyFileMajorVersion>$(AssemblyMajorVersion)</AssemblyFileMajorVersion>
     <AssemblyFileMinorVersion>$(AssemblyMinorVersion)</AssemblyFileMinorVersion>
     <AssemblyFileBuildNumber>$(AssemblyBuildNumber)</AssemblyFileBuildNumber>
@@ -108,8 +109,8 @@
     <ModName>TAC Life Support</ModName>
     <ModUrl>http://ksp-avc.cybutek.net/version.php?id=9</ModUrl>
     <DownloadUrl></DownloadUrl>
-    <KspVersionMajor>0</KspVersionMajor>
-    <KspVersionMinor>90</KspVersionMinor>
+    <KspVersionMajor>1</KspVersionMajor>
+    <KspVersionMinor>0</KspVersionMinor>
     <KspVersionPatch>0</KspVersionPatch>
   </PropertyGroup>
   <Target Name="BeforeBuild">

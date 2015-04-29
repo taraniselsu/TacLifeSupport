@@ -1,0 +1,10 @@
+@PART[TacAirFilter|TacWaterPurifier|TacWaterPurifierLarge]:NEEDS[CommunityTechTree,TechManager]:AFTER[TacLifeSupport]
+{
+    @TechRequired = recycling
+}
+
+
+@PART[TacCarbonExtractor|TacCarbonExtractorLarge|TacSabatierRecycler|TacSabatierRecyclerLarge|TacWaterSplitter]:NEEDS[CommunityTechTree,TechManager]:AFTER[TacLifeSupport]
+{
+    @TechRequired = enhancedSurvivability
+}

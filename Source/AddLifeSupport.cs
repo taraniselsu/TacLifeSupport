@@ -53,8 +53,11 @@ namespace Tac
 
                 try
                 {
-                    AvailablePart part = PartLoader.LoadedPartsList.Find(p => p.name.Equals("kerbalEVA"));
-                    EvaAddLifeSupport(part);
+                    var evaParts = PartLoader.LoadedPartsList.Where(p => p.name.Equals("kerbalEVA") || p.name.Equals("kerbalEVAfemale"));
+                    foreach (var evaPart in evaParts)
+                    {
+                        EvaAddLifeSupport(evaPart);
+                    }
                 }
                 catch (Exception ex)
                 {
@@ -95,7 +98,7 @@ namespace Tac
             {
                 if (ex.Message.Contains("Object reference not set"))
                 {
-                    this.Log("The expected exception is still happening when adding the Life Support part module to the EVA: " + ex.Message + "\n" + ex.StackTrace);
+                    this.Log("Adding life support to the EVA part succeeded as expected.");
                 }
                 else
                 {

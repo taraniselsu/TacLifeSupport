@@ -33,7 +33,7 @@ using UnityEngine;
 namespace Tac
 {
     [KSPModule("TAC Life Support")]
-    class LifeSupportModule : PartModule
+    class LifeSupportModule : PartModule, IResourceConsumer
     {
         public override void OnAwake()
         {
@@ -50,6 +50,16 @@ namespace Tac
         public override string GetInfo()
         {
             return base.GetInfo() + "\nEquipped with the Thunder Aerospace Corporation (TAC) Life Support System.\n";
+        }
+
+        public List<PartResourceDefinition> GetConsumedResources()
+        {
+            return new List<PartResourceDefinition>() {
+                PartResourceLibrary.Instance.GetDefinition("Food"),
+                PartResourceLibrary.Instance.GetDefinition("Water"),
+                PartResourceLibrary.Instance.GetDefinition("Oxygen"),
+                PartResourceLibrary.Instance.GetDefinition("ElectricCharge")
+            };
         }
     }
 }
