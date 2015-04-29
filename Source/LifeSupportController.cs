@@ -669,12 +669,12 @@ namespace Tac
             if (vessel.mainBody == FlightGlobals.Bodies[1])
             {
                 // On or above Kerbin
-                if (vessel.staticPressure > 0.5)
+                if (vessel.staticPressurekPa > (0.5 * vessel.mainBody.atmospherePressureSeaLevel))
                 {
                     // air pressure is high enough so they can open a window
                     return false;
                 }
-                else if (vessel.staticPressure > 0.2 && vesselInfo.remainingElectricity > vesselInfo.estimatedElectricityConsumptionRate)
+                else if (vessel.staticPressurekPa > (0.2 * vessel.mainBody.atmospherePressureSeaLevel) && vesselInfo.remainingElectricity > vesselInfo.estimatedElectricityConsumptionRate)
                 {
                     // air pressure is high enough & have electricity to run vents
                     return false;
@@ -691,7 +691,7 @@ namespace Tac
             if (vessel.mainBody == FlightGlobals.Bodies[1])
             {
                 // On or above Kerbin
-                if (vessel.staticPressure > 0.5)
+                if (vessel.staticPressurekPa > (0.5 * vessel.mainBody.atmospherePressureSeaLevel))
                 {
                     // air pressure is high enough so they can open a window
                     return false;
