@@ -35,8 +35,6 @@ namespace Tac
 {
     class LifeSupportController : MonoBehaviour, Savable
     {
-        private const double seaLevelPressure = 101.325;
-
         private GlobalSettings globalSettings;
         private TacGameSettings gameSettings;
         private LifeSupportMonitoringWindow monitoringWindow;
@@ -44,6 +42,7 @@ namespace Tac
         private ButtonWrapper button;
         private string configFilename;
         private bool loadingNewScene = false;
+        private double seaLevelPressure = 101.325;
 
         void Awake()
         {
@@ -80,6 +79,9 @@ namespace Tac
                 GameEvents.onCrewOnEva.Add(OnCrewOnEva);
                 GameEvents.onCrewBoardVessel.Add(OnCrewBoardVessel);
                 GameEvents.onGameSceneLoadRequested.Add(OnGameSceneLoadRequested);
+
+                // Double check that we have the right sea level pressure for Kerbin
+                seaLevelPressure = FlightGlobals.Bodies[1].GetPressure(0);
             }
             else
             {
@@ -676,12 +678,12 @@ namespace Tac
             if (vessel.mainBody == FlightGlobals.Bodies[1])
             {
                 // On or above Kerbin
-                if (vessel.staticPressurekPa / seaLevelPressure > 0.5)
+                if ((vessel.staticPressurekPa / seaLevelPressure) > 0.5)
                 {
                     // air pressure is high enough so they can open a window
                     return false;
                 }
-                else if (vessel.staticPressurekPa / seaLevelPressure > 0.2 && vesselInfo.remainingElectricity > vesselInfo.estimatedElectricityConsumptionRate)
+                else if ((vessel.staticPressurekPa / seaLevelPressure) > 0.2 && vesselInfo.remainingElectricity > vesselInfo.estimatedElectricityConsumptionRate)
                 {
                     // air pressure is high enough & have electricity to run vents
                     return false;
@@ -698,7 +700,7 @@ namespace Tac
             if (vessel.mainBody == FlightGlobals.Bodies[1])
             {
                 // On or above Kerbin
-                if (vessel.staticPressurekPa / seaLevelPressure > 0.5)
+                if ((vessel.staticPressurekPa / seaLevelPressure) > 0.5)
                 {
                     // air pressure is high enough so they can open a window
                     return false;
