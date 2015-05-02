@@ -111,7 +111,7 @@
     <DownloadUrl></DownloadUrl>
     <KspVersionMajor>1</KspVersionMajor>
     <KspVersionMinor>0</KspVersionMinor>
-    <KspVersionPatch>0</KspVersionPatch>
+    <KspVersionPatch>2</KspVersionPatch>
   </PropertyGroup>
   <Target Name="BeforeBuild">
     <CallTarget Targets="GitInfo" />
