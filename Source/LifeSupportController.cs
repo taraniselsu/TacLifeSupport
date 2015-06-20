@@ -107,7 +107,6 @@ namespace Tac
             {
                 return;
             }
-            print ("TAC FixedUpdate!");
             double currentTime = Planetarium.GetUniversalTime();
             var allVessels = new List<Vessel>();
             if (FlightGlobals.ready) {
@@ -116,7 +115,6 @@ namespace Tac
             var knownVessels = gameSettings.knownVessels;
 
             var vesselsToDelete = new List<Guid>();
-            print ("TAC FixedUpdate: foreach");
             foreach (var entry in knownVessels)
             {
                 Guid vesselId = entry.Key;
@@ -157,7 +155,7 @@ namespace Tac
                         ConsumeResources(currentTime, vessel, vesselInfo);
                     }
                 }
-                    
+
                 if (vesselInfo.numCrew > 0)
                 {
                     double foodRate = globalSettings.FoodConsumptionRate * vesselInfo.numCrew;
