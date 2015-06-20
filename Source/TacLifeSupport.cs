@@ -68,9 +68,17 @@ namespace Tac
                 this.Log("Adding SpaceCenterManager");
                 var c = gameObject.AddComponent<SpaceCenterManager>();
                 children.Add(c);
+                /* This does show the window, but only shows one button in the toolbar
                 this.Log("Adding LifeSupportController");
-                var see = gameObject.AddComponent<LifeSupportController>();
-                children.Add(see);
+                var d = gameObject.AddComponent<LifeSupportController>();
+                children.Add(d);
+                */
+            }
+            else if (HighLogic.LoadedScene == GameScenes.TRACKSTATION)
+            {
+                this.Log("Adding LifeSupportController");
+                var c = gameObject.AddComponent<LifeSupportController>();
+                children.Add(c);
             }
             else if (HighLogic.LoadedScene == GameScenes.FLIGHT)
             {
