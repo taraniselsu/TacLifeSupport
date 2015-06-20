@@ -72,6 +72,8 @@ namespace Tac
         public double estimatedElectricityConsumptionRate;
         public bool hibernating;
 
+        public string KACAlarmID;
+
         public VesselInfo(string vesselName, double currentTime)
         {
             this.vesselName = vesselName;
@@ -115,6 +117,8 @@ namespace Tac
 
             info.hibernating = Utilities.GetValue(node, "hibernating", false);
 
+            info.KACAlarmID = Utilities.GetValue(node, "KACAlarmID", "");
+
             return info;
         }
 
@@ -148,6 +152,8 @@ namespace Tac
             node.AddValue("estimatedElectricityConsumptionRate", estimatedElectricityConsumptionRate);
 
             node.AddValue("hibernating", hibernating);
+
+            node.AddValue("KACAlarmID", KACAlarmID);
 
             return node;
         }

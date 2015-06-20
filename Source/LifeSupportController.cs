@@ -30,6 +30,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using UnityEngine;
+using TACLS_KACWrapper;
 
 namespace Tac
 {
@@ -82,6 +83,8 @@ namespace Tac
 
                 // Double check that we have the right sea level pressure for Kerbin
                 seaLevelPressure = FlightGlobals.Bodies[1].GetPressure(0);
+
+                KACWrapper.InitKACWrapper();
             }
             else
             {
@@ -129,6 +132,16 @@ namespace Tac
                         this.Log("Deleting crew member: " + name);
                         gameSettings.knownCrew.Remove(name);
                     }
+                    if (KACWrapper.APIReady) {
+                        if (vesselInfo.KACAlarmID != "") {
+                            try {
+                                KACWrapper.KAC.DeleteAlarm (vesselInfo.KACAlarmID);
+                            }
+                            catch {
+                                // Don't crash if there was some problem deleting the alarm
+                            }
+                        }
+                    }
                     continue;
                 }
 
@@ -144,27 +157,46 @@ namespace Tac
                     }
                 }
 
-                if (vesselInfo.numCrew > 0)
-                {
+                if (vesselInfo.numCrew > 0) {
                     double foodRate = globalSettings.FoodConsumptionRate * vesselInfo.numCrew;
                     vesselInfo.estimatedTimeFoodDepleted = vesselInfo.lastFood + (vesselInfo.remainingFood / foodRate);
                     double estimatedFood = vesselInfo.remainingFood - ((currentTime - vesselInfo.lastFood) * foodRate);
-                    ShowWarnings(vessel, estimatedFood, vesselInfo.maxFood, foodRate, globalSettings.Food, ref vesselInfo.foodStatus);
+                    ShowWarnings (vessel, estimatedFood, vesselInfo.maxFood, foodRate, globalSettings.Food, ref vesselInfo.foodStatus);
 
                     double waterRate = globalSettings.WaterConsumptionRate * vesselInfo.numCrew;
                     vesselInfo.estimatedTimeWaterDepleted = vesselInfo.lastWater + (vesselInfo.remainingWater / waterRate);
                     double estimatedWater = vesselInfo.remainingWater - ((currentTime - vesselInfo.lastWater) * waterRate);
-                    ShowWarnings(vessel, estimatedWater, vesselInfo.maxWater, waterRate, globalSettings.Water, ref vesselInfo.waterStatus);
+                    ShowWarnings (vessel, estimatedWater, vesselInfo.maxWater, waterRate, globalSettings.Water, ref vesselInfo.waterStatus);
 
                     double oxygenRate = globalSettings.OxygenConsumptionRate * vesselInfo.numCrew;
                     vesselInfo.estimatedTimeOxygenDepleted = vesselInfo.lastOxygen + (vesselInfo.remainingOxygen / oxygenRate);
                     double estimatedOxygen = vesselInfo.remainingOxygen - ((currentTime - vesselInfo.lastOxygen) * oxygenRate);
-                    ShowWarnings(vessel, estimatedOxygen, vesselInfo.maxOxygen, oxygenRate, globalSettings.Oxygen, ref vesselInfo.oxygenStatus);
+                    ShowWarnings (vessel, estimatedOxygen, vesselInfo.maxOxygen, oxygenRate, globalSettings.Oxygen, ref vesselInfo.oxygenStatus);
 
                     vesselInfo.estimatedTimeElectricityDepleted = vesselInfo.lastElectricity + (vesselInfo.remainingElectricity / vesselInfo.estimatedElectricityConsumptionRate);
-                    if (vessel.loaded)
-                    {
-                        ShowWarnings(vessel, vesselInfo.remainingElectricity, vesselInfo.maxElectricity, vesselInfo.estimatedElectricityConsumptionRate, globalSettings.Electricity, ref vesselInfo.electricityStatus);
+                    if (vessel.loaded) {
+                        ShowWarnings (vessel, vesselInfo.remainingElectricity, vesselInfo.maxElectricity, vesselInfo.estimatedElectricityConsumptionRate, globalSettings.Electricity, ref vesselInfo.electricityStatus);
+                        if (KACWrapper.APIReady) {
+                            double firstToEmpty = Math.Min (vesselInfo.estimatedTimeOxygenDepleted, Math.Min (vesselInfo.estimatedTimeFoodDepleted, vesselInfo.estimatedTimeWaterDepleted));
+
+                            KACWrapper.KACAPI.KACAlarm a = null;
+                            if (vesselInfo.KACAlarmID != "") {
+                                a = KACWrapper.KAC.Alarms.FirstOrDefault (z => z.ID == vesselInfo.KACAlarmID);
+                            } else {
+                                vesselInfo.KACAlarmID = KACWrapper.KAC.CreateAlarm (
+                                    KACWrapper.KACAPI.AlarmTypeEnum.Raw,
+                                    "TACLS: "+vessel.vesselName+" gonna die!! Oh Noes!!",
+                                    firstToEmpty
+                                );
+                                a = KACWrapper.KAC.Alarms.FirstOrDefault (z => z.ID == vesselInfo.KACAlarmID);
+                                if (a != null) {
+                                    a.AlarmAction = KACWrapper.KACAPI.AlarmActionEnum.KillWarp;
+                                    a.AlarmMargin = 0;
+                                    a.VesselID = vessel.id.ToString ();
+                                    a.Notes = vessel.vesselName+" will run out of life support resources";
+                                }
+                            }
+                        }
                     }
                 }
 
