@@ -68,6 +68,9 @@ namespace Tac
                 this.Log("Adding SpaceCenterManager");
                 var c = gameObject.AddComponent<SpaceCenterManager>();
                 children.Add(c);
+                this.Log("Adding LifeSupportController");
+                var see = gameObject.AddComponent<LifeSupportController>();
+                children.Add(see);
             }
             else if (HighLogic.LoadedScene == GameScenes.FLIGHT)
             {
