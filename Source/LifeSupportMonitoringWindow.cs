@@ -131,7 +131,7 @@ namespace Tac
                     GUILayout.Space(10);
                 }
 
-                foreach (var entry in gameSettings.knownVessels)
+                foreach (var entry in sortedKnownVessels())
                 {
                     // The active vessel was already done above
                     if (entry.Key != activeVessel.id)
@@ -153,6 +153,11 @@ namespace Tac
             }
 
             GUI.Label(new Rect(4, windowPos.height - 13, windowPos.width - 20, 12), "TAC Life Support v" + version, versionStyle);
+        }
+
+        private IEnumerable<KeyValuePair<Guid, VesselInfo>> sortedKnownVessels()
+        {
+            return gameSettings.knownVessels.OrderBy (x => Math.Min (x.Value.estimatedTimeOxygenDepleted, Math.Min (x.Value.estimatedTimeFoodDepleted, x.Value.estimatedTimeWaterDepleted)));
         }
 
         private void DrawVesselInfo(VesselInfo vesselInfo, double currentTime)
