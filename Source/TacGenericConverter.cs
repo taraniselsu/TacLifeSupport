@@ -124,18 +124,11 @@ namespace Tac
             this.Log("OnStart: " + state);
             base.OnStart(state);
 
-            if (state != StartState.Editor)
-            {
-                part.force_activate();
-            }
-
             UpdateEvents();
         }
 
-        public override void OnFixedUpdate()
+        void FixedUpdate()
         {
-            base.OnFixedUpdate();
-
             if (Time.timeSinceLevelLoad < 1.0f || !FlightGlobals.ready)
             {
                 return;
