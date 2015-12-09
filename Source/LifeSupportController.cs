@@ -103,7 +103,7 @@ namespace Tac
 
         void FixedUpdate()
         {
-            if (Time.timeSinceLevelLoad < 1.0f || !FlightGlobals.ready || loadingNewScene)
+            if (Time.timeSinceLevelLoad < 1.0f || loadingNewScene)
             {
                 return;
             }
@@ -142,6 +142,13 @@ namespace Tac
                         vesselsToDelete.Add(vesselId);
                         continue;
                     }
+
+                    ConsumeResources(currentTime, vessel, vesselInfo);
+
+                    if (vesselInfo.numCrew > 0)
+                    {
+                        ShowWarnings(vessel.vesselName, vesselInfo.remainingElectricity, vesselInfo.maxElectricity, vesselInfo.estimatedElectricityConsumptionRate, globalSettings.Electricity, ref vesselInfo.electricityStatus);
+                    }
                 }
 
                 if (vesselInfo.numCrew > 0)
@@ -149,29 +156,21 @@ namespace Tac
                     double foodRate = globalSettings.FoodConsumptionRate * vesselInfo.numCrew;
                     vesselInfo.estimatedTimeFoodDepleted = vesselInfo.lastFood + (vesselInfo.remainingFood / foodRate);
                     double estimatedFood = vesselInfo.remainingFood - ((currentTime - vesselInfo.lastFood) * foodRate);
-                    ShowWarnings(vessel, estimatedFood, vesselInfo.maxFood, foodRate, globalSettings.Food, ref vesselInfo.foodStatus);
+                    ShowWarnings(vesselInfo.vesselName, estimatedFood, vesselInfo.maxFood, foodRate, globalSettings.Food, ref vesselInfo.foodStatus);
 
                     double waterRate = globalSettings.WaterConsumptionRate * vesselInfo.numCrew;
                     vesselInfo.estimatedTimeWaterDepleted = vesselInfo.lastWater + (vesselInfo.remainingWater / waterRate);
                     double estimatedWater = vesselInfo.remainingWater - ((currentTime - vesselInfo.lastWater) * waterRate);
-                    ShowWarnings(vessel, estimatedWater, vesselInfo.maxWater, waterRate, globalSettings.Water, ref vesselInfo.waterStatus);
+                    ShowWarnings(vesselInfo.vesselName, estimatedWater, vesselInfo.maxWater, waterRate, globalSettings.Water, ref vesselInfo.waterStatus);
 
                     double oxygenRate = globalSettings.OxygenConsumptionRate * vesselInfo.numCrew;
                     vesselInfo.estimatedTimeOxygenDepleted = vesselInfo.lastOxygen + (vesselInfo.remainingOxygen / oxygenRate);
                     double estimatedOxygen = vesselInfo.remainingOxygen - ((currentTime - vesselInfo.lastOxygen) * oxygenRate);
-                    ShowWarnings(vessel, estimatedOxygen, vesselInfo.maxOxygen, oxygenRate, globalSettings.Oxygen, ref vesselInfo.oxygenStatus);
+                    ShowWarnings(vesselInfo.vesselName, estimatedOxygen, vesselInfo.maxOxygen, oxygenRate, globalSettings.Oxygen, ref vesselInfo.oxygenStatus);
 
                     vesselInfo.estimatedTimeElectricityDepleted = vesselInfo.lastElectricity + (vesselInfo.remainingElectricity / vesselInfo.estimatedElectricityConsumptionRate);
-                    if (vessel.loaded)
-                    {
-                        ShowWarnings(vessel, vesselInfo.remainingElectricity, vesselInfo.maxElectricity, vesselInfo.estimatedElectricityConsumptionRate, globalSettings.Electricity, ref vesselInfo.electricityStatus);
-                    }
                 }
 
-                if (vessel.loaded)
-                {
-                    ConsumeResources(currentTime, vessel, vesselInfo);
-                }
             }
 
             vesselsToDelete.ForEach(id => knownVessels.Remove(id));
@@ -457,7 +456,7 @@ namespace Tac
             return crewCapacity;
         }
 
-        private void ShowWarnings(Vessel vessel, double resourceRemaining, double max, double rate, string resourceName, ref VesselInfo.Status status)
+        private void ShowWarnings(string vesselName, double resourceRemaining, double max, double rate, string resourceName, ref VesselInfo.Status status)
         {
             double criticalLevel = rate; // 1 second of resources
             double warningLevel = max * 0.10; // 10% full
@@ -466,8 +465,8 @@ namespace Tac
             {
                 if (status != VesselInfo.Status.CRITICAL)
                 {
-                    ScreenMessages.PostScreenMessage(vessel.vesselName + " - " + resourceName + " depleted!", 10.0f, ScreenMessageStyle.UPPER_CENTER);
-                    this.Log(vessel.vesselName + " - " + resourceName + " depleted!");
+                    ScreenMessages.PostScreenMessage(vesselName + " - " + resourceName + " depleted!", 10.0f, ScreenMessageStyle.UPPER_CENTER);
+                    this.Log(vesselName + " - " + resourceName + " depleted!");
                     status = VesselInfo.Status.CRITICAL;
                     TimeWarp.SetRate(0, false);
                 }
@@ -480,8 +479,8 @@ namespace Tac
                 }
                 else if (status != VesselInfo.Status.LOW)
                 {
-                    ScreenMessages.PostScreenMessage(vessel.vesselName + " - " + resourceName + " is running out!", 10.0f, ScreenMessageStyle.UPPER_CENTER);
-                    this.Log(vessel.vesselName + " - " + resourceName + " is running out!");
+                    ScreenMessages.PostScreenMessage(vesselName + " - " + resourceName + " is running out!", 10.0f, ScreenMessageStyle.UPPER_CENTER);
+                    this.Log(vesselName + " - " + resourceName + " is running out!");
                     status = VesselInfo.Status.LOW;
                     TimeWarp.SetRate(0, false);
                 }

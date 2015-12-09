@@ -99,14 +99,13 @@ namespace Tac
 
         protected override void DrawWindowContents(int windowId)
         {
-            if (FlightGlobals.ready)
-            {
-                scrollPosition = GUILayout.BeginScrollView(scrollPosition, scrollStyle);
-                GUILayout.BeginVertical();
-                GUILayout.Space(4);
+            scrollPosition = GUILayout.BeginScrollView(scrollPosition, scrollStyle);
+            GUILayout.BeginVertical();
+            GUILayout.Space(4);
 
-                double currentTime = Planetarium.GetUniversalTime();
+            double currentTime = Planetarium.GetUniversalTime();
 
+            if (FlightGlobals.ready) {
                 // Draw the active vessel first
                 Vessel activeVessel = FlightGlobals.ActiveVessel;
                 if (activeVessel != null)
@@ -140,10 +139,18 @@ namespace Tac
                         GUILayout.Space(10);
                     }
                 }
-
-                GUILayout.EndVertical();
-                GUILayout.EndScrollView();
             }
+            else
+            {
+                foreach (var entry in gameSettings.knownVessels)
+                {
+                    DrawVesselInfo (entry.Value, currentTime);
+                    GUILayout.Space(10);
+                }
+            }
+
+            GUILayout.EndVertical();
+            GUILayout.EndScrollView();
 
             GUILayout.Space(8);
 
