@@ -80,30 +80,27 @@ namespace Tac
 
         protected override void DrawWindowContents(int windowID)
         {
-            if (FlightGlobals.ready)
+            scrollPosition = GUILayout.BeginScrollView(scrollPosition);
+            GUILayout.BeginVertical();
+            GUILayout.Space(4);
+
+            double currentTime = Planetarium.GetUniversalTime();
+
+            foreach (CrewMemberInfo crewInfo in gameSettings.knownCrew.Values)
             {
-                scrollPosition = GUILayout.BeginScrollView(scrollPosition);
-                GUILayout.BeginVertical();
-                GUILayout.Space(4);
-
-                double currentTime = Planetarium.GetUniversalTime();
-
-                foreach (CrewMemberInfo crewInfo in gameSettings.knownCrew.Values)
+                GUILayout.Label(crewInfo.name + " (" + crewInfo.vesselName + ")", headerStyle);
+                GUILayout.Label("  Last updated: " + Utilities.FormatTime(currentTime - crewInfo.lastUpdate), labelStyle);
+                GUILayout.Label("  Last food: " + Utilities.FormatTime(currentTime - crewInfo.lastFood), getStyle(crewInfo.lastUpdate, crewInfo.lastFood, globalSettings.MaxTimeWithoutFood));
+                GUILayout.Label("  Last water: " + Utilities.FormatTime(currentTime - crewInfo.lastWater), getStyle(crewInfo.lastUpdate, crewInfo.lastWater, globalSettings.MaxTimeWithoutWater));
+                if (gameSettings.HibernateInsteadOfKill)
                 {
-                    GUILayout.Label(crewInfo.name + " (" + crewInfo.vesselName + ")", headerStyle);
-                    GUILayout.Label("  Last updated: " + Utilities.FormatTime(currentTime - crewInfo.lastUpdate), labelStyle);
-                    GUILayout.Label("  Last food: " + Utilities.FormatTime(currentTime - crewInfo.lastFood), getStyle(crewInfo.lastUpdate, crewInfo.lastFood, globalSettings.MaxTimeWithoutFood));
-                    GUILayout.Label("  Last water: " + Utilities.FormatTime(currentTime - crewInfo.lastWater), getStyle(crewInfo.lastUpdate, crewInfo.lastWater, globalSettings.MaxTimeWithoutWater));
-                    if (gameSettings.HibernateInsteadOfKill)
-                    {
-                        GUILayout.Label("  Hibernating: " + crewInfo.hibernating, labelStyle);
-                    }
-                    GUILayout.Space(10);
+                    GUILayout.Label("  Hibernating: " + crewInfo.hibernating, labelStyle);
                 }
-
-                GUILayout.EndVertical();
-                GUILayout.EndScrollView();
+                GUILayout.Space(10);
             }
+
+            GUILayout.EndVertical();
+            GUILayout.EndScrollView();
 
             GUILayout.Space(8);
         }
