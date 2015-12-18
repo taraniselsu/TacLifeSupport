@@ -43,6 +43,7 @@ namespace Tac
         private string configFilename;
         private bool loadingNewScene = false;
         private double seaLevelPressure = 101.325;
+        private bool IsDFInstalled = false;
 
         void Awake()
         {
@@ -56,6 +57,7 @@ namespace Tac
                 "LS", "TAC Life Support Monitoring Window", OnIconClicked, "FlightIcon");
 
             configFilename = IOUtils.GetFilePathFor(this.GetType(), "LifeSupport.cfg");
+            IsDFInstalled = DF.DFInterface.IsDFInstalled;
         }
 
         void Start()
@@ -106,6 +108,11 @@ namespace Tac
             if (Time.timeSinceLevelLoad < 1.0f || loadingNewScene)
             {
                 return;
+            }
+
+            if (IsDFInstalled)
+            {
+                RemoveFrozenKerbals();
             }
 
             double currentTime = Planetarium.GetUniversalTime();
@@ -210,6 +217,29 @@ namespace Tac
                         }
                     }
                 }
+            }
+        }
+
+        private void RemoveFrozenKerbals()
+        {
+            var crew = HighLogic.CurrentGame.CrewRoster.Unowned;
+            DF.IDFInterface DFOjbect = null;
+            try
+            {
+                DFOjbect = DF.DFInterface.GetFrozenKerbals();
+                foreach (KeyValuePair<string, DF.KerbalInfo> frznCrew in DFOjbect.FrozenKerbals)
+                {
+                    if (gameSettings.knownCrew.ContainsKey(frznCrew.Key))
+                    {
+                        this.Log("Deleting Frozen crew member: " + frznCrew.Key);
+                        gameSettings.knownCrew.Remove(frznCrew.Key);
+                    }
+                }
+            }           
+            catch (Exception ex)
+            {
+                this.Log("Error attempting to check DeepFreeze for FrozenKerbals");
+                this.Log(ex.Message);
             }
         }
 
