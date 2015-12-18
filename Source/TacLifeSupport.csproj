@@ -36,6 +36,9 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>$(KSP)\KSP_Data\Managed\Assembly-CSharp.dll</HintPath>
     </Reference>
+    <Reference Include="DFInterface">
+      <HintPath>..\DeepFreeze\DFInterface.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
@@ -108,7 +111,8 @@
     <!-- Needed for the WriteAvcVersion build target -->
     <ModName>TAC Life Support</ModName>
     <ModUrl>http://ksp-avc.cybutek.net/version.php?id=9</ModUrl>
-    <DownloadUrl></DownloadUrl>
+    <DownloadUrl>
+    </DownloadUrl>
     <KspVersionMajor>1</KspVersionMajor>
     <KspVersionMinor>0</KspVersionMinor>
     <KspVersionPatch>5</KspVersionPatch>
