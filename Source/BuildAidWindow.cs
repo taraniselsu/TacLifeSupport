@@ -24,10 +24,8 @@
  * is purely coincidental.
  */
 
-using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
+using KSP.UI;
 using UnityEngine;
 
 namespace Tac
@@ -232,7 +230,7 @@ namespace Tac
                     }
                 }
 
-                CMAssignmentDialog dialog = CMAssignmentDialog.Instance;
+                CrewAssignmentDialog dialog = CrewAssignmentDialog.Instance;
                 if (dialog != null)
                 {
                     VesselCrewManifest manifest = dialog.GetManifest();
