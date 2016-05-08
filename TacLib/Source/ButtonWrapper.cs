@@ -80,6 +80,11 @@ namespace Tac
             }
         }
 
+        public void OnGUI()
+        {
+            icon?.OnGUI();
+        }
+
         public void Load(ConfigNode node)
         {
             if (icon != null)

@@ -101,6 +101,13 @@ namespace Tac
             GameEvents.onGameSceneLoadRequested.Remove(OnGameSceneLoadRequested);
         }
 
+        void OnGUI()
+        {
+            button?.OnGUI();
+            rosterWindow?.OnGUI();
+            monitoringWindow?.OnGUI();
+        }
+
         void FixedUpdate()
         {
             if (Time.timeSinceLevelLoad < 1.0f || loadingNewScene)

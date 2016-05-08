@@ -33,10 +33,13 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Assembly-CSharp">
-      <HintPath>$(KSP)\KSP_Data\Managed\Assembly-CSharp.dll</HintPath>
+      <HintPath>..\..\..\KSP Test\KSP_Data\Managed\Assembly-CSharp.dll</HintPath>
+    </Reference>
+    <Reference Include="KSPCore">
+      <HintPath>..\..\..\KSP Test\KSP_Data\Managed\KSPCore.dll</HintPath>
     </Reference>
     <Reference Include="KSPUtil">
-      <HintPath>$(KSP)\KSP_Data\Managed\KSPUtil.dll</HintPath>
+      <HintPath>..\..\..\KSP Test\KSP_Data\Managed\KSPUtil.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -45,10 +48,10 @@
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
     <Reference Include="UnityEngine">
-      <HintPath>$(KSP)\KSP_Data\Managed\UnityEngine.dll</HintPath>
+      <HintPath>..\..\..\KSP Test\KSP_Data\Managed\UnityEngine.dll</HintPath>
     </Reference>
     <Reference Include="UnityEngine.UI">
-      <HintPath>$(KSP)\KSP_Data\Managed\UnityEngine.UI.dll</HintPath>
+      <HintPath>..\..\..\KSP Test\KSP_Data\Managed\UnityEngine.UI.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
@@ -98,6 +101,9 @@
     <Compile Include="GlobalSettings.cs" />
     <Compile Include="VesselInfo.cs" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="ClassDiagram1.cd" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="..\TacLib\Source\CommonProperties.proj" />
   <PropertyGroup>
@@ -112,10 +118,17 @@
     <!-- Needed for the WriteAvcVersion build target -->
     <ModName>TAC Life Support</ModName>
     <ModUrl>http://ksp-avc.cybutek.net/version.php?id=9</ModUrl>
-    <DownloadUrl></DownloadUrl>
+    <DownloadUrl>
+    </DownloadUrl>
     <KspVersionMajor>1</KspVersionMajor>
     <KspVersionMinor>0</KspVersionMinor>
     <KspVersionPatch>5</KspVersionPatch>
+  </PropertyGroup>
+  <PropertyGroup>
+    <PostBuildEvent>"C:\Users\Danny\Source\pdb2mdb\pdb2mdb.exe" "$(TargetFileName)"
+xcopy /Y "$(TargetPath)" "C:\Users\Danny\Source\KSP Test\GameData\ThunderAerospace\TacLifeSupport"
+xcopy /Y "$(TargetDir)$(TargetName).pdb" "C:\Users\Danny\Source\KSP Test\GameData\ThunderAerospace\TacLifeSupport"
+xcopy /Y "$(TargetDir)$(TargetName).dll.mdb" "C:\Users\Danny\Source\KSP Test\GameData\ThunderAerospace\TacLifeSupport"</PostBuildEvent>
   </PropertyGroup>
   <Target Name="BeforeBuild">
     <CallTarget Targets="GitInfo" />

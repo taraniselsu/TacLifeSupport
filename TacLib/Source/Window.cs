@@ -78,6 +78,14 @@ namespace Tac
             this.visible = newValue;
         }
 
+        public void OnGUI()
+        {
+            if (visible)
+            {
+                DrawWindow();
+            }
+        }
+
         public void ToggleVisible()
         {
             SetVisible(!visible);
@@ -182,14 +190,6 @@ namespace Tac
                 resizeStyle.padding = new RectOffset(1, 1, 1, 1);
             }
         }
-		
-		private void OnGUI()
-		{
-			if (visible)
-			{
-				DrawWindow();
-			}
-		}
 
         private void PreDrawWindowContents(int windowId)
         {

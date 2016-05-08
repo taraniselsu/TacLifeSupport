@@ -45,7 +45,27 @@ namespace Tac
         private GUIContent content;
         private GUIStyle iconStyle;
 
-        public bool Visible { get; set; }
+        private bool visible;
+        public bool Visible
+        {
+            get
+            {
+                return visible;
+            }
+            set
+            {
+
+                visible = value;
+            }
+        }
+
+        public void OnGUI()
+        {
+            if (visible)
+            {
+                DrawIcon();
+            }
+        }
 
         public Icon(Rect defaultPosition, string imageFilename, string noImageText, string tooltip, Action onClickHandler, string configNodeName = "Icon")
         {
@@ -65,14 +85,6 @@ namespace Tac
                 content = new GUIContent(noImageText, tooltip);
             }
         }
-		
-		private void OnGUI()
-		{
-			if (this.Visible)
-			{
-                DrawIcon();
-			}
-		}
 
         private void DrawIcon()
         {
