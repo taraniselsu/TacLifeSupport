@@ -83,6 +83,12 @@ namespace Tac
             window.Save(globalNode);
         }
 
+        void OnGUI()
+        {
+            window?.OnGUI();
+            button?.OnGUI();
+        }
+
         void OnDestroy()
         {
             this.Log("OnDestroy");

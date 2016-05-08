@@ -30,6 +30,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using UnityEngine;
+using TacDFWrapper; 
 
 namespace Tac
 {
@@ -43,6 +44,7 @@ namespace Tac
         private string configFilename;
         private bool loadingNewScene = false;
         private double seaLevelPressure = 101.325;
+        private bool IsDFInstalled = false;        
 
         void Awake()
         {
@@ -56,6 +58,19 @@ namespace Tac
                 "LS", "TAC Life Support Monitoring Window", OnIconClicked, "FlightIcon");
 
             configFilename = IOUtils.GetFilePathFor(this.GetType(), "LifeSupport.cfg");
+
+            //Check if DeepFreeze is installed and set bool.
+            var DeepFreezeassembly = (from a in AppDomain.CurrentDomain.GetAssemblies()
+                            where a.FullName.StartsWith("DeepFreeze")
+                            select a).FirstOrDefault();
+            if (DeepFreezeassembly != null)
+            {
+                IsDFInstalled = true;
+            }
+            else
+            {
+                IsDFInstalled = false;
+            }
         }
 
         void Start()
@@ -101,11 +116,35 @@ namespace Tac
             GameEvents.onGameSceneLoadRequested.Remove(OnGameSceneLoadRequested);
         }
 
+        void OnGUI()
+        {
+            button?.OnGUI();
+            rosterWindow?.OnGUI();
+            monitoringWindow?.OnGUI();
+        }
+
         void FixedUpdate()
         {
             if (Time.timeSinceLevelLoad < 1.0f || loadingNewScene)
             {
                 return;
+            }
+
+            // If DeepFreeze is installed do DeepFreeze processing to remove frozen kerbals from our list.
+            if (IsDFInstalled)  
+            {
+                if (!DFWrapper.InstanceExists)  // Check if DFWrapper has been initialized or not. If not try to initialize.
+                {
+                    DFWrapper.InitDFWrapper();
+                }
+                if (DFWrapper.APIReady)
+                {
+                    Dictionary<string, DFWrapper.KerbalInfo> DFFrozenKerbals = new Dictionary<string, DFWrapper.KerbalInfo>();
+                    //Get the DeepFreeze Dictionary of all Frozen Kerbals in the current Game.
+                    DFFrozenKerbals = DFWrapper.DeepFreezeAPI.FrozenKerbals;
+                    //Remove any Frozen Kerbals from TAC LS tracking.
+                    RemoveFrozenKerbals(DFFrozenKerbals);
+                }                
             }
 
             double currentTime = Planetarium.GetUniversalTime();
@@ -210,6 +249,26 @@ namespace Tac
                         }
                     }
                 }
+            }
+        }
+
+        private void RemoveFrozenKerbals(Dictionary<string, DFWrapper.KerbalInfo> DFFrozenKerbals)
+        {                    
+            try
+            {
+                foreach (KeyValuePair<string, DFWrapper.KerbalInfo> frznCrew in DFFrozenKerbals)
+                {
+                    if (gameSettings.knownCrew.ContainsKey(frznCrew.Key))
+                    {
+                        this.Log("Deleting Frozen crew member: " + frznCrew.Key);
+                        gameSettings.knownCrew.Remove(frznCrew.Key);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                this.Log("Error attempting to check DeepFreeze for FrozenKerbals");
+                this.Log(ex.Message);
             }
         }
 
