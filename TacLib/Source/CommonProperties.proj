@@ -76,7 +76,7 @@
     <WriteLinesToFile File="$(AVCFile)"
       Lines="{&#xD;&#xA;  &quot;NAME&quot;: &quot;$(ModName)&quot;,&#xD;&#xA;  &quot;URL&quot;: &quot;$(ModUrl)&quot;,&#xD;&#xA;  &quot;DOWNLOAD&quot;: &quot;$(DownloadUrl)&quot;,&#xD;&#xA;  &quot;VERSION&quot;: &quot;$(MaxAssemblyFileVersion)&quot;,&#xD;&#xA;  &quot;KSP_VERSION&quot;: {&#xD;&#xA;    &quot;MAJOR&quot;: $(KspVersionMajor),&#xD;&#xA;    &quot;MINOR&quot;: $(KspVersionMinor),&#xD;&#xA;    &quot;PATCH&quot;: $(KspVersionPatch)&#xD;&#xA;  },&#xD;&#xA;  &quot;KSP_VERSION_MIN&quot;: {&#xD;&#xA;    &quot;MAJOR&quot;: 1,&#xD;&#xA;    &quot;MINOR&quot;: 0,&#xD;&#xA;    &quot;PATCH&quot;: 0&#xD;&#xA;  },&#xD;&#xA;  &quot;KSP_VERSION_MAX&quot;: {&#xD;&#xA;    &quot;MAJOR&quot;: 1,&#xD;&#xA;    &quot;MINOR&quot;: -1,&#xD;&#xA;    &quot;PATCH&quot;: -1&#xD;&#xA;  }&#xD;&#xA;}"
       Overwrite="true" Encoding="UTF-8" />
-	 <!-- <Copy SourceFiles="$(BaseDir)\TacLib\AVC\MiniAVC.dll" DestinationFolder="$(BaseDir)\GameData\ThunderAerospace\$(ProjectName)\" /> -->
+	  <Copy SourceFiles="$(BaseDir)\TacLib\AVC\MiniAVC.dll" DestinationFolder="$(BaseDir)\GameData\ThunderAerospace\$(ProjectName)\" />
   </Target>
 
   <Target Name="CopyToTest">
