@@ -1,7 +1,9 @@
 TacLifeSupport
 ==============
 
-A Life Support system from Thunder Aerospace Corporation (TAC), designed by Taranis Elsu.
+A Life Support system from Thunder Aerospace Corporation (TAC), designed originally by Taranis Elsu.
+
+Updated by Danny Farnsworth.
 
 For use with the Kerbal Space Program, http://kerbalspaceprogram.com/
 
@@ -36,12 +38,18 @@ Includes HexCan parts from Greys, licensed CC-BY 3.0. Used with permission. See
 Readme-HexCans.txt and LICENSE-HexCans.txt in the HexCans directory.
 Forum thread: http://forum.kerbalspaceprogram.com/showthread.php/33754
 
+Special thanks to TMS for updated textures, originally from "TMS TAC Retexture." Used with permission.
+
 Includes contributions from (in alphabetical order):
 - Alexander Gavrilov
 - Dominik Hannen
+- james3838
 - jfjohnny5
+- JPLRepo
 - Kerbas-ad-astra
 - NathanKell
 - Ninenium
 - NoMrBond
 - Olympic1 (Arne Peirs)
+- TMS
+- WaylandSmith

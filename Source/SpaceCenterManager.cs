@@ -114,6 +114,12 @@ namespace Tac
             configWindow.Save(globalNode);
         }
 
+        void OnGUI()
+        {
+            button?.OnGUI();
+            configWindow?.OnGUI();
+        }
+
         void OnDestroy()
         {
             this.Log("OnDestroy");
