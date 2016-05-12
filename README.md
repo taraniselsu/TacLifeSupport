@@ -1,7 +1,9 @@
 TacLifeSupport
 ==============
 
-A Life Support system from Thunder Aerospace Corporation (TAC), designed by Taranis Elsu.
+A Life Support system from Thunder Aerospace Corporation (TAC), designed originally by Taranis Elsu.
+
+Updated by Danny Farnsworth.
 
 For use with the Kerbal Space Program, http://kerbalspaceprogram.com/
 
@@ -39,9 +41,13 @@ Forum thread: http://forum.kerbalspaceprogram.com/showthread.php/33754
 Includes contributions from (in alphabetical order):
 - Alexander Gavrilov
 - Dominik Hannen
+- james3838
 - jfjohnny5
+- JPLRepo
 - Kerbas-ad-astra
 - NathanKell
 - Ninenium
 - NoMrBond
 - Olympic1 (Arne Peirs)
+- TMS
+- WaylandSmith

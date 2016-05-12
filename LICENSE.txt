@@ -1,8 +1,8 @@
 Thunder Aerospace Corporation's Life Support for the Kerbal Space Program, by Taranis Elsu
 
-(C) Copyright 2013, Taranis Elsu
+(C) Copyright 2016, Taranis Elsu, Danny Farnsworth
 
-Kerbal Space Program is Copyright (C) 2013 Squad. See http://kerbalspaceprogram.com/. This
+Kerbal Space Program is Copyright (C) 2016 Squad. See http://kerbalspaceprogram.com/. This
 project is in no way associated with nor endorsed by Squad.
 
 This code is licensed under the Attribution-NonCommercial-ShareAlike 3.0 (CC BY-NC-SA 3.0)
