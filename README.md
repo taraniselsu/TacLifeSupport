@@ -38,6 +38,8 @@ Includes HexCan parts from Greys, licensed CC-BY 3.0. Used with permission. See
 Readme-HexCans.txt and LICENSE-HexCans.txt in the HexCans directory.
 Forum thread: http://forum.kerbalspaceprogram.com/showthread.php/33754
 
+Special thanks to TMS for updated textures, originally from "TMS TAC Retexture." Used with permission.
+
 Includes contributions from (in alphabetical order):
 - Alexander Gavrilov
 - Dominik Hannen
