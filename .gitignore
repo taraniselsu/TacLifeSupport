@@ -1,4 +1,5 @@
-
+*.zip
+*.tar.gz
 #################
 ## Eclipse
 #################
@@ -214,3 +215,4 @@ pip-log.txt
 
 #Mr Developer
 .mr.developer.cfg
+/Source/.vs/config/applicationhost.config
