@@ -143,6 +143,9 @@ csx
 # Windows Store app package directory
 AppPackages/
 
+# Nuget packags
+Packages/
+
 # Others
 sql/
 *.Cache
@@ -217,3 +220,4 @@ pip-log.txt
 
 #Mr Developer
 .mr.developer.cfg
+/GameData/ThunderAerospace/TacLifeSupport_v.txt

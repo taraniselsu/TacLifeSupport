@@ -25,60 +25,75 @@
  * is purely coincidental.
  */
 
-using KSP.IO;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+using System.Globalization;
 using UnityEngine;
 
 namespace Tac
 {
     public static class Logging
     {
+        const string Info = "INFO";
+        const string Warning = "WARNING";
+        const string Error = "ERROR";
+
         public static void Log(this UnityEngine.Object obj, string message)
         {
-            Debug.Log("-INFO- " + obj.GetType().FullName + "[" + obj.GetInstanceID().ToString("X") + "][" + Time.time.ToString("0.00") + "]: " + message, obj);
+            Debug.Log(GenerateLogMessage(Info, obj, message), obj);
         }
 
         public static void LogWarning(this UnityEngine.Object obj, string message)
         {
-            Debug.LogWarning("-WARNING- " + obj.GetType().FullName + "[" + obj.GetInstanceID().ToString("X") + "][" + Time.time.ToString("0.00") + "]: " + message, obj);
+            Debug.LogWarning(GenerateLogMessage(Warning, obj, message), obj);
         }
 
         public static void LogError(this UnityEngine.Object obj, string message)
         {
-            Debug.LogError("-ERROR- " + obj.GetType().FullName + "[" + obj.GetInstanceID().ToString("X") + "][" + Time.time.ToString("0.00") + "]: " + message, obj);
+            Debug.LogError(GenerateLogMessage(Error, obj, message), obj);
         }
 
         public static void Log(this System.Object obj, string message)
         {
-            Debug.Log("-INFO- " + obj.GetType().FullName + "[" + obj.GetHashCode().ToString("X") + "][" + Time.time.ToString("0.00") + "]: " + message);
+            Debug.Log(GenerateLogMessage(Info, obj, message));
         }
 
         public static void LogWarning(this System.Object obj, string message)
         {
-            Debug.LogWarning("-WARNING- " + obj.GetType().FullName + "[" + obj.GetHashCode().ToString("X") + "][" + Time.time.ToString("0.00") + "]: " + message);
+            Debug.LogWarning(GenerateLogMessage(Warning, obj, message));
         }
 
         public static void LogError(this System.Object obj, string message)
         {
-            Debug.LogError("-ERROR- " + obj.GetType().FullName + "[" + obj.GetHashCode().ToString("X") + "][" + Time.time.ToString("0.00") + "]: " + message);
+            Debug.LogError(GenerateLogMessage(Error, obj, message));
         }
 
         public static void Log(string context, string message)
         {
-            Debug.Log("-INFO- " + context + "[][" + Time.time.ToString("0.00") + "]: " + message);
+            Debug.Log(GenerateLogMessage(Info, context, message));
         }
 
         public static void LogWarning(string context, string message)
         {
-            Debug.LogWarning("-WARNING- " + context + "[][" + Time.time.ToString("0.00") + "]: " + message);
+            Debug.LogWarning(GenerateLogMessage(Warning, context, message));
         }
 
         public static void LogError(string context, string message)
         {
-            Debug.LogError("-ERROR- " + context + "[][" + Time.time.ToString("0.00") + "]: " + message);
+            Debug.LogError(GenerateLogMessage(Error, context, message));
+        }
+
+        static string GenerateLogMessage(string type, System.Object obj, string message)
+        {
+            return GenerateLogMessage(type, "{0}][{1}".FormatInvarient(obj.GetType().FullName, obj.GetHashCode().ToString("X")), message);
+        }
+
+        static string GenerateLogMessage(string type, string context, string message)
+        {
+            return "[TLS-{0}][{1}][{2}][{2}]: {3}".FormatInvarient(type, context, Time.time.ToString("0.00"), message);
+        }
+
+        public static string FormatInvarient(this string formater, params object[] arguments)
+        {
+            return string.Format(CultureInfo.InvariantCulture, formater, arguments);
         }
     }
 }

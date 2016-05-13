@@ -24,16 +24,16 @@
 
   <Target Name="GitInfo">
     <!-- Get the current git SHA1 -->
-    <Exec Command="git log -1 --format='%%h'" ConsoleToMSBuild="true" EchoOff="true" WorkingDirectory="$(BaseDir)\">
+    <!--Exec Command="git log -1 -format='%%h'" ConsoleToMSBuild="true" EchoOff="true" WorkingDirectory="$(BaseDir)\">
       <Output TaskParameter="ConsoleOutput" PropertyName="GitSHA" />
     </Exec>
-    <Exec Command="git log -1 --format='%%h'" ConsoleToMSBuild="true" EchoOff="true" WorkingDirectory="$(BaseDir)\TacLib\">
+    <Exec Command="git log -1 -format='%%h'" ConsoleToMSBuild="true" EchoOff="true" WorkingDirectory="$(BaseDir)\TacLib\">
       <Output TaskParameter="ConsoleOutput" PropertyName="GitSHA2" />
     </Exec>
-    <Message Text="Current Git SHA = $(GitSHA)+$(GitSHA2)" />
+    <Message Text="Current Git SHA = $(GitSHA)+$(GitSHA2)" /-->
 
     <!-- Check that the workspace matches the repository. -->
-    <Exec Command="git status -s | grep -v AssemblyInfo.cs" ConsoleToMSBuild="true" EchoOff="true" IgnoreExitCode="true" WorkingDirectory="$(BaseDir)\">
+      <!--Exec Command="git status -s | grep -v AssemblyInfo.cs" ConsoleToMSBuild="true" EchoOff="true" IgnoreExitCode="true" WorkingDirectory="$(BaseDir)\">
       <Output TaskParameter="ConsoleOutput" PropertyName="GitStatusCheck" />
     </Exec>
     <Exec Command="git status -s" ConsoleToMSBuild="true" EchoOff="true" IgnoreExitCode="true" WorkingDirectory="$(BaseDir)\TacLib\">
@@ -45,7 +45,7 @@
       <GitStatus>clean</GitStatus>
       <GitStatus Condition="$(GitStatusCheck) != ''">with modifications</GitStatus>
       <GitStatus Condition="$(GitStatusCheck2) != ''">with modifications</GitStatus>
-    </PropertyGroup>
+    </PropertyGroup-->
   </Target>
 
   <Target Name="TacPostBuild">

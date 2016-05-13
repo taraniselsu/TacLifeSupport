@@ -24,33 +24,29 @@
  * is purely coincidental.
  */
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+using KSP.UI.Screens;
 using UnityEngine;
 
 namespace Tac
 {
     class EditorController : MonoBehaviour, Savable
     {
-        private ButtonWrapper button;
-        private BuildAidWindow window;
-        private const string lockName = "TACLS_EditorLock";
-        private const ControlTypes desiredLock = ControlTypes.EDITOR_SOFT_LOCK | ControlTypes.EDITOR_UI | ControlTypes.EDITOR_LAUNCH;
+        ApplicationLauncherButton _appLauncherButton;
+        BuildAidWindow window;
+        const string lockName = "TACLS_EditorLock";
+        const ControlTypes desiredLock = ControlTypes.EDITOR_SOFT_LOCK | ControlTypes.EDITOR_UI | ControlTypes.EDITOR_LAUNCH;
 
         void Awake()
         {
             this.Log("Awake");
-            button = new ButtonWrapper(new Rect(Screen.width * 0.275f, 0, 32, 32), "ThunderAerospace/TacLifeSupport/Textures/greenIcon",
-                "LS", "TAC Life Support Build Aid", OnIconClicked, "EditorIcon");
             window = new BuildAidWindow(TacLifeSupport.Instance.globalSettings);
+            GameEvents.onGUIApplicationLauncherReady.Add(OnGUIAppLauncherReady);
+            OnGUIAppLauncherReady();
         }
 
         void Start()
         {
             this.Log("Start");
-            button.Visible = true;
         }
 
         void Update()
@@ -71,39 +67,49 @@ namespace Tac
             }
         }
 
+        void OnGUIAppLauncherReady()
+        {
+            if (ApplicationLauncher.Ready && _appLauncherButton == null)
+            {
+                _appLauncherButton = ApplicationLauncher.Instance.AddModApplication(
+                    () => window.SetVisible(true),
+                    () => window.SetVisible(false),
+                    () => { },
+                    () => { },
+                    () => { },
+                    () => { },
+                    ApplicationLauncher.AppScenes.SPH | ApplicationLauncher.AppScenes.VAB,
+                    GameDatabase.Instance.GetTexture("ThunderAerospace/TacLifeSupport/Textures/greenIcon", false));
+            }
+        }
+
         public void Load(ConfigNode globalNode)
         {
-            button.Load(globalNode);
             window.Load(globalNode);
         }
 
         public void Save(ConfigNode globalNode)
         {
-            button.Save(globalNode);
             window.Save(globalNode);
         }
 
         void OnGUI()
         {
             window?.OnGUI();
-            button?.OnGUI();
         }
 
         void OnDestroy()
         {
             this.Log("OnDestroy");
-            button.Destroy();
+
+            GameEvents.onGUIApplicationLauncherReady.Remove(OnGUIAppLauncherReady);
+            ApplicationLauncher.Instance.RemoveModApplication(_appLauncherButton);
 
             // Make sure we remove our locks
             if (InputLockManager.GetControlLock(lockName) == desiredLock)
             {
                 InputLockManager.RemoveControlLock(lockName);
             }
-        }
-
-        private void OnIconClicked()
-        {
-            window.ToggleVisible();
         }
     }
 }

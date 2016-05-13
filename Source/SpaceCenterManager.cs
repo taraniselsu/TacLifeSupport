@@ -25,6 +25,7 @@
  */
 
 using KSP.IO;
+using KSP.UI.Screens;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -35,32 +36,31 @@ namespace Tac
 {
     class SpaceCenterManager : MonoBehaviour, Savable
     {
-        private GlobalSettings globalSettings;
+        ApplicationLauncherButton _appLauncherButton;
+        GlobalSettings globalSettings;
         private TacGameSettings gameSettings;
-        private ButtonWrapper button;
-        private SavedGameConfigWindow configWindow;
-        private const string lockName = "TACLS_SpaceCenterLock";
-        private const ControlTypes desiredLock = ControlTypes.KSC_FACILITIES;
+        SavedGameConfigWindow configWindow;
+        const string lockName = "TACLS_SpaceCenterLock";
+        const ControlTypes desiredLock = ControlTypes.KSC_FACILITIES;
 
         public SpaceCenterManager()
         {
             this.Log("Constructor");
             globalSettings = TacLifeSupport.Instance.globalSettings;
             gameSettings = TacLifeSupport.Instance.gameSettings;
-            button = new ButtonWrapper(new Rect(Screen.width * 0.75f, 0, 32, 32), "ThunderAerospace/TacLifeSupport/Textures/greenIcon",
-                "LS", "TAC Life Support Configuration Window", OnIconClicked, "SpaceCenterIcon");
-            configWindow = new SavedGameConfigWindow(globalSettings, gameSettings);
         }
 
         void Awake()
         {
             this.Log("Awake");
+            configWindow = new SavedGameConfigWindow(globalSettings, gameSettings);
+            GameEvents.onGUIApplicationLauncherReady.Add(OnGUIAppLauncherReady);
+            OnGUIAppLauncherReady();
         }
 
         void Start()
         {
             this.Log("Start, new game = " + gameSettings.IsNewSave);
-            button.Visible = true;
 
             if (gameSettings.IsNewSave)
             {
@@ -84,6 +84,22 @@ namespace Tac
             }
         }
 
+        void OnGUIAppLauncherReady()
+        {
+            if (ApplicationLauncher.Ready && _appLauncherButton == null)
+            {
+                _appLauncherButton = ApplicationLauncher.Instance.AddModApplication(
+                    () => { configWindow.SetVisible(true); this.Log("set true"); },
+                    () => { configWindow.SetVisible(false); this.Log("set false"); },
+                    () => { },
+                    () => { },
+                    () => { },
+                    () => { },
+                    ApplicationLauncher.AppScenes.SPACECENTER,
+                    GameDatabase.Instance.GetTexture("ThunderAerospace/TacLifeSupport/Textures/greenIcon", false));
+            }
+        }
+
         void Update()
         {
             if (configWindow.IsVisible() && configWindow.Contains(Event.current.mousePosition))
@@ -104,37 +120,31 @@ namespace Tac
 
         public void Load(ConfigNode globalNode)
         {
-            button.Load(globalNode);
             configWindow.Load(globalNode);
         }
 
         public void Save(ConfigNode globalNode)
         {
-            button.Save(globalNode);
             configWindow.Save(globalNode);
         }
 
         void OnGUI()
         {
-            button?.OnGUI();
             configWindow?.OnGUI();
         }
 
         void OnDestroy()
         {
             this.Log("OnDestroy");
-            button.Destroy();
+
+            GameEvents.onGUIApplicationLauncherReady.Remove(OnGUIAppLauncherReady);
+            ApplicationLauncher.Instance.RemoveModApplication(_appLauncherButton);
 
             // Make sure we remove our locks
             if (InputLockManager.GetControlLock(lockName) == desiredLock)
             {
                 InputLockManager.RemoveControlLock(lockName);
             }
-        }
-
-        private void OnIconClicked()
-        {
-            configWindow.ToggleVisible();
         }
     }
 }
