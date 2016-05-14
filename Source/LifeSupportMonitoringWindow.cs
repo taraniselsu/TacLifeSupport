@@ -52,9 +52,7 @@ namespace Tac
             this.gameSettings = gameSettings;
             this.rosterWindow = rosterWindow;
             version = Utilities.GetDllVersion(this);
-
             windowPos.y = 75;
-            SetVisible(true);
         }
 
         public override void SetVisible(bool newValue)

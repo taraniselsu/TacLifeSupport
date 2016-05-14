@@ -25,6 +25,7 @@
  */
 
 using KSP.IO;
+using KSP.UI;
 using KSP.UI.Screens;
 using System;
 using System.Collections.Generic;
@@ -130,7 +131,16 @@ namespace Tac
 
         void OnGUI()
         {
-            configWindow?.OnGUI();
+            if (configWindow != null)
+            {
+                configWindow.OnGUI();
+
+                // Disable app if window was closed
+                if (!configWindow.IsVisible() && _appLauncherButton.toggleButton.CurrentState == UIRadioButton.State.True)
+                {
+                    _appLauncherButton.SetFalse();
+                }
+            }
         }
 
         void OnDestroy()

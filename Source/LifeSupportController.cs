@@ -28,6 +28,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using KSP.IO;
+using KSP.UI;
 using KSP.UI.Screens;
 using TacDFWrapper;
 using UnityEngine;
@@ -41,7 +42,6 @@ namespace Tac
         TacGameSettings gameSettings;
         LifeSupportMonitoringWindow monitoringWindow;
         RosterWindow rosterWindow;
-        //ButtonWrapper button;
         string configFilename;
         bool loadingNewScene = false;
         double seaLevelPressure = 101.325;
@@ -134,8 +134,20 @@ namespace Tac
 
         void OnGUI()
         {
-            rosterWindow?.OnGUI();
-            monitoringWindow?.OnGUI();
+            if (rosterWindow != null)
+            {
+                rosterWindow.OnGUI();
+            }
+            if (monitoringWindow != null)
+            {
+                monitoringWindow.OnGUI();
+
+                // Disable app if window was closed
+                if (!monitoringWindow.IsVisible() && _appLauncherButton.toggleButton.CurrentState == UIRadioButton.State.True)
+                {
+                    _appLauncherButton.SetFalse();
+                }
+            }
         }
 
         void FixedUpdate()

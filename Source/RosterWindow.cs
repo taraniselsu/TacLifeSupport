@@ -48,8 +48,6 @@ namespace Tac
         {
             this.globalSettings = globalSettings;
             this.gameSettings = gameSettings;
-
-            SetVisible(true);
         }
 
         protected override void ConfigureStyles()

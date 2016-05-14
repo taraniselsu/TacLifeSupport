@@ -82,7 +82,10 @@ namespace Tac
 
         public void OnGUI()
         {
-            icon?.OnGUI();
+            if (icon != null)
+            {
+                icon.OnGUI();
+            }
         }
 
         public void Load(ConfigNode node)

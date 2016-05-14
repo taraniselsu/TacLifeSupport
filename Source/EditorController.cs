@@ -24,6 +24,7 @@
  * is purely coincidental.
  */
 
+using KSP.UI;
 using KSP.UI.Screens;
 using UnityEngine;
 
@@ -95,7 +96,16 @@ namespace Tac
 
         void OnGUI()
         {
-            window?.OnGUI();
+            if (window != null)
+            {
+                window.OnGUI();
+
+                // Disable app if window was closed
+                if (!window.IsVisible() && _appLauncherButton.toggleButton.CurrentState == UIRadioButton.State.True)
+                {
+                    _appLauncherButton.SetFalse();
+                }
+            }
         }
 
         void OnDestroy()
