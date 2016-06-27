@@ -153,7 +153,7 @@ namespace RSTUtils
 			Log_Debug("Distance from Home Planet = " + DstFrmHome);
 			return DstFrmHome;
 		}
-
+		
 		public static bool CelestialBodyDistancetoSun(CelestialBody cb, out Vector3d sun_dir, out double sun_dist)
 		{
 			// bodies traced against
@@ -1265,6 +1265,7 @@ namespace RSTUtils
 			if (tmpRegRc.status.ToLower().Contains("missing")) returnStatus = ISRUStatus.MissingResource; //Missing an Input resource makes this appear in the status.
 			if (tmpRegRc.status.ToLower().Contains("full")) returnStatus = ISRUStatus.OutputFull; //If the vessel has nowhere to store the output, full appears in the status.
 			if (tmpRegRc.status.ToLower().Contains("load")) returnStatus = ISRUStatus.Active; //a Percentage Load indicates it is active and actually processing... except when it gets stuck on this.
+			if (tmpRegRc.status.ToLower().Contains("operational")) returnStatus = ISRUStatus.Active; //a new status with KSP 1.1.3.
 			return returnStatus;
 		}
 
@@ -1314,14 +1315,14 @@ namespace RSTUtils
 			}
 		}
 
-	    internal static bool IsEVEInstalled
-	    {
-	        get
-	        {
-	            return IsModInstalled("EVEManager");
-	            
-	        }
-	    }
+		internal static bool IsEVEInstalled
+		{
+			get
+			{
+				return IsModInstalled("EVEManager");
+				
+			}
+		}
 
 		internal static bool IsOPMInstalled
 		{
