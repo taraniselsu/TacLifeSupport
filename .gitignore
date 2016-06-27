@@ -216,3 +216,4 @@ pip-log.txt
 #Mr Developer
 .mr.developer.cfg
 /Source/.vs/config/applicationhost.config
+/Packages/Mono.pdb2mdb.0.1.0.20130128
