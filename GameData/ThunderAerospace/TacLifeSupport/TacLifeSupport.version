@@ -2,10 +2,10 @@
   "NAME": "TAC Life Support",
   "URL": "http://ksp-avc.cybutek.net/version.php?id=9",
   "DOWNLOAD": "https://github.com/KSP-RO/TacLifeSupport/releases",
-  "VERSION": "0.12.1",
+  "VERSION": "0.12.2",
   "KSP_VERSION": {
     "MAJOR": 1,
     "MINOR": 1,
-    "PATCH": 2
- }
+    "PATCH": 3
+  }
 }
