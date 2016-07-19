@@ -139,11 +139,13 @@ namespace Tac
                 }
                 if (DFWrapper.APIReady)
                 {
-                    Dictionary<string, DFWrapper.KerbalInfo> DFFrozenKerbals = new Dictionary<string, DFWrapper.KerbalInfo>();
-                    //Get the DeepFreeze Dictionary of all Frozen Kerbals in the current Game.
-                    DFFrozenKerbals = DFWrapper.DeepFreezeAPI.FrozenKerbals;
-                    //Remove any Frozen Kerbals from TAC LS tracking.
-                    RemoveFrozenKerbals(DFFrozenKerbals);
+                    //Check if the DeepFreeze Dictionary contains any Frozen Kerbals in the current Game.
+                    //If it does process them.
+                    if (DFWrapper.DeepFreezeAPI.FrozenKerbals.Count > 0)
+                    {
+                        //Remove any Frozen Kerbals from TAC LS tracking.
+                        RemoveFrozenKerbals();
+                    }
                 }
             }
 
@@ -252,11 +254,11 @@ namespace Tac
             }
         }
 
-        private void RemoveFrozenKerbals(Dictionary<string, DFWrapper.KerbalInfo> DFFrozenKerbals)
+        private void RemoveFrozenKerbals()
         {
             try
             {
-                foreach (KeyValuePair<string, DFWrapper.KerbalInfo> frznCrew in DFFrozenKerbals)
+                foreach (KeyValuePair<string, DFWrapper.KerbalInfo> frznCrew in DFWrapper.DeepFreezeAPI.FrozenKerbals)
                 {
                     if (gameSettings.knownCrew.ContainsKey(frznCrew.Key))
                     {
