@@ -1,6 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <Import Project="..\KSPPath.inc" />
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
@@ -33,13 +34,13 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Assembly-CSharp">
-      <HintPath>..\..\..\KSP_DEV\KSP_Data\Managed\Assembly-CSharp.dll</HintPath>
+      <HintPath>$(KSP)\Assembly-CSharp.dll</HintPath>
     </Reference>
     <Reference Include="KSPCore">
-      <HintPath>..\..\..\KSP_DEV\KSP_Data\Managed\KSPCore.dll</HintPath>
+      <HintPath>$(KSP)\KSPCore.dll</HintPath>
     </Reference>
     <Reference Include="KSPUtil">
-      <HintPath>..\..\..\KSP_DEV\KSP_Data\Managed\KSPUtil.dll</HintPath>
+      <HintPath>$(KSP)\KSPUtil.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -48,10 +49,10 @@
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
     <Reference Include="UnityEngine">
-      <HintPath>..\..\..\KSP_DEV\KSP_Data\Managed\UnityEngine.dll</HintPath>
+      <HintPath>$(KSP)\UnityEngine.dll</HintPath>
     </Reference>
     <Reference Include="UnityEngine.UI">
-      <HintPath>..\..\..\KSP_DEV\KSP_Data\Managed\UnityEngine.UI.dll</HintPath>
+      <HintPath>$(KSP)\UnityEngine.UI.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
@@ -102,12 +103,16 @@
     <Compile Include="GlobalSettings.cs" />
     <Compile Include="VesselInfo.cs" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="CommonProperties.proj" />
+    <None Include="packages.config" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="..\TacLib\Source\CommonProperties.proj" />
   <PropertyGroup>
     <AssemblyMajorVersion>0</AssemblyMajorVersion>
-    <AssemblyMinorVersion>11</AssemblyMinorVersion>
-    <AssemblyBuildNumber>2</AssemblyBuildNumber>
+    <AssemblyMinorVersion>12</AssemblyMinorVersion>
+    <AssemblyBuildNumber>3</AssemblyBuildNumber>
     <AssemblyFileMajorVersion>$(AssemblyMajorVersion)</AssemblyFileMajorVersion>
     <AssemblyFileMinorVersion>$(AssemblyMinorVersion)</AssemblyFileMinorVersion>
     <AssemblyFileBuildNumber>$(AssemblyBuildNumber)</AssemblyFileBuildNumber>
@@ -119,8 +124,8 @@
     <DownloadUrl>
     </DownloadUrl>
     <KspVersionMajor>1</KspVersionMajor>
-    <KspVersionMinor>0</KspVersionMinor>
-    <KspVersionPatch>5</KspVersionPatch>
+    <KspVersionMinor>1</KspVersionMinor>
+    <KspVersionPatch>3</KspVersionPatch>
   </PropertyGroup>
   <PropertyGroup>
     <PostBuildEvent>
