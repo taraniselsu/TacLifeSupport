@@ -65,10 +65,10 @@ namespace Tac
                 case ResourceFlowMode.STACK_PRIORITY_SEARCH:
                     return TakeResource_StackPriority(part, resource, demand);
                 case ResourceFlowMode.STAGE_PRIORITY_FLOW:
-                    Debug.LogWarning("Tac.PartExtensions.TakeResource: ResourceFlowMode.STAGE_PRIORITY_FLOW is not supported yet.");
+                    //Debug.LogWarning("Tac.PartExtensions.TakeResource: ResourceFlowMode.STAGE_PRIORITY_FLOW is not supported yet.");
                     return part.RequestResource(resource.id, demand);
                 default:
-                    Debug.LogWarning("Tac.PartExtensions.TakeResource: Unknown ResourceFlowMode = " + resource.resourceFlowMode.ToString());
+                    //Debug.LogWarning("Tac.PartExtensions.TakeResource: Unknown ResourceFlowMode = " + resource.resourceFlowMode.ToString());
                     return part.RequestResource(resource.id, demand);
             }
         }
@@ -102,10 +102,10 @@ namespace Tac
                 case ResourceFlowMode.STACK_PRIORITY_SEARCH:
                     return IsResourceAvailable_StackPriority(part, resource, demand);
                 case ResourceFlowMode.STAGE_PRIORITY_FLOW:
-                    Debug.LogWarning("Tac.PartExtensions.IsResourceAvailable: ResourceFlowMode.STAGE_PRIORITY_FLOW is not supported yet.");
+                    //Debug.LogWarning("Tac.PartExtensions.IsResourceAvailable: ResourceFlowMode.STAGE_PRIORITY_FLOW is not supported yet.");
                     return IsResourceAvailable_AllVessel(part, resource, demand);
                 default:
-                    Debug.LogWarning("Tac.PartExtensions.IsResourceAvailable: Unknown ResourceFlowMode = " + resource.resourceFlowMode.ToString());
+                    //Debug.LogWarning("Tac.PartExtensions.IsResourceAvailable: Unknown ResourceFlowMode = " + resource.resourceFlowMode.ToString());
                     return IsResourceAvailable_AllVessel(part, resource, demand);
             }
         }
@@ -119,7 +119,7 @@ namespace Tac
             {
                 if (partResource.flowMode == PartResource.FlowMode.None)
                 {
-                    Debug.LogWarning("Tac.PartExtensions.TakeResource_NoFlow: cannot take resource from a part where FlowMode is None.");
+                    //Debug.LogWarning("Tac.PartExtensions.TakeResource_NoFlow: cannot take resource from a part where FlowMode is None.");
                     return 0.0;
                 }
                 else if (!partResource.flowState)
@@ -131,7 +131,7 @@ namespace Tac
                 {
                     if (partResource.flowMode == PartResource.FlowMode.In)
                     {
-                        Debug.LogWarning("Tac.PartExtensions.TakeResource_NoFlow: cannot take resource from a part where FlowMode is In.");
+                        //Debug.LogWarning("Tac.PartExtensions.TakeResource_NoFlow: cannot take resource from a part where FlowMode is In.");
                         return 0.0;
                     }
 
@@ -143,7 +143,7 @@ namespace Tac
                 {
                     if (partResource.flowMode == PartResource.FlowMode.Out)
                     {
-                        Debug.LogWarning("Tac.PartExtensions.TakeResource_NoFlow: cannot give resource to a part where FlowMode is Out.");
+                        //Debug.LogWarning("Tac.PartExtensions.TakeResource_NoFlow: cannot give resource to a part where FlowMode is Out.");
                         return 0.0;
                     }
 
