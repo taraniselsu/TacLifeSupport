@@ -878,6 +878,30 @@ namespace RSTUtils
 			return totalReceived;
 		}
 
+        /// <summary>
+        /// Converts Stock EC units to SI units (W,kW,mW)
+        /// </summary>
+        /// <param name="EC">input EC units amount</param>
+        /// <param name="Unit">OUTPUT Unit string</param>
+        /// <returns>converted SI units amount</returns>
+	    public static double ConvertECtoSI(double EC, out string Unit)
+	    {
+            double outputECSI = EC;
+            outputECSI *= 1000; //Watts (W)
+	        Unit = "W";
+	        if (outputECSI > 1000)
+	        {
+	            outputECSI /= 1000; //KiloWatts
+	            Unit = "kW";
+	        }
+	        if (outputECSI > 1000)
+	        {
+                outputECSI /= 1000; //MegaWatts
+                Unit = "mW";
+            }
+	        return outputECSI;
+	    }
+
 		#endregion Resources
 
 		#region GUI&Window
@@ -1249,7 +1273,9 @@ namespace RSTUtils
 			Inactive,
 			Active,
 			MissingResource,
-			OutputFull
+			OutputFull,
+            ZeroEfficiency
+
 		}
 
 		private static ISRUStatus returnStatus;
@@ -1264,8 +1290,10 @@ namespace RSTUtils
 			if (tmpRegRc.status.ToLower().Contains("inactive")) returnStatus = ISRUStatus.Inactive; //Status is inactive, it's inactive.. Not sure how but sometimes this remains on load even when it's inactive? Hence the test above.
 			if (tmpRegRc.status.ToLower().Contains("missing")) returnStatus = ISRUStatus.MissingResource; //Missing an Input resource makes this appear in the status.
 			if (tmpRegRc.status.ToLower().Contains("full")) returnStatus = ISRUStatus.OutputFull; //If the vessel has nowhere to store the output, full appears in the status.
-			if (tmpRegRc.status.ToLower().Contains("load")) returnStatus = ISRUStatus.Active; //a Percentage Load indicates it is active and actually processing... except when it gets stuck on this.
-			if (tmpRegRc.status.ToLower().Contains("operational")) returnStatus = ISRUStatus.Active; //a new status with KSP 1.1.3.
+            if (tmpRegRc.status.ToLower().Contains("output cap")) returnStatus = ISRUStatus.OutputFull; //If the vessel has nowhere to store the output, output cap: x% appears in the status.
+            if (tmpRegRc.status.ToLower().Contains("load")) returnStatus = ISRUStatus.Active; //a Percentage Load indicates it is active and actually processing... except when it gets stuck on this.
+		    if (tmpRegRc.status.ToLower().Contains("zero efficiency")) returnStatus = ISRUStatus.ZeroEfficiency; //Efficiency has reduced to zero (heat factor?).
+            if (tmpRegRc.status.ToLower().Contains("operational")) returnStatus = ISRUStatus.Active; //a new status with KSP 1.1.3.
 			return returnStatus;
 		}
 
@@ -1324,7 +1352,16 @@ namespace RSTUtils
 			}
 		}
 
-		internal static bool IsOPMInstalled
+        internal static bool IsROInstalled
+        {
+            get
+            {
+                return IsModInstalled("RealismOverhaul");
+
+            }
+        }
+
+        internal static bool IsOPMInstalled
 		{
 			get
 			{

@@ -1,0 +1,85 @@
+﻿<#@ template debug="false" hostspecific="false" language="C#" #>
+<#@ output extension=".cs" #>
+// This file is auto-generated from the Arg.tt T4 template.
+
+// The types here are used to forward arguments through to the string
+// formatter routine without introducing any copying of the argument
+// (if it's a value type) and preserving its statically known type via
+// the generic type parameters.
+
+// The switch statement in each Format() method looks ugly but gets
+// translated by the compiler into a nice direct jump table.
+
+using System.Runtime.CompilerServices;
+
+namespace System.Text.Formatting {
+    /// <summary>
+    /// A low-allocation version of the built-in <see cref="StringBuilder"/> type.
+    /// </summary>
+    partial class StringBuffer {<# for(int i = 1; i <= 8; i++) {
+        var simpleName = "Arg" + i;
+        var genericParams = "<T0";
+        for (int j = 1; j < i; j++) {
+            genericParams += ", T" + j;
+        }
+        genericParams += ">";
+        var fullName = simpleName + genericParams;
+    #>
+
+        /// <summary>
+        /// Appends the string returned by processing a composite format string, which contains zero or more format items, to this instance. Each format item is replaced by the string representation of a single argument.
+        /// </summary>
+        /// <param name="format">A composite format string.</param><#for(int j = 0; j < i; j++) {
+#>
+
+        /// <param name="arg<#=j#>">A value to format.</param><#}#>   
+        public void AppendFormat<#=genericParams#>(string format, T0 arg0<#for(int j = 1; j < i; j++) { #>, T<#=j#> arg<#=j#><#}#>) {
+            var args = new <#=fullName#>(__makeref(arg0)<#for(int j = 1; j < i; j++) { #>, __makeref(arg<#=j#>)<#}#>);
+            AppendArgSet(format, ref args);
+        }
+
+        /// <summary>
+        /// Converts the value of objects to strings based on the formats specified and inserts them into another string.
+        /// </summary>
+        /// <param name="format">A composite format string.</param><#for(int j = 0; j < i; j++) {
+#>
+
+        /// <param name="arg<#=j#>">A value to format.</param><#}#>   
+        public static string Format<#=genericParams#>(string format, T0 arg0<#for(int j = 1; j < i; j++) { #>, T<#=j#> arg<#=j#><#}#>) {
+            var buffer = Acquire(format.Length + <#=i * 8#>);
+            buffer.AppendFormat(format, arg0<#for(int j = 1; j < i; j++) { #>, arg<#=j#><#}#>);
+            var result = buffer.ToString();
+            Release(buffer);
+            return result;
+        }
+<#}#>
+    }
+<# for(int i = 1; i <= 8; i++) {
+    var simpleName = "Arg" + i;
+    var fullName = simpleName + "<T0";
+    for (int j = 1; j < i; j++) {
+        fullName += ", T" + j;
+    }
+    fullName += ">";
+#>
+
+    unsafe struct <#=fullName#> : IArgSet {
+<#for(int j = 0; j < i; j++) { #>        IntPtr t<#=j#>;
+<#}#>
+
+        public int Count => <#=i#>;
+
+        public <#=simpleName#> (TypedReference t0<#for(int j = 1; j < i; j++) { #>, TypedReference t<#=j#><#}#>) {
+    <#for(int j = 0; j < i; j++) { #>        this.t<#=j#> = *(IntPtr*)&t<#=j#>;
+    <#}#>
+    }
+
+        //[MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public void Format (StringBuffer buffer, int index, StringView format) {
+            switch (index) {
+<#for(int j = 0; j < i; j++) { #>                case <#=j#>: buffer.AppendGeneric<T<#=j#>>(t<#=j#>, format); break;
+<#}#>
+            }
+        }
+    }
+<#}#>}
