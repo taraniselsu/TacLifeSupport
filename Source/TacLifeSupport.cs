@@ -43,6 +43,7 @@ namespace Tac
 
         private readonly string globalConfigFilename;
         private ConfigNode globalNode = new ConfigNode();
+        internal bool globalConfigChanged = false;
 
         private readonly List<Component> children = new List<Component>();
 
@@ -53,7 +54,15 @@ namespace Tac
             gameSettings = new TacGameSettings();
             globalSettings = new GlobalSettings();
 
-            globalConfigFilename = IOUtils.GetFilePathFor(this.GetType(), "LifeSupport.cfg");
+            //globalConfigFilename = IOUtils.GetFilePathFor(this.GetType(), "LifeSupport.cfg");
+            if (Application.platform != RuntimePlatform.OSXPlayer)
+            {
+                globalConfigFilename = Application.dataPath + "/../LifeSupport.cfg";
+            }
+            else
+            {
+                globalConfigFilename = Application.dataPath + "/../../LifeSupport.cfg";
+            }
         }
 
         public override void OnAwake()
@@ -98,16 +107,20 @@ namespace Tac
         {
             base.OnLoad(gameNode);
             gameSettings.Load(gameNode);
+            foreach (Savable s in children.Where(c => c is Savable))
+            {
+                s.Load(gameNode);
+            }
 
             // Load the global settings
             if (File.Exists<TacLifeSupport>(globalConfigFilename))
             {
                 globalNode = ConfigNode.Load(globalConfigFilename);
                 globalSettings.Load(globalNode);
-                foreach (Savable s in children.Where(c => c is Savable))
-                {
-                    s.Load(globalNode);
-                }
+                //foreach (Savable s in children.Where(c => c is Savable))
+                //{
+                //    s.Load(globalNode);
+                //}
             }
 
             this.Log("OnLoad: " + gameNode + "\n" + globalNode);
@@ -117,15 +130,22 @@ namespace Tac
         {
             base.OnSave(gameNode);
             gameSettings.Save(gameNode);
-
-            // Save the global settings
-            globalSettings.Save(globalNode);
             foreach (Savable s in children.Where(c => c is Savable))
             {
-                s.Save(globalNode);
+                s.Save(gameNode);
             }
-            globalNode.Save(globalConfigFilename);
 
+            // Save the global settings
+            if (globalConfigChanged)
+            {
+                globalSettings.Save(globalNode);
+                //foreach (Savable s in children.Where(c => c is Savable))
+                //{
+                //    s.Save(globalNode);
+                //}
+                globalNode.Save(globalConfigFilename);
+                globalConfigChanged = false;
+            }
             this.Log("OnSave: " + gameNode + "\n" + globalNode);
         }
 
@@ -147,7 +167,7 @@ namespace Tac
 
     interface Savable
     {
-        void Load(ConfigNode globalNode);
-        void Save(ConfigNode globalNode);
+        void Load(ConfigNode gameNode);
+        void Save(ConfigNode gameNode);
     }
 }

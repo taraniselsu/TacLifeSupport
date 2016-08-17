@@ -1,0 +1,3 @@
+﻿You have installed the TAC Life Support, version 0.12.3.0 ('9055a9b'+'9055a9b' with modifications).
+
+See the Readme.txt and LICENSE.txt files for more information.

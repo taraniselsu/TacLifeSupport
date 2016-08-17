@@ -1,3 +1,0 @@
-﻿You have installed the TAC Life Support, version  ('ab80151'+'ab80151' with modifications).
-
-See the Readme.txt and LICENSE.txt files for more information.

@@ -133,6 +133,7 @@ namespace Tac
 
             if (showConsumptionRates)
             {
+                TacLifeSupport.Instance.globalConfigChanged = true;
                 GUILayout.BeginVertical(GUI.skin.box);
                 GUILayout.Label("These settings affect all saves. Restart KSP for changes to take effect.", warningStyle);
                 GUILayout.Label("The following values are in units per second.", headerStyle);
@@ -180,6 +181,7 @@ namespace Tac
 
             if (showMaxTimeWithout)
             {
+                TacLifeSupport.Instance.globalConfigChanged = true;
                 GUILayout.BeginVertical(GUI.skin.box);
                 GUILayout.Label("These settings affect all saves. Restart KSP for changes to take effect.", warningStyle);
                 GUILayout.Label("The following values are in seconds.", headerStyle);
@@ -202,6 +204,7 @@ namespace Tac
 
             if (showDefaultResourceAmounts)
             {
+                TacLifeSupport.Instance.globalConfigChanged = true;
                 GUILayout.BeginVertical(GUI.skin.box);
                 GUILayout.Label("These settings affect all saves. Restart KSP for changes to take effect.", warningStyle);
                 GUILayout.Label("Will automatically stock EVA suits with the following amount of resources (in seconds).", headerStyle2);
