@@ -29,6 +29,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using KSP.UI.Screens;
+using RSTUtils;
 using UnityEngine;
 using TacDFWrapper;
 
@@ -40,7 +42,7 @@ namespace Tac
         private TacGameSettings gameSettings;
         private LifeSupportMonitoringWindow monitoringWindow;
         private RosterWindow rosterWindow;
-        private ButtonWrapper button;
+        internal AppLauncherToolBar TACMenuAppLToolBar;
         private string configFilename;
         private bool loadingNewScene = false;
         private double seaLevelPressure = 101.325;
@@ -51,11 +53,15 @@ namespace Tac
             this.Log("Awake");
             globalSettings = TacLifeSupport.Instance.globalSettings;
             gameSettings = TacLifeSupport.Instance.gameSettings;
-            rosterWindow = new RosterWindow(globalSettings, gameSettings);
-            monitoringWindow = new LifeSupportMonitoringWindow(this, globalSettings, gameSettings, rosterWindow);
+            
+            TACMenuAppLToolBar = new AppLauncherToolBar("TACLifeSupport", "TAC Life Support",
+                Textures.PathToolbarIconsPath + "/TACgreenIconTB",
+                ApplicationLauncher.AppScenes.TRACKSTATION | ApplicationLauncher.AppScenes.FLIGHT,
+                (Texture)Textures.GrnApplauncherIcon, (Texture)Textures.GrnApplauncherIcon,
+                GameScenes.TRACKSTATION , GameScenes.FLIGHT);
 
-            button = new ButtonWrapper(new Rect(Screen.width * 0.75f, 0, 32, 32), "ThunderAerospace/TacLifeSupport/Textures/greenIcon",
-                "LS", "TAC Life Support Monitoring Window", OnIconClicked, "FlightIcon");
+            rosterWindow = new RosterWindow(TACMenuAppLToolBar, globalSettings, gameSettings);
+            monitoringWindow = new LifeSupportMonitoringWindow(TACMenuAppLToolBar, this, globalSettings, gameSettings, rosterWindow);
 
             configFilename = IOUtils.GetFilePathFor(this.GetType(), "LifeSupport.cfg");
             
@@ -78,7 +84,14 @@ namespace Tac
             this.Log("Start");
             if (gameSettings.Enabled)
             {
-                button.Visible = true;
+                if (!ToolbarManager.ToolbarAvailable && !gameSettings.UseAppLauncher)
+                {
+                    gameSettings.UseAppLauncher = true;
+                }
+
+                TACMenuAppLToolBar.Start(gameSettings.UseAppLauncher);
+
+                RSTUtils.Utilities.setScaledScreen();
 
                 var crew = HighLogic.CurrentGame.CrewRoster.Crew;
                 var knownCrew = gameSettings.knownCrew;
@@ -100,7 +113,7 @@ namespace Tac
             }
             else
             {
-                button.Visible = false;
+                TACMenuAppLToolBar.Destroy();
                 monitoringWindow.SetVisible(false);
                 Destroy(this);
             }
@@ -109,8 +122,7 @@ namespace Tac
         void OnDestroy()
         {
             this.Log("OnDestroy");
-            button.Destroy();
-
+            TACMenuAppLToolBar.Destroy();
             GameEvents.onCrewOnEva.Remove(OnCrewOnEva);
             GameEvents.onCrewBoardVessel.Remove(OnCrewBoardVessel);
             GameEvents.onGameSceneLoadRequested.Remove(OnGameSceneLoadRequested);
@@ -118,7 +130,12 @@ namespace Tac
 
         void OnGUI()
         {
-            button?.OnGUI();
+            //rosterWindow.SetVisible(TACMenuAppLToolBar.GuiVisible);
+            monitoringWindow.SetVisible(TACMenuAppLToolBar.GuiVisible);
+            if (!TACMenuAppLToolBar.GuiVisible && rosterWindow.IsVisible())
+            {
+                rosterWindow.SetVisible(false);
+            }
             rosterWindow?.OnGUI();
             monitoringWindow?.OnGUI();
         }
@@ -550,6 +567,44 @@ namespace Tac
             {
                 status = VesselInfo.Status.GOOD;
             }
+            //Set Icon Colour
+            //if toolbar
+            if (TACMenuAppLToolBar.usingToolBar)
+            {
+                string iconToSet = "/TACgreenIconTB";
+                if (status == VesselInfo.Status.LOW)
+                {
+                    iconToSet = "TACyellowIconTB";
+                }
+                else
+                {
+                    if (status == VesselInfo.Status.CRITICAL)
+                    {
+                        iconToSet = "TACredIconTB";
+                    }
+                }
+                TACMenuAppLToolBar.setToolBarTexturePath(Textures.PathToolbarIconsPath + iconToSet);
+            }
+            else
+            {
+                if (TACMenuAppLToolBar.StockButtonNotNull)
+                {
+                    Texture iconToSet = Textures.GrnApplauncherIcon;
+                    if (status == VesselInfo.Status.LOW)
+                    {
+                        iconToSet = Textures.YlwApplauncherIcon;
+                    }
+                    else
+                    {
+                        if (status == VesselInfo.Status.CRITICAL)
+                        {
+                            iconToSet = Textures.RedApplauncherIcon;
+                        }
+                    }
+
+                    TACMenuAppLToolBar.setAppLauncherTexture(iconToSet);
+                }
+            }
         }
 
         private double CalculateElectricityConsumptionRate(Vessel vessel, VesselInfo vesselInfo)
@@ -678,23 +733,16 @@ namespace Tac
 
         public void Load(ConfigNode globalNode)
         {
-            button.Load(globalNode);
             monitoringWindow.Load(globalNode);
             rosterWindow.Load(globalNode);
         }
 
         public void Save(ConfigNode globalNode)
         {
-            button.Save(globalNode);
             monitoringWindow.Save(globalNode);
             rosterWindow.Save(globalNode);
         }
-
-        private void OnIconClicked()
-        {
-            monitoringWindow.ToggleVisible();
-        }
-
+        
         private void OnCrewOnEva(GameEvents.FromToAction<Part, Part> action)
         {
             this.Log("OnCrewOnEva: from=" + action.from.partInfo.title + "(" + action.from.vessel.vesselName + ")" + ", to=" + action.to.partInfo.title + "(" + action.to.vessel.vesselName + ")");

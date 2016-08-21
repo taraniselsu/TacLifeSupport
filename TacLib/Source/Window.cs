@@ -28,6 +28,7 @@
 using KSP.IO;
 using KSP.UI.Dialogs;
 using System;
+using RSTUtils;
 using UnityEngine;
 
 namespace Tac
@@ -40,6 +41,7 @@ namespace Tac
         protected Rect windowPos;
         private bool mouseDown;
         private bool visible;
+        private AppLauncherToolBar TACMenuAppLToolBar;
 
         protected GUIStyle closeButtonStyle;
         private GUIStyle resizeStyle;
@@ -49,10 +51,11 @@ namespace Tac
         public bool HideCloseButton { get; set; }
         public bool HideWhenPaused { get; set; }
 
-        protected Window(string windowTitle, float defaultWidth, float defaultHeight)
+        protected Window(AppLauncherToolBar tacMenuAppLToolBar, string windowTitle, float defaultWidth, float defaultHeight)
         {
             this.windowTitle = windowTitle;
             this.windowId = windowTitle.GetHashCode() + new System.Random().Next(65536);
+            this.TACMenuAppLToolBar = tacMenuAppLToolBar;
 
             configNodeName = windowTitle.Replace(" ", "");
 
@@ -115,6 +118,16 @@ namespace Tac
 
                 bool newValue = Utilities.GetValue(windowConfig, "visible", visible);
                 SetVisible(newValue);
+                if (newValue) //So window is on.
+                {
+                    if (!TACMenuAppLToolBar.GuiVisible) //If Menu ApplToolbar thinks we are off we turn it on
+                        TACMenuAppLToolBar.onAppLaunchToggle();
+                }
+                else //So window is off.
+                {
+                    if (TACMenuAppLToolBar.GuiVisible) //If Menu ApplToolbar thinks we are on we turn it off
+                        TACMenuAppLToolBar.onAppLaunchToggle();
+                }
 
                 return windowConfig;
             }
@@ -178,13 +191,14 @@ namespace Tac
         {
             if (closeButtonStyle == null)
             {
-                closeButtonStyle = new GUIStyle(GUI.skin.button);
-                closeButtonStyle.padding = new RectOffset(5, 5, 3, 0);
-                closeButtonStyle.margin = new RectOffset(1, 1, 1, 1);
-                closeButtonStyle.stretchWidth = false;
-                closeButtonStyle.stretchHeight = false;
-                closeButtonStyle.alignment = TextAnchor.MiddleCenter;
-
+                closeButtonStyle = new GUIStyle(GUI.skin.button)
+                {
+                    alignment = TextAnchor.MiddleCenter,
+                    fixedWidth = 20,
+                    fixedHeight = 20,
+                    fontSize = 14,
+                    fontStyle = FontStyle.Normal
+                };
                 resizeStyle = new GUIStyle(GUI.skin.button);
                 resizeStyle.alignment = TextAnchor.MiddleCenter;
                 resizeStyle.padding = new RectOffset(1, 1, 1, 1);
@@ -197,9 +211,21 @@ namespace Tac
 
             if (!HideCloseButton)
             {
-                if (GUI.Button(new Rect(windowPos.width - 24, 4, 20, 20), "X", closeButtonStyle))
+                GUIContent closeContent = new GUIContent(Textures.BtnRedCross, "Close Window");
+                Rect closeRect = new Rect(windowPos.width - 24, 4, 16, 16);
+                if (GUI.Button(closeRect, closeContent, closeButtonStyle))//Textures.ClosebtnStyle))
                 {
-                    SetVisible(false);
+                    //if (GUI.Button(new Rect(windowPos.width - 24, 4, 20, 20), "X", closeButtonStyle))
+                    //{
+                    //SetVisible(false);
+                    if (this.GetType() == typeof(RosterWindow))
+                    {
+                        this.SetVisible(false);
+                    }
+                    else
+                    {
+                        TACMenuAppLToolBar.onAppLaunchToggle();
+                    }
                 }
             }
 

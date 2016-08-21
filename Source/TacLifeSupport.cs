@@ -24,15 +24,25 @@
  * is purely coincidental.
  */
 
-using KSP.IO;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using UnityEngine;
+using File = KSP.IO.File;
 
 namespace Tac
 {
+    [KSPAddon(KSPAddon.Startup.MainMenu, true)]
+    public class TacStartOnce : MonoBehaviour
+    {
+        public void Start()
+        {
+            Textures.LoadIconAssets();
+        }
+    }
+
     [KSPScenario(ScenarioCreationOptions.AddToAllGames, GameScenes.SPACECENTER, GameScenes.EDITOR, GameScenes.FLIGHT, GameScenes.TRACKSTATION)]
     public class TacLifeSupport : ScenarioModule
     {
@@ -55,14 +65,7 @@ namespace Tac
             globalSettings = new GlobalSettings();
 
             //globalConfigFilename = IOUtils.GetFilePathFor(this.GetType(), "LifeSupport.cfg");
-            if (Application.platform != RuntimePlatform.OSXPlayer)
-            {
-                globalConfigFilename = Application.dataPath + "/../LifeSupport.cfg";
-            }
-            else
-            {
-                globalConfigFilename = Application.dataPath + "/../../LifeSupport.cfg";
-            }
+            globalConfigFilename = Path.Combine(Textures.AssemblyFolder, "LifeSupport.cfg").Replace("\\", "/");
         }
 
         public override void OnAwake()
@@ -77,11 +80,6 @@ namespace Tac
                 this.Log("Adding SpaceCenterManager");
                 var c = gameObject.AddComponent<SpaceCenterManager>();
                 children.Add(c);
-                /* This does show the window, but only shows one button in the toolbar
-                this.Log("Adding LifeSupportController");
-                var d = gameObject.AddComponent<LifeSupportController>();
-                children.Add(d);
-                */
             }
             else if (HighLogic.LoadedScene == GameScenes.TRACKSTATION)
             {

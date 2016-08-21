@@ -29,6 +29,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using RSTUtils;
 using UnityEngine;
 
 namespace Tac
@@ -43,6 +44,8 @@ namespace Tac
         private GUIStyle headerStyle2;
         private GUIStyle warningStyle;
         private GUIStyle buttonStyle;
+        private string tmpToolTip;
+        private AppLauncherToolBar tacMenuAppLToolBar;
 
         private bool showConsumptionRates = false;
         private bool showMaxTimeWithout = false;
@@ -50,12 +53,13 @@ namespace Tac
 
         private readonly string version;
 
-        public SavedGameConfigWindow(GlobalSettings globalSettings, TacGameSettings gameSettings)
-            : base("TAC Life Support Settings", 400, 300)
+        public SavedGameConfigWindow(AppLauncherToolBar TACMenuAppLToolBar, GlobalSettings globalSettings, TacGameSettings gameSettings)
+            : base(TACMenuAppLToolBar, "TAC Life Support Settings", 400, 300)
         {
             base.Resizable = false;
             this.globalSettings = globalSettings;
             this.gameSettings = gameSettings;
+            this.tacMenuAppLToolBar = TACMenuAppLToolBar;
 
             version = Utilities.GetDllVersion(this);
         }
@@ -93,6 +97,24 @@ namespace Tac
             GUILayout.Label("Version: " + version, labelStyle);
             GUILayout.Label("Configure TAC Life Support for use with this saved game.", headerStyle);
             gameSettings.Enabled = GUILayout.Toggle(gameSettings.Enabled, "Enabled");
+            if (!ToolbarManager.ToolbarAvailable)
+            {
+                GUI.enabled = false;
+                tmpToolTip = "Not available unless ToolBar mod is installed";
+            }
+            else
+            {
+                tmpToolTip =
+                    "If ON Icon will appear in the stock Applauncher, if OFF Icon will appear in ToolBar mod";
+            }
+            var tmpUseAppLauncher = GUILayout.Toggle(gameSettings.UseAppLauncher, new GUIContent( "Use Stock Icons", tmpToolTip));
+            if (tmpUseAppLauncher != gameSettings.UseAppLauncher)
+            {
+                gameSettings.UseAppLauncher = tmpUseAppLauncher;
+                tacMenuAppLToolBar.chgAppIconStockToolBar(tmpUseAppLauncher);
+            }
+
+            GUI.enabled = true;
 
             if (gameSettings.Enabled)
             {

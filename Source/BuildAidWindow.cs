@@ -26,6 +26,7 @@
 
 using System.Linq;
 using KSP.UI;
+using RSTUtils;
 using UnityEngine;
 
 namespace Tac
@@ -64,8 +65,8 @@ namespace Tac
         private string wasteWaterRoomMaxCrew = "";
         private string carbonDioxideRoomMaxCrew = "";
 
-        public BuildAidWindow(GlobalSettings globalSettings)
-            : base("Life Support Build Aid", 300, 180)
+        public BuildAidWindow(AppLauncherToolBar TACMenuAppLToolBar, GlobalSettings globalSettings)
+            : base(TACMenuAppLToolBar, "Life Support Build Aid", 300, 180)
         {
             this.globalSettings = globalSettings;
         }

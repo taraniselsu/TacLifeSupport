@@ -2,7 +2,6 @@
 <Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <Import Project="..\KSPPath.inc" />
-  
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
@@ -40,6 +39,9 @@
     <Reference Include="KSPCore">
       <HintPath>$(KSP)\KSPCore.dll</HintPath>
     </Reference>
+    <Reference Include="Assembly-CSharp-firstpass">
+      <HintPath>$(KSP)\Assembly-CSharp-firstpass.dll</HintPath>
+    </Reference>
     <Reference Include="KSPUtil">
       <HintPath>$(KSP)\KSPUtil.dll</HintPath>
     </Reference>
@@ -57,12 +59,6 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="..\TacLib\Source\ButtonWrapper.cs">
-      <Link>ButtonWrapper.cs</Link>
-    </Compile>
-    <Compile Include="..\TacLib\Source\Icon.cs">
-      <Link>Icon.cs</Link>
-    </Compile>
     <Compile Include="..\TacLib\Source\Logging.cs">
       <Link>Logging.cs</Link>
     </Compile>
@@ -72,12 +68,6 @@
     <Compile Include="..\TacLib\Source\PopupWindow.cs">
       <Link>PopupWindow.cs</Link>
     </Compile>
-    <Compile Include="..\TacLib\Source\ToolbarButton.cs">
-      <Link>ToolbarButton.cs</Link>
-    </Compile>
-    <Compile Include="..\TacLib\Source\ToolbarWrapper.cs">
-      <Link>ToolbarWrapper.cs</Link>
-    </Compile>
     <Compile Include="..\TacLib\Source\Utilities.cs">
       <Link>Utilities.cs</Link>
     </Compile>
@@ -85,12 +75,15 @@
       <Link>Window.cs</Link>
     </Compile>
     <Compile Include="AddLifeSupport.cs" />
+    <Compile Include="AppLauncherToolBarExtension.cs" />
     <Compile Include="BuildAidWindow.cs" />
     <Compile Include="DFWrapper.cs" />
     <Compile Include="EngineersReportLifeSupportTests.cs" />
     <Compile Include="GameSettings.cs" />
     <Compile Include="EditorController.cs" />
     <Compile Include="InstallChecker.cs" />
+    <Compile Include="RectExtentions.cs" />
+    <Compile Include="RSTutilities.cs" />
     <Compile Include="SavedGameConfigWindow.cs" />
     <Compile Include="SpaceCenterManager.cs" />
     <Compile Include="TacLifeSupport.cs" />
@@ -102,10 +95,11 @@
     <Compile Include="LifeSupportMonitoringWindow.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="GlobalSettings.cs" />
+    <Compile Include="Textures.cs" />
+    <Compile Include="ToolBarManager.cs" />
     <Compile Include="VesselInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="CommonProperties.proj" />
     <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
@@ -144,7 +138,6 @@
     <KspMaxVersionMinor>1</KspMaxVersionMinor>
     <KspMaxVersionPatch>3</KspMaxVersionPatch>
   </PropertyGroup>
-  
   <Target Name="GitInfo">
     <!-- Get the current git SHA1 -->
     <Exec Command="git log -1 --format='%%h'" ConsoleToMSBuild="true" EchoOff="true" WorkingDirectory="$(BaseDir)\">
@@ -154,7 +147,6 @@
       <Output TaskParameter="ConsoleOutput" PropertyName="GitSHA2" />
     </Exec>
     <Message Text="Current Git SHA = $(GitSHA)+$(GitSHA2)" />
-
     <!-- Check that the workspace matches the repository. -->
     <Exec Command="git status -s | git grep -v AssemblyInfo.cs" ConsoleToMSBuild="true" EchoOff="true" IgnoreExitCode="true" WorkingDirectory="$(BaseDir)\">
       <Output TaskParameter="ConsoleOutput" PropertyName="GitStatusCheck" />
@@ -170,7 +162,6 @@
       <GitStatus Condition="$(GitStatusCheck2) != ''">with modifications</GitStatus>
     </PropertyGroup>
   </Target>
-  
   <Target Name="PostBuildMacros">
     <GetAssemblyIdentity AssemblyFiles="$(TargetPath)">
       <Output TaskParameter="Assemblies" ItemName="Targets" />
@@ -178,12 +169,13 @@
     <ItemGroup>
       <VersionNumber Include="@(Targets->'%(Version)')" />
     </ItemGroup>
-  </Target>
-  
-  
+	<PropertyGroup>
+    <VersionNum>@(VersionNumber)</VersionNum>
+  </PropertyGroup>
+  </Target>  
   <Target Name="TacPostBuild">
-    <Message Text="Built version = $(MaxAssemblyFileVersion)" Importance="high" />
-    <Message Text="Built version = @(VersionNumber)" Importance="high" />
+    <!--<Message Text="Built version = $(MaxAssemblyFileVersion)" Importance="high" /> -->
+    <Message Text="Built version = $(VersionNum)" Importance="high" />
     <!-- Copy the dll to the GameData directory -->
     <MakeDir Directories="$(BaseDir)\GameData\ThunderAerospace\$(ProjectName)\" />
     <Copy SourceFiles="$(TargetPath)" DestinationFolder="$(BaseDir)\GameData\ThunderAerospace\$(ProjectName)\" />
@@ -191,69 +183,56 @@
     <CallTarget Targets="WriteAvcVersion" Condition="$(ModUrl) != ''" />
     <CallTarget Targets="CopyToTest" />
   </Target>
-
   <Target Name="WriteVersionFile">
     <!-- Write the version file -->
-    <PropertyGroup>
-      <VersionNum>@(VersionNumber)</VersionNum>
-    </PropertyGroup>
     <ItemGroup>
       <OldVersionFiles Include="$(BaseDir)\GameData\ThunderAerospace\$(ProjectName)_*.txt" />
     </ItemGroup>
     <Delete Files="@(OldVersionFiles)" />
     <WriteLinesToFile File="$(BaseDir)\GameData\ThunderAerospace\$(ProjectName)_v$(VersionNum).txt" Lines="You have installed the $(ModName), version $(VersionNum) ($(GitSHA)+$(GitSHA2) $(GitStatus)).&#xD;&#xA;&#xD;&#xA;See the Readme.txt and LICENSE.txt files for more information." Overwrite="true" Encoding="UTF-8" />
   </Target>
-
   <Target Name="WriteAvcVersion">
     <!-- Write the .version file for KSP-AVC, http://forum.kerbalspaceprogram.com/threads/79745 -->
+    <Message Text="Writing AVC version file" Importance="high" />
     <PropertyGroup>
       <AVCFile>$(BaseDir)\GameData\ThunderAerospace\$(ProjectName)\$(ProjectName).version</AVCFile>
-      <VersionNum>@(VersionNumber)</VersionNum>
     </PropertyGroup>
     <Delete Files="$(AVCFile)" />
-    <WriteLinesToFile File="$(AVCFile)"
-      Lines="{&#xD;&#xA;  &quot;NAME&quot;: &quot;$(ModName)&quot;,&#xD;&#xA;  &quot;URL&quot;: &quot;$(ModUrl)&quot;,&#xD;&#xA;  &quot;DOWNLOAD&quot;: &quot;$(DownloadUrl)&quot;,&#xD;&#xA;  &quot;VERSION&quot;: &quot;$(VersionNum)&quot;,&#xD;&#xA;  &quot;KSP_VERSION&quot;: {&#xD;&#xA;    &quot;MAJOR&quot;: $(KspVersionMajor),&#xD;&#xA;    &quot;MINOR&quot;: $(KspVersionMinor),&#xD;&#xA;    &quot;PATCH&quot;: $(KspVersionPatch)&#xD;&#xA;  },&#xD;&#xA;  &quot;KSP_VERSION_MIN&quot;: {&#xD;&#xA;    &quot;MAJOR&quot;: $(KspMinVersionMajor),&#xD;&#xA;    &quot;MINOR&quot;: $(KspMinVersionMinor),&#xD;&#xA;    &quot;PATCH&quot;: $(KspMinVersionPatch)&#xD;&#xA;  },&#xD;&#xA;  &quot;KSP_VERSION_MAX&quot;: {&#xD;&#xA;    &quot;MAJOR&quot;: $(KspMaxVersionMajor),&#xD;&#xA;    &quot;MINOR&quot;: $(KspMaxVersionMinor),&#xD;&#xA;    &quot;PATCH&quot;: $(KspMaxVersionPatch)&#xD;&#xA;  }&#xD;&#xA;}"
-      Overwrite="true" Encoding="UTF-8" />
+    <WriteLinesToFile File="$(AVCFile)" Lines="{&#xD;&#xA;  &quot;NAME&quot;: &quot;$(ModName)&quot;,&#xD;&#xA;  &quot;URL&quot;: &quot;$(ModUrl)&quot;,&#xD;&#xA;  &quot;DOWNLOAD&quot;: &quot;$(DownloadUrl)&quot;,&#xD;&#xA;  &quot;VERSION&quot;: &quot;$(VersionNum)&quot;,&#xD;&#xA;  &quot;KSP_VERSION&quot;: {&#xD;&#xA;    &quot;MAJOR&quot;: $(KspVersionMajor),&#xD;&#xA;    &quot;MINOR&quot;: $(KspVersionMinor),&#xD;&#xA;    &quot;PATCH&quot;: $(KspVersionPatch)&#xD;&#xA;  },&#xD;&#xA;  &quot;KSP_VERSION_MIN&quot;: {&#xD;&#xA;    &quot;MAJOR&quot;: $(KspMinVersionMajor),&#xD;&#xA;    &quot;MINOR&quot;: $(KspMinVersionMinor),&#xD;&#xA;    &quot;PATCH&quot;: $(KspMinVersionPatch)&#xD;&#xA;  },&#xD;&#xA;  &quot;KSP_VERSION_MAX&quot;: {&#xD;&#xA;    &quot;MAJOR&quot;: $(KspMaxVersionMajor),&#xD;&#xA;    &quot;MINOR&quot;: $(KspMaxVersionMinor),&#xD;&#xA;    &quot;PATCH&quot;: $(KspMaxVersionPatch)&#xD;&#xA;  }&#xD;&#xA;}" Overwrite="true" Encoding="UTF-8" />
     <Copy SourceFiles="$(BaseDir)\TacLib\AVC\MiniAVC.dll" DestinationFolder="$(BaseDir)\GameData\ThunderAerospace\$(ProjectName)\" />
+    <Message Text="Writing AVC version file complete." Importance="high" />
   </Target>
-
   <Target Name="CopyToTest">
     <!-- Copy to the test directory -->
     <Warning Condition="'$(KSP_TEST)' == ''" Text="The environment variable KSP_TEST is not set!" />
+    <Message Text="Execute Test Debug mode commands" Importance="high" />
+	  <Exec Command="$(ProjectDir)packages\Mono.Unofficial.pdb2mdb.4.2.3.4\tools\pdb2mdb.exe $(TargetFileName)" WorkingDirectory="$(TargetDir)" IgnoreExitCode="true" Condition="'$(KSP_TEST)' != ''"  />    
+    <Copy SourceFiles="$(TargetDir)$(TargetName).pdb"  DestinationFolder="$(KSP_TEST)\GameData\ThunderAerospace\TacLifeSupport\" Condition="'$(KSP_TEST)' != ''" />
+    <Copy SourceFiles="$(TargetDir)$(TargetName).dll.mdb" DestinationFolder="$(KSP_TEST)\GameData\ThunderAerospace\TacLifeSupport\" Condition="'$(KSP_TEST)' != ''" />
     <Exec Command="test.bat" WorkingDirectory="$(BaseDir)\" IgnoreExitCode="true" Condition="'$(KSP_TEST)' != ''" />
+    <Message Text="Execute Test Debug mode commands complete." Importance="high" />
   </Target>
-
   <Target Name="Package" DependsOnTargets="Rebuild">
     <ItemGroup>
       <PackageFiles Include="$(BaseDir)\GameData\**\*" Exclude="$(BaseDir)\**\Thumbs.db" />
     </ItemGroup>
-    <Copy SourceFiles="@(PackageFiles)"
-            DestinationFiles="@(PackageFiles->'$(BaseDir)\Release\$(ProjectName)_$(MaxAssemblyFileVersion)\GameData\%(RecursiveDir)%(Filename)%(Extension)')"
-        />
+    <Copy SourceFiles="@(PackageFiles)" DestinationFiles="@(PackageFiles->'$(BaseDir)\Release\$(ProjectName)_$(MaxAssemblyFileVersion)\GameData\%(RecursiveDir)%(Filename)%(Extension)')" />
     <ItemGroup>
       <ReadmeFiles Include="$(BaseDir)\LICENSE*" />
       <ReadmeFiles Include="$(BaseDir)\Readme*" />
       <ReadmeFiles Include="$(BaseDir)\NOTICE*" />
     </ItemGroup>
     <Copy SourceFiles="@(ReadmeFiles)" DestinationFolder="$(BaseDir)\Release\$(ProjectName)_$(MaxAssemblyFileVersion)\" />
-
     <ItemGroup>
       <FilesToZip Include="$(BaseDir)\Release\$(ProjectName)_$(MaxAssemblyFileVersion)\**\*" />
     </ItemGroup>
-    <MSBuild.ExtensionPack.Compression.Zip
-            TaskAction="Create"
-            CompressFiles="@(FilesToZip)"
-            ZipFileName="$(BaseDir)\Release\$(ProjectName)_$(MaxAssemblyFileVersion).zip"
-            RemoveRoot="$(BaseDir)\Release\$(ProjectName)_$(MaxAssemblyFileVersion)"
-        />
+    <MSBuild.ExtensionPack.Compression.Zip TaskAction="Create" CompressFiles="@(FilesToZip)" ZipFileName="$(BaseDir)\Release\$(ProjectName)_$(MaxAssemblyFileVersion).zip" RemoveRoot="$(BaseDir)\Release\$(ProjectName)_$(MaxAssemblyFileVersion)" />
   </Target>
-  
-  
   <Target Name="BeforeBuild">
     <CallTarget Targets="GitInfo" />
   </Target>
   <Target Name="AfterBuild">
-    <CallTarget Targets ="PostBuildMacros" />
+    <CallTarget Targets="PostBuildMacros" />
     <CallTarget Targets="TacPostBuild" />
   </Target>
 </Project>
