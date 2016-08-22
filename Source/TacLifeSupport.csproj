@@ -22,7 +22,8 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <RunCodeAnalysis>true</RunCodeAnalysis>
+    <RunCodeAnalysis>false</RunCodeAnalysis>
+    <CodeAnalysisIgnoreGeneratedCode>true</CodeAnalysisIgnoreGeneratedCode>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -78,6 +79,7 @@
     <Compile Include="AppLauncherToolBarExtension.cs" />
     <Compile Include="BuildAidWindow.cs" />
     <Compile Include="DFWrapper.cs" />
+    <Compile Include="EditorFilter.cs" />
     <Compile Include="EngineersReportLifeSupportTests.cs" />
     <Compile Include="GameSettings.cs" />
     <Compile Include="EditorController.cs" />
@@ -126,8 +128,9 @@
   <PropertyGroup>
     <!-- Needed for the WriteAvcVersion build target -->
     <ModName>TAC Life Support</ModName>
-    <ModUrl>http://ksp-avc.cybutek.net/version.php?id=9</ModUrl>
+    <ModUrl>http://ksp-avc.cybutek.net/version.php?id=335</ModUrl>
     <DownloadUrl>https://github.com/KSP-RO/TacLifeSupport/releases</DownloadUrl>
+    <ChangelogUrl>https://github.com/KSP-RO/TacLifeSupport/wiki/Changes</ChangelogUrl>
     <KspVersionMajor>1</KspVersionMajor>
     <KspVersionMinor>1</KspVersionMinor>
     <KspVersionPatch>3</KspVersionPatch>
@@ -169,10 +172,10 @@
     <ItemGroup>
       <VersionNumber Include="@(Targets->'%(Version)')" />
     </ItemGroup>
-	<PropertyGroup>
-    <VersionNum>@(VersionNumber)</VersionNum>
-  </PropertyGroup>
-  </Target>  
+    <PropertyGroup>
+      <VersionNum>@(VersionNumber)</VersionNum>
+    </PropertyGroup>
+  </Target>
   <Target Name="TacPostBuild">
     <!--<Message Text="Built version = $(MaxAssemblyFileVersion)" Importance="high" /> -->
     <Message Text="Built version = $(VersionNum)" Importance="high" />
@@ -198,7 +201,7 @@
       <AVCFile>$(BaseDir)\GameData\ThunderAerospace\$(ProjectName)\$(ProjectName).version</AVCFile>
     </PropertyGroup>
     <Delete Files="$(AVCFile)" />
-    <WriteLinesToFile File="$(AVCFile)" Lines="{&#xD;&#xA;  &quot;NAME&quot;: &quot;$(ModName)&quot;,&#xD;&#xA;  &quot;URL&quot;: &quot;$(ModUrl)&quot;,&#xD;&#xA;  &quot;DOWNLOAD&quot;: &quot;$(DownloadUrl)&quot;,&#xD;&#xA;  &quot;VERSION&quot;: &quot;$(VersionNum)&quot;,&#xD;&#xA;  &quot;KSP_VERSION&quot;: {&#xD;&#xA;    &quot;MAJOR&quot;: $(KspVersionMajor),&#xD;&#xA;    &quot;MINOR&quot;: $(KspVersionMinor),&#xD;&#xA;    &quot;PATCH&quot;: $(KspVersionPatch)&#xD;&#xA;  },&#xD;&#xA;  &quot;KSP_VERSION_MIN&quot;: {&#xD;&#xA;    &quot;MAJOR&quot;: $(KspMinVersionMajor),&#xD;&#xA;    &quot;MINOR&quot;: $(KspMinVersionMinor),&#xD;&#xA;    &quot;PATCH&quot;: $(KspMinVersionPatch)&#xD;&#xA;  },&#xD;&#xA;  &quot;KSP_VERSION_MAX&quot;: {&#xD;&#xA;    &quot;MAJOR&quot;: $(KspMaxVersionMajor),&#xD;&#xA;    &quot;MINOR&quot;: $(KspMaxVersionMinor),&#xD;&#xA;    &quot;PATCH&quot;: $(KspMaxVersionPatch)&#xD;&#xA;  }&#xD;&#xA;}" Overwrite="true" Encoding="UTF-8" />
+    <WriteLinesToFile File="$(AVCFile)" Lines="{&#xD;&#xA;  &quot;NAME&quot;: &quot;$(ModName)&quot;,&#xD;&#xA;  &quot;URL&quot;: &quot;$(ModUrl)&quot;,&#xD;&#xA;  &quot;DOWNLOAD&quot;: &quot;$(DownloadUrl)&quot;,&#xD;&#xA;  &quot;CHANGE_LOG_URL&quot;: &quot;$(ChangelogUrl)&quot;,&#xD;&#xA;  &quot;VERSION&quot;: &quot;$(VersionNum)&quot;,&#xD;&#xA;  &quot;KSP_VERSION&quot;: {&#xD;&#xA;    &quot;MAJOR&quot;: $(KspVersionMajor),&#xD;&#xA;    &quot;MINOR&quot;: $(KspVersionMinor),&#xD;&#xA;    &quot;PATCH&quot;: $(KspVersionPatch)&#xD;&#xA;  },&#xD;&#xA;  &quot;KSP_VERSION_MIN&quot;: {&#xD;&#xA;    &quot;MAJOR&quot;: $(KspMinVersionMajor),&#xD;&#xA;    &quot;MINOR&quot;: $(KspMinVersionMinor),&#xD;&#xA;    &quot;PATCH&quot;: $(KspMinVersionPatch)&#xD;&#xA;  },&#xD;&#xA;  &quot;KSP_VERSION_MAX&quot;: {&#xD;&#xA;    &quot;MAJOR&quot;: $(KspMaxVersionMajor),&#xD;&#xA;    &quot;MINOR&quot;: $(KspMaxVersionMinor),&#xD;&#xA;    &quot;PATCH&quot;: $(KspMaxVersionPatch)&#xD;&#xA;  }&#xD;&#xA;}" Overwrite="true" Encoding="UTF-8" />
     <Copy SourceFiles="$(BaseDir)\TacLib\AVC\MiniAVC.dll" DestinationFolder="$(BaseDir)\GameData\ThunderAerospace\$(ProjectName)\" />
     <Message Text="Writing AVC version file complete." Importance="high" />
   </Target>
@@ -206,33 +209,49 @@
     <!-- Copy to the test directory -->
     <Warning Condition="'$(KSP_TEST)' == ''" Text="The environment variable KSP_TEST is not set!" />
     <Message Text="Execute Test Debug mode commands" Importance="high" />
-	  <Exec Command="$(ProjectDir)packages\Mono.Unofficial.pdb2mdb.4.2.3.4\tools\pdb2mdb.exe $(TargetFileName)" WorkingDirectory="$(TargetDir)" IgnoreExitCode="true" Condition="'$(KSP_TEST)' != ''"  />    
-    <Copy SourceFiles="$(TargetDir)$(TargetName).pdb"  DestinationFolder="$(KSP_TEST)\GameData\ThunderAerospace\TacLifeSupport\" Condition="'$(KSP_TEST)' != ''" />
+    <Exec Command="$(ProjectDir)packages\Mono.Unofficial.pdb2mdb.4.2.3.4\tools\pdb2mdb.exe $(TargetFileName)" WorkingDirectory="$(TargetDir)" IgnoreExitCode="true" Condition="'$(KSP_TEST)' != ''" />
+    <Copy SourceFiles="$(TargetDir)$(TargetName).pdb" DestinationFolder="$(KSP_TEST)\GameData\ThunderAerospace\TacLifeSupport\" Condition="'$(KSP_TEST)' != ''" />
     <Copy SourceFiles="$(TargetDir)$(TargetName).dll.mdb" DestinationFolder="$(KSP_TEST)\GameData\ThunderAerospace\TacLifeSupport\" Condition="'$(KSP_TEST)' != ''" />
     <Exec Command="test.bat" WorkingDirectory="$(BaseDir)\" IgnoreExitCode="true" Condition="'$(KSP_TEST)' != ''" />
     <Message Text="Execute Test Debug mode commands complete." Importance="high" />
   </Target>
-  <Target Name="Package" DependsOnTargets="Rebuild">
+  <Target Name="Package" Condition="'$(Configuration)' == 'Release'">
+    <PropertyGroup>
+      <PostBuildEvent>
+        where /q %25ZA_DIR%25:7za.exe
+        if %25ERRORLEVEL%25 == 1 (
+        echo Cannot find 7-zip to package build
+        ) else (
+        echo Packaging build
+        )
+        if exist "$(BaseDir)\Release\$(ProjectName)_$(VersionNum).zip" del "$(BaseDir)\Release\$(ProjectName)_$(VersionNum).zip"
+
+        %25ZA_DIR%257za.exe a -tzip -r "$(BaseDir)\Release\$(ProjectName)_$(VersionNum).zip" "$(BaseDir)\Release\$(ProjectName)_$(VersionNum)"
+      </PostBuildEvent>
+    </PropertyGroup>
     <ItemGroup>
       <PackageFiles Include="$(BaseDir)\GameData\**\*" Exclude="$(BaseDir)\**\Thumbs.db" />
     </ItemGroup>
-    <Copy SourceFiles="@(PackageFiles)" DestinationFiles="@(PackageFiles->'$(BaseDir)\Release\$(ProjectName)_$(MaxAssemblyFileVersion)\GameData\%(RecursiveDir)%(Filename)%(Extension)')" />
+    <Message Text="Copying Distribution files to Release folder" Importance="high" />
+    <Copy SourceFiles="@(PackageFiles)" DestinationFiles="@(PackageFiles->'$(BaseDir)\Release\$(ProjectName)_$(VersionNum)\GameData\%(RecursiveDir)%(Filename)%(Extension)')" />
     <ItemGroup>
       <ReadmeFiles Include="$(BaseDir)\LICENSE*" />
       <ReadmeFiles Include="$(BaseDir)\Readme*" />
       <ReadmeFiles Include="$(BaseDir)\NOTICE*" />
     </ItemGroup>
-    <Copy SourceFiles="@(ReadmeFiles)" DestinationFolder="$(BaseDir)\Release\$(ProjectName)_$(MaxAssemblyFileVersion)\" />
-    <ItemGroup>
-      <FilesToZip Include="$(BaseDir)\Release\$(ProjectName)_$(MaxAssemblyFileVersion)\**\*" />
-    </ItemGroup>
-    <MSBuild.ExtensionPack.Compression.Zip TaskAction="Create" CompressFiles="@(FilesToZip)" ZipFileName="$(BaseDir)\Release\$(ProjectName)_$(MaxAssemblyFileVersion).zip" RemoveRoot="$(BaseDir)\Release\$(ProjectName)_$(MaxAssemblyFileVersion)" />
+    <Copy SourceFiles="@(ReadmeFiles)" DestinationFolder="$(BaseDir)\Release\$(ProjectName)_$(VersionNum)\" />
+    <Message Text="Distribution files Copied to Release folder" Importance="high" />
+    <Message Text="Creating Distribution Zip file" />
+    <Exec Command="$(PostBuildEvent)" />
+    <Message Text="Distribution Zip file created" />
   </Target>
+  
   <Target Name="BeforeBuild">
     <CallTarget Targets="GitInfo" />
   </Target>
   <Target Name="AfterBuild">
     <CallTarget Targets="PostBuildMacros" />
     <CallTarget Targets="TacPostBuild" />
+    <CallTarget Targets="Package" />
   </Target>
 </Project>

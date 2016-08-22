@@ -23,6 +23,7 @@ namespace Tac
         internal static Texture2D GrnApplauncherIcon = new Texture2D(38, 38, TextureFormat.ARGB32, false);
         internal static Texture2D YlwApplauncherIcon = new Texture2D(38, 38, TextureFormat.ARGB32, false);
         internal static Texture2D RedApplauncherIcon = new Texture2D(38, 38, TextureFormat.ARGB32, false);
+        internal static Texture2D EditorCatIcon = new Texture2D(32, 32, TextureFormat.ARGB32, false);
 
         //Toolbar Icons
         internal static Texture2D GrnToolbarIcon = new Texture2D(24, 24, TextureFormat.ARGB32, false);
@@ -56,6 +57,7 @@ namespace Tac
                 LoadImageFromFile(ref BtnResize, "TACbtnResize.png", PathIconsPath);
                 LoadImageFromFile(ref BtnResizeHeight, "TACbtnResizeHeight.png", PathIconsPath);
                 LoadImageFromFile(ref BtnResizeWidth, "TACbtnResizeWidth.png", PathIconsPath);
+                LoadImageFromFile(ref EditorCatIcon, "TACEditorCatIcon.png", PathIconsPath);
             }
             catch (Exception)
             {

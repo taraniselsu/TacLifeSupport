@@ -1,7 +1,8 @@
 ﻿{
   "NAME": "TAC Life Support",
-  "URL": "http://ksp-avc.cybutek.net/version.php?id=9",
+  "URL": "http://ksp-avc.cybutek.net/version.php?id=335",
   "DOWNLOAD": "https://github.com/KSP-RO/TacLifeSupport/releases",
+  "CHANGE_LOG_URL": "https://github.com/KSP-RO/TacLifeSupport/wiki/Changes",
   "VERSION": "0.12.3.0",
   "KSP_VERSION": {
     "MAJOR": 1,

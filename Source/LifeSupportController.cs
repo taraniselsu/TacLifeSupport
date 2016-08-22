@@ -658,8 +658,8 @@ namespace Tac
             this.Log("FillRescueEvaSuit: Rescue mission EVA: " + vessel.vesselName);
             Part part = vessel.rootPart;
 
-            // Only fill the suit to 10-90% full
-            double fillAmount = UnityEngine.Random.Range(0.1f, 0.9f);
+            // Only fill the suit to 30-90% full
+            double fillAmount = UnityEngine.Random.Range(0.3f, 0.9f);
 
             part.TakeResource(globalSettings.ElectricityId, -fillAmount * globalSettings.EvaElectricityConsumptionRate * globalSettings.EvaDefaultResourceAmount);
             part.TakeResource(globalSettings.FoodId, -fillAmount * globalSettings.FoodConsumptionRate * globalSettings.EvaDefaultResourceAmount);
