@@ -29,6 +29,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using KSP.UI.Screens;
+using RSTUtils;
 using UnityEngine;
 
 namespace Tac
@@ -37,19 +39,23 @@ namespace Tac
     {
         private GlobalSettings globalSettings;
         private TacGameSettings gameSettings;
-        private ButtonWrapper button;
         private SavedGameConfigWindow configWindow;
+        internal AppLauncherToolBar TACMenuAppLToolBar;
         private const string lockName = "TACLS_SpaceCenterLock";
         private const ControlTypes desiredLock = ControlTypes.KSC_FACILITIES;
+        
 
         public SpaceCenterManager()
         {
             this.Log("Constructor");
             globalSettings = TacLifeSupport.Instance.globalSettings;
             gameSettings = TacLifeSupport.Instance.gameSettings;
-            button = new ButtonWrapper(new Rect(Screen.width * 0.75f, 0, 32, 32), "ThunderAerospace/TacLifeSupport/Textures/greenIcon",
-                "LS", "TAC Life Support Configuration Window", OnIconClicked, "SpaceCenterIcon");
-            configWindow = new SavedGameConfigWindow(globalSettings, gameSettings);
+            TACMenuAppLToolBar = new AppLauncherToolBar("TACLifeSupport", "TAC Life Support",
+                Textures.PathToolbarIconsPath + "/TACgreenIconTB",
+                ApplicationLauncher.AppScenes.SPACECENTER,
+                (Texture)Textures.GrnApplauncherIcon, (Texture)Textures.GrnApplauncherIcon,
+                GameScenes.SPACECENTER);
+            configWindow = new SavedGameConfigWindow(TACMenuAppLToolBar, globalSettings, gameSettings);
         }
 
         void Awake()
@@ -60,12 +66,20 @@ namespace Tac
         void Start()
         {
             this.Log("Start, new game = " + gameSettings.IsNewSave);
-            button.Visible = true;
+            //If Settings wants to use ToolBar mod, check it is installed and available. If not set the Setting to use Stock.
+            if (!ToolbarManager.ToolbarAvailable && !gameSettings.UseAppLauncher)
+            {
+                gameSettings.UseAppLauncher = true;
+            }
+
+            TACMenuAppLToolBar.Start(gameSettings.UseAppLauncher);
+
+            RSTUtils.Utilities.setScaledScreen();
 
             if (gameSettings.IsNewSave)
             {
                 this.Log("New save detected!");
-                configWindow.SetVisible(true);
+                TACMenuAppLToolBar.onAppLaunchToggle();
                 gameSettings.IsNewSave = false;
             }
 
@@ -104,37 +118,29 @@ namespace Tac
 
         public void Load(ConfigNode globalNode)
         {
-            button.Load(globalNode);
             configWindow.Load(globalNode);
         }
 
         public void Save(ConfigNode globalNode)
         {
-            button.Save(globalNode);
             configWindow.Save(globalNode);
         }
 
         void OnGUI()
         {
-            button?.OnGUI();
+            configWindow.SetVisible(TACMenuAppLToolBar.GuiVisible);
             configWindow?.OnGUI();
         }
 
         void OnDestroy()
         {
             this.Log("OnDestroy");
-            button.Destroy();
-
+            TACMenuAppLToolBar.Destroy();
             // Make sure we remove our locks
             if (InputLockManager.GetControlLock(lockName) == desiredLock)
             {
                 InputLockManager.RemoveControlLock(lockName);
             }
-        }
-
-        private void OnIconClicked()
-        {
-            configWindow.ToggleVisible();
         }
     }
 }

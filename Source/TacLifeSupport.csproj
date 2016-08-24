@@ -1,6 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <Import Project="..\KSPPath.inc" />
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
@@ -21,7 +22,8 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <RunCodeAnalysis>true</RunCodeAnalysis>
+    <RunCodeAnalysis>false</RunCodeAnalysis>
+    <CodeAnalysisIgnoreGeneratedCode>true</CodeAnalysisIgnoreGeneratedCode>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -33,13 +35,16 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Assembly-CSharp">
-      <HintPath>..\..\..\KSP_DEV\KSP_Data\Managed\Assembly-CSharp.dll</HintPath>
+      <HintPath>$(KSP)\Assembly-CSharp.dll</HintPath>
     </Reference>
     <Reference Include="KSPCore">
-      <HintPath>..\..\..\KSP_DEV\KSP_Data\Managed\KSPCore.dll</HintPath>
+      <HintPath>$(KSP)\KSPCore.dll</HintPath>
+    </Reference>
+    <Reference Include="Assembly-CSharp-firstpass">
+      <HintPath>$(KSP)\Assembly-CSharp-firstpass.dll</HintPath>
     </Reference>
     <Reference Include="KSPUtil">
-      <HintPath>..\..\..\KSP_DEV\KSP_Data\Managed\KSPUtil.dll</HintPath>
+      <HintPath>$(KSP)\KSPUtil.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -48,19 +53,13 @@
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
     <Reference Include="UnityEngine">
-      <HintPath>..\..\..\KSP_DEV\KSP_Data\Managed\UnityEngine.dll</HintPath>
+      <HintPath>$(KSP)\UnityEngine.dll</HintPath>
     </Reference>
     <Reference Include="UnityEngine.UI">
-      <HintPath>..\..\..\KSP_DEV\KSP_Data\Managed\UnityEngine.UI.dll</HintPath>
+      <HintPath>$(KSP)\UnityEngine.UI.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="..\TacLib\Source\ButtonWrapper.cs">
-      <Link>ButtonWrapper.cs</Link>
-    </Compile>
-    <Compile Include="..\TacLib\Source\Icon.cs">
-      <Link>Icon.cs</Link>
-    </Compile>
     <Compile Include="..\TacLib\Source\Logging.cs">
       <Link>Logging.cs</Link>
     </Compile>
@@ -70,12 +69,6 @@
     <Compile Include="..\TacLib\Source\PopupWindow.cs">
       <Link>PopupWindow.cs</Link>
     </Compile>
-    <Compile Include="..\TacLib\Source\ToolbarButton.cs">
-      <Link>ToolbarButton.cs</Link>
-    </Compile>
-    <Compile Include="..\TacLib\Source\ToolbarWrapper.cs">
-      <Link>ToolbarWrapper.cs</Link>
-    </Compile>
     <Compile Include="..\TacLib\Source\Utilities.cs">
       <Link>Utilities.cs</Link>
     </Compile>
@@ -83,12 +76,16 @@
       <Link>Window.cs</Link>
     </Compile>
     <Compile Include="AddLifeSupport.cs" />
+    <Compile Include="AppLauncherToolBarExtension.cs" />
     <Compile Include="BuildAidWindow.cs" />
     <Compile Include="DFWrapper.cs" />
+    <Compile Include="EditorFilter.cs" />
     <Compile Include="EngineersReportLifeSupportTests.cs" />
     <Compile Include="GameSettings.cs" />
     <Compile Include="EditorController.cs" />
     <Compile Include="InstallChecker.cs" />
+    <Compile Include="RectExtentions.cs" />
+    <Compile Include="RSTutilities.cs" />
     <Compile Include="SavedGameConfigWindow.cs" />
     <Compile Include="SpaceCenterManager.cs" />
     <Compile Include="TacLifeSupport.cs" />
@@ -100,36 +97,161 @@
     <Compile Include="LifeSupportMonitoringWindow.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="GlobalSettings.cs" />
+    <Compile Include="Textures.cs" />
+    <Compile Include="ToolBarManager.cs" />
     <Compile Include="VesselInfo.cs" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <Import Project="..\TacLib\Source\CommonProperties.proj" />
+  <!-- <Import Project="..\TacLib\Source\CommonProperties.proj" /> -->
+  <PropertyGroup>
+    <BaseDir>$(ProjectDir)..</BaseDir>
+  </PropertyGroup>
+  <Import Project="$(PROGRAMFILES)\MSBuild\ExtensionPack\4.0\MSBuild.ExtensionPack.VersionNumber.targets" Condition="Exists('$(PROGRAMFILES)\MSBuild\ExtensionPack\4.0\MSBuild.ExtensionPack.VersionNumber.targets')" />
+  <Import Project="$(PROGRAMFILES)\MSBuild\ExtensionPack\4.0\MSBuild.ExtensionPack.tasks" Condition="Exists('$(PROGRAMFILES)\MSBuild\ExtensionPack\4.0\MSBuild.ExtensionPack.tasks')" />
   <PropertyGroup>
     <AssemblyMajorVersion>0</AssemblyMajorVersion>
-    <AssemblyMinorVersion>11</AssemblyMinorVersion>
-    <AssemblyBuildNumber>2</AssemblyBuildNumber>
+    <AssemblyMinorVersion>12</AssemblyMinorVersion>
+    <AssemblyBuildNumber>3</AssemblyBuildNumber>
     <AssemblyFileMajorVersion>$(AssemblyMajorVersion)</AssemblyFileMajorVersion>
     <AssemblyFileMinorVersion>$(AssemblyMinorVersion)</AssemblyFileMinorVersion>
     <AssemblyFileBuildNumber>$(AssemblyBuildNumber)</AssemblyFileBuildNumber>
+    <AssemblyBuildNumberType>NoIncrement</AssemblyBuildNumberType>
+    <AssemblyRevisionType>NoIncrement</AssemblyRevisionType>
+    <AssemblyFileBuildNumberType>NoIncrement</AssemblyFileBuildNumberType>
+    <!-- This will increment the revision number found in the AssemblyInfo.cs file. -->
+    <AssemblyFileRevisionType>AutoIncrement</AssemblyFileRevisionType>
+    <AssemblyFileRevisionFormat>0</AssemblyFileRevisionFormat>
   </PropertyGroup>
   <PropertyGroup>
     <!-- Needed for the WriteAvcVersion build target -->
     <ModName>TAC Life Support</ModName>
-    <ModUrl>http://ksp-avc.cybutek.net/version.php?id=9</ModUrl>
-    <DownloadUrl>
-    </DownloadUrl>
+    <ModUrl>http://ksp-avc.cybutek.net/version.php?id=335</ModUrl>
+    <DownloadUrl>https://github.com/KSP-RO/TacLifeSupport/releases</DownloadUrl>
+    <ChangelogUrl>https://github.com/KSP-RO/TacLifeSupport/wiki/Changes</ChangelogUrl>
     <KspVersionMajor>1</KspVersionMajor>
-    <KspVersionMinor>0</KspVersionMinor>
-    <KspVersionPatch>5</KspVersionPatch>
+    <KspVersionMinor>1</KspVersionMinor>
+    <KspVersionPatch>3</KspVersionPatch>
+    <KspMinVersionMajor>1</KspMinVersionMajor>
+    <KspMinVersionMinor>1</KspMinVersionMinor>
+    <KspMinVersionPatch>3</KspMinVersionPatch>
+    <KspMaxVersionMajor>1</KspMaxVersionMajor>
+    <KspMaxVersionMinor>1</KspMaxVersionMinor>
+    <KspMaxVersionPatch>3</KspMaxVersionPatch>
   </PropertyGroup>
-  <PropertyGroup>
-    <PostBuildEvent>
-    </PostBuildEvent>
-  </PropertyGroup>
+  <Target Name="GitInfo">
+    <!-- Get the current git SHA1 -->
+    <Exec Command="git log -1 --format='%%h'" ConsoleToMSBuild="true" EchoOff="true" WorkingDirectory="$(BaseDir)\">
+      <Output TaskParameter="ConsoleOutput" PropertyName="GitSHA" />
+    </Exec>
+    <Exec Command="git log -1 --format='%%h'" ConsoleToMSBuild="true" EchoOff="true" WorkingDirectory="$(BaseDir)\TacLib\">
+      <Output TaskParameter="ConsoleOutput" PropertyName="GitSHA2" />
+    </Exec>
+    <Message Text="Current Git SHA = $(GitSHA)+$(GitSHA2)" />
+    <!-- Check that the workspace matches the repository. -->
+    <Exec Command="git status -s | git grep -v AssemblyInfo.cs" ConsoleToMSBuild="true" EchoOff="true" IgnoreExitCode="true" WorkingDirectory="$(BaseDir)\">
+      <Output TaskParameter="ConsoleOutput" PropertyName="GitStatusCheck" />
+    </Exec>
+    <Exec Command="git status -s" ConsoleToMSBuild="true" EchoOff="true" IgnoreExitCode="true" WorkingDirectory="$(BaseDir)\TacLib\">
+      <Output TaskParameter="ConsoleOutput" PropertyName="GitStatusCheck2" />
+    </Exec>
+    <Warning Condition="$(GitStatusCheck) != ''" Text="Your workspace is not clean" />
+    <Warning Condition="$(GitStatusCheck2) != ''" Text="Your workspace is not clean (TacLib)" />
+    <PropertyGroup>
+      <GitStatus>clean</GitStatus>
+      <GitStatus Condition="$(GitStatusCheck) != ''">with modifications</GitStatus>
+      <GitStatus Condition="$(GitStatusCheck2) != ''">with modifications</GitStatus>
+    </PropertyGroup>
+  </Target>
+  <Target Name="PostBuildMacros">
+    <GetAssemblyIdentity AssemblyFiles="$(TargetPath)">
+      <Output TaskParameter="Assemblies" ItemName="Targets" />
+    </GetAssemblyIdentity>
+    <ItemGroup>
+      <VersionNumber Include="@(Targets->'%(Version)')" />
+    </ItemGroup>
+    <PropertyGroup>
+      <VersionNum>@(VersionNumber)</VersionNum>
+    </PropertyGroup>
+  </Target>
+  <Target Name="TacPostBuild">
+    <!--<Message Text="Built version = $(MaxAssemblyFileVersion)" Importance="high" /> -->
+    <Message Text="Built version = $(VersionNum)" Importance="high" />
+    <!-- Copy the dll to the GameData directory -->
+    <MakeDir Directories="$(BaseDir)\GameData\ThunderAerospace\$(ProjectName)\" />
+    <Copy SourceFiles="$(TargetPath)" DestinationFolder="$(BaseDir)\GameData\ThunderAerospace\$(ProjectName)\" />
+    <CallTarget Targets="WriteVersionFile" />
+    <CallTarget Targets="WriteAvcVersion" Condition="$(ModUrl) != ''" />
+    <CallTarget Targets="CopyToTest" />
+  </Target>
+  <Target Name="WriteVersionFile">
+    <!-- Write the version file -->
+    <ItemGroup>
+      <OldVersionFiles Include="$(BaseDir)\GameData\ThunderAerospace\$(ProjectName)_*.txt" />
+    </ItemGroup>
+    <Delete Files="@(OldVersionFiles)" />
+    <WriteLinesToFile File="$(BaseDir)\GameData\ThunderAerospace\$(ProjectName)_v$(VersionNum).txt" Lines="You have installed the $(ModName), version $(VersionNum) ($(GitSHA)+$(GitSHA2) $(GitStatus)).&#xD;&#xA;&#xD;&#xA;See the Readme.txt and LICENSE.txt files for more information." Overwrite="true" Encoding="UTF-8" />
+  </Target>
+  <Target Name="WriteAvcVersion">
+    <!-- Write the .version file for KSP-AVC, http://forum.kerbalspaceprogram.com/threads/79745 -->
+    <Message Text="Writing AVC version file" Importance="high" />
+    <PropertyGroup>
+      <AVCFile>$(BaseDir)\GameData\ThunderAerospace\$(ProjectName)\$(ProjectName).version</AVCFile>
+    </PropertyGroup>
+    <Delete Files="$(AVCFile)" />
+    <WriteLinesToFile File="$(AVCFile)" Lines="{&#xD;&#xA;  &quot;NAME&quot;: &quot;$(ModName)&quot;,&#xD;&#xA;  &quot;URL&quot;: &quot;$(ModUrl)&quot;,&#xD;&#xA;  &quot;DOWNLOAD&quot;: &quot;$(DownloadUrl)&quot;,&#xD;&#xA;  &quot;CHANGE_LOG_URL&quot;: &quot;$(ChangelogUrl)&quot;,&#xD;&#xA;  &quot;VERSION&quot;: &quot;$(VersionNum)&quot;,&#xD;&#xA;  &quot;KSP_VERSION&quot;: {&#xD;&#xA;    &quot;MAJOR&quot;: $(KspVersionMajor),&#xD;&#xA;    &quot;MINOR&quot;: $(KspVersionMinor),&#xD;&#xA;    &quot;PATCH&quot;: $(KspVersionPatch)&#xD;&#xA;  },&#xD;&#xA;  &quot;KSP_VERSION_MIN&quot;: {&#xD;&#xA;    &quot;MAJOR&quot;: $(KspMinVersionMajor),&#xD;&#xA;    &quot;MINOR&quot;: $(KspMinVersionMinor),&#xD;&#xA;    &quot;PATCH&quot;: $(KspMinVersionPatch)&#xD;&#xA;  },&#xD;&#xA;  &quot;KSP_VERSION_MAX&quot;: {&#xD;&#xA;    &quot;MAJOR&quot;: $(KspMaxVersionMajor),&#xD;&#xA;    &quot;MINOR&quot;: $(KspMaxVersionMinor),&#xD;&#xA;    &quot;PATCH&quot;: $(KspMaxVersionPatch)&#xD;&#xA;  }&#xD;&#xA;}" Overwrite="true" Encoding="UTF-8" />
+    <Copy SourceFiles="$(BaseDir)\TacLib\AVC\MiniAVC.dll" DestinationFolder="$(BaseDir)\GameData\ThunderAerospace\$(ProjectName)\" />
+    <Message Text="Writing AVC version file complete." Importance="high" />
+  </Target>
+  <Target Name="CopyToTest">
+    <!-- Copy to the test directory -->
+    <Warning Condition="'$(KSP_TEST)' == ''" Text="The environment variable KSP_TEST is not set!" />
+    <Message Text="Execute Test Debug mode commands" Importance="high" />
+    <Exec Command="$(ProjectDir)packages\Mono.Unofficial.pdb2mdb.4.2.3.4\tools\pdb2mdb.exe $(TargetFileName)" WorkingDirectory="$(TargetDir)" IgnoreExitCode="true" Condition="'$(KSP_TEST)' != ''" />
+    <Copy SourceFiles="$(TargetDir)$(TargetName).pdb" DestinationFolder="$(KSP_TEST)\GameData\ThunderAerospace\TacLifeSupport\" Condition="'$(KSP_TEST)' != ''" />
+    <Copy SourceFiles="$(TargetDir)$(TargetName).dll.mdb" DestinationFolder="$(KSP_TEST)\GameData\ThunderAerospace\TacLifeSupport\" Condition="'$(KSP_TEST)' != ''" />
+    <Exec Command="test.bat" WorkingDirectory="$(BaseDir)\" IgnoreExitCode="true" Condition="'$(KSP_TEST)' != ''" />
+    <Message Text="Execute Test Debug mode commands complete." Importance="high" />
+  </Target>
+  <Target Name="Package" Condition="'$(Configuration)' == 'Release'">
+    <PropertyGroup>
+      <PostBuildEvent>
+        where /q %25ZA_DIR%25:7za.exe
+        if %25ERRORLEVEL%25 == 1 (
+        echo Cannot find 7-zip to package build
+        ) else (
+        echo Packaging build
+        )
+        if exist "$(BaseDir)\Release\$(ProjectName)_$(VersionNum).zip" del "$(BaseDir)\Release\$(ProjectName)_$(VersionNum).zip"
+
+        %25ZA_DIR%257za.exe a -tzip -r "$(BaseDir)\Release\$(ProjectName)_$(VersionNum).zip" "$(BaseDir)\Release\$(ProjectName)_$(VersionNum)"
+      </PostBuildEvent>
+    </PropertyGroup>
+    <ItemGroup>
+      <PackageFiles Include="$(BaseDir)\GameData\**\*" Exclude="$(BaseDir)\**\Thumbs.db" />
+    </ItemGroup>
+    <Message Text="Copying Distribution files to Release folder" Importance="high" />
+    <Copy SourceFiles="@(PackageFiles)" DestinationFiles="@(PackageFiles->'$(BaseDir)\Release\$(ProjectName)_$(VersionNum)\GameData\%(RecursiveDir)%(Filename)%(Extension)')" />
+    <ItemGroup>
+      <ReadmeFiles Include="$(BaseDir)\LICENSE*" />
+      <ReadmeFiles Include="$(BaseDir)\Readme*" />
+      <ReadmeFiles Include="$(BaseDir)\NOTICE*" />
+    </ItemGroup>
+    <Copy SourceFiles="@(ReadmeFiles)" DestinationFolder="$(BaseDir)\Release\$(ProjectName)_$(VersionNum)\" />
+    <Message Text="Distribution files Copied to Release folder" Importance="high" />
+    <Message Text="Creating Distribution Zip file" />
+    <Exec Command="$(PostBuildEvent)" />
+    <Message Text="Distribution Zip file created" />
+  </Target>
+  
   <Target Name="BeforeBuild">
     <CallTarget Targets="GitInfo" />
   </Target>
   <Target Name="AfterBuild">
+    <CallTarget Targets="PostBuildMacros" />
     <CallTarget Targets="TacPostBuild" />
+    <CallTarget Targets="Package" />
   </Target>
 </Project>

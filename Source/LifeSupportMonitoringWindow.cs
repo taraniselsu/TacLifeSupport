@@ -28,6 +28,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using RSTUtils;
 using UnityEngine;
 
 namespace Tac
@@ -46,8 +47,8 @@ namespace Tac
         private GUIStyle versionStyle;
         private Vector2 scrollPosition = Vector2.zero;
 
-        public LifeSupportMonitoringWindow(LifeSupportController controller, GlobalSettings globalSettings, TacGameSettings gameSettings, RosterWindow rosterWindow)
-            : base("Life Support Monitoring", 300, 300)
+        public LifeSupportMonitoringWindow(AppLauncherToolBar TACMenuAppLToolBar, LifeSupportController controller, GlobalSettings globalSettings, TacGameSettings gameSettings, RosterWindow rosterWindow)
+            : base(TACMenuAppLToolBar, "Life Support Monitoring", 300, 300)
         {
             this.gameSettings = gameSettings;
             this.rosterWindow = rosterWindow;

@@ -28,6 +28,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using RSTUtils;
 using UnityEngine;
 
 namespace Tac
@@ -43,8 +44,8 @@ namespace Tac
         private GUIStyle headerStyle;
         private Vector2 scrollPosition;
 
-        public RosterWindow(GlobalSettings globalSettings, TacGameSettings gameSettings)
-            : base("Life Support Crew Roster", 320, 200)
+        public RosterWindow(AppLauncherToolBar TACMenuAppLToolBar, GlobalSettings globalSettings, TacGameSettings gameSettings)
+            : base(TACMenuAppLToolBar, "Life Support Crew Roster", 320, 200)
         {
             this.globalSettings = globalSettings;
             this.gameSettings = gameSettings;

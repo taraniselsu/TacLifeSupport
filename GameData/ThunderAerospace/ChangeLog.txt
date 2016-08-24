@@ -1,0 +1,131 @@
+V0.12.3
+	Added VAB/SPH Editor Category for TAC LS parts. https://github.com/KSP-RO/TacLifeSupport/issues/32
+	Added support for Stock Application Launcher Icons (also still supports blizzy Tollbar if that mod is installed), setting in the settings menu at the SpaceCenter can change this.
+	https://github.com/KSP-RO/TacLifeSupport/issues/31	
+	Realism Overhaul compatibility fix, moved the LifeSupport.cfg file from the PluginData folder to the TacLifeSupport folder. This allows RO to use Module Manager to change these
+	values. Moved user config and settings values into the persistent save file. This is to reduce the amount of updates on this file. As each time it is updated Module Manager will
+	now rebuild its cache. https://github.com/KSP-RO/TacLifeSupport/issues/5
+	Removed log spam. https://github.com/KSP-RO/TacLifeSupport/issues/27
+	Fix DeepFreeze integration. https://github.com/JPLRepo/DeepFreeze/issues/58	
+	Copied across the old Wiki to new Repository. https://github.com/KSP-RO/TacLifeSupport/wiki
+	Internal Code Deployment automation, fixes and changes.
+v0.12.2
+    Recompiled for KSP 1.1.3
+    Updated bundled dependencies
+    Made a few texture references consistent
+v0.12.1 
+    Fixed "Release/Release/GameData/..." in the .zip, so it's not so ugly. Mod name and version are reflected in the .zip file too. What a concept! If the mod is already working fine for you, this update is unnecessary.
+v0.12.0
+    Added TMS retextures as standard - thanks @TMS
+    Integrated DeepFreeze compatibility - thanks @JPLRepo
+    Updated part files with search tags
+    Updated version and licensing files
+v0.11.3 - KSP 1.1.2 update - Many thanks @WaylandSmith and @James3838 for update code.
+v0.11.2.1
+    Built for KSP 1.0.5
+    Shows the Life Support Monitoring window in the Tracking Station [thanks Henry!]
+    Sorts the Life Support Monitoring window by who's going to run out of resources first, though the active vessel is still always listed first. [thanks Henry!]
+    Times shown now show the number of years instead of a huge number of days.
+    Fixes for better compatibility with RealFuel: no longer patches RF tanks, and converters no longer force_activate() [thanks NathanKell and Thomas!]
+v0.11.1.20
+	Updated for 1.0.2. No changes needed.
+v0.11.1
+    Updated for KSP 1.0
+    staticPressure is now in kPa instead of atm
+    LifeSupportModule now implements IResourceConsumer so that all crewable parts properly show as consumers of life support supplies.
+    Added an hsp (specific heat) value to most of my resources. Not sure what to use for Food or Waste. Not positive that any of the numbers that I picked are correct.
+    Added an Info entry to the Engineer's Report to remind about checking life support supplies
+    Fixed a bug where female Kerbals were not being given supplies when going on EVA
+    Disabled my tech tree changes for now. Not sure if they are needed anymore.
+    Removed the workaround for the infinitely zooming parts bug in the VAB/SPH
+    Changed to use the new greater than checks available for ModuleManager scripts
+    Only makes stock parts available for making part test contracts.
+    Only changes the default EC amount for stock parts.
+    Disabled the Community Tech Tree compatibility config. I do not use CTT (yet), so I need someone to look it over and tell me where they think the parts should go.
+    Fixed missing brackets in AddResources.
+    Adds EC to command pods instead of overwriting the default amount.
+    Fetches sea level pressure instead of using Earth's, in case someone mods it.
+v0.10.2
+    Updated for KSP 0.90
+    Removed the "Allow Respawn" setting because it is available in the game settings now.
+    Used new Module Manager syntax to simplify the MM configs.
+    Added part tests for command pods. It makes sense to test life support systems in a variety of situations.
+    Added an MM compatibility config for the Community Tech Tree -- by Kerbas-ad-astra
+    Fixed the node sizes -- by NoMrBond
+    Fixed the node sizes for the MFT containers.
+	Warning: has not been tested with ModularFuelTanks. Recent changes to MFT conflict with compatibility configs in this mod, so they will probably not work together.
+v0.10.1
+    Recompiled for KSP 0.25: fixed Build Aid window and broken part sizes.
+    Updated part research costs to be more reasonable.
+    Updated to latest MiniAVC
+v0.10
+    Finished rebalancing and added costs. Note that all the consumption rates changed, and the amounts of resources in all vessels changed. Your ships may have more or less supplies, and may have more or less delta-V because the masses of all the containers and recyclers also changed.
+    The InstallChecker now runs on the loading screen instead of waiting until the main menu. I also added more logging, and added checks for changes since 0.9.1.
+    Fixed issue with click-through in the Space Center and Editor scenes.
+	Warning: I recommend a full delete and re-install when upgrading to this version.
+v0.9.1
+
+    Added support for the KSP Add-on Version Checker (KSP-AVC) and the KSP-AVC plug-in
+    Moved the OX-STAT earlier on the tech tree. Justification: stock allows sending manned craft to the moons or other planets almost right away. Life Support severely limits that, mainly electricity requirements because supply containers are available in the Survivability node (tier 3).
+    Added some logging to the InstallChecker. Should help when trying to debug people's installs.
+    Rescue Kerbals now start with resources. The first time a Rescue-mission Kerbal is encountered, it is given 10-90% of the normal resource amounts. That gives anywhere from 36 minutes to 5:24 hours to complete the rendezvous and get the Kerbal aboard. You will need to be careful that you do not get too close before you are ready.
+	Notice
+	Now includes the KSP Add-on Version Checker's MiniAVC. It does a GET request to http://ksp-avc.cybutek.net/ to find the latest release number. It is opt-in and no information is sent to the server. I recommend downloading the full KSP-AVC Plugin to get the most out of it. And encourage other mod authors to support it.
+v0.9 (pre4) [0.24]
+	Note: This release is not compatible with version 0.8 and before.
+	This is a pre-release. I have not been able to test it as much as I would like so there probably are some bugs or things that do not quite work as intended.
+	Changes
+    Added an InstallChecker based on the one Majiir made for Kethane
+    Tweaked the defaults for the max time without.
+	Note: This release is not compatible with version 0.8 and before.
+v0.9 (pre3) [0.24]
+	Note: This release is not compatible with version 0.8 and before. It will break your saved-game.
+	This is a pre-release. I have not been able to test it as much as I would like so there probably are some bugs or things that do not quite work as intended.
+	Changes
+    Improved compatibility with ModularFuelTanks and RealFuels
+    Updated for 0.24
+    Added cost information to the resources
+    Bug fix: Kerbals returning to a pod that had been out of oxygen were being killed.
+    Adjusted the amount of ElectricCharge in all stock command pods. You should not worry too much about running out of electric charge up to oribiting Kerbin.
+	Note: This release is not compatible with version 0.8 and before. It will break your saved-game.	
+v0.9 (pre2)
+	Note: This release is not compatible with version 0.8 and before. It will break your saved-game.
+	This is a pre-release. I have not been able to test it as much as I would like so there probably are some bugs or things that do not quite work as intended.
+	Changes
+    Added parts that use the ModularFuelTanks mod. They will hide all of the original parts so that there are only 3 containers and 3 hex containers: small, medium, and large. Existing ships with the original parts will not be broken since this only hides the originals and does not delete them, and only if the ModularFuelTanks mod is present.
+	Note: This release is not compatible with version 0.8 and before. It will break your saved-game.
+Pre-release of v0.9
+	Note: This release is not compatible with previous releases. It will break your saved-game.
+	This is a pre-release. I have not been able to test it as much as I would like so there probably are some bugs or things that do not quite work as intended.
+	Changes
+    Includes performance improvements contributed by angavrilov
+    Now uses the textures made by jfjohnny5
+    Uses fixes to the model contributed by Ninenium
+    Respects the length-of-day game setting (Kerbin 6-hour vs Earth 24-hour)
+    The current vessel's status is now always displayed and is at the top of the monitoring window
+    The Build Aid can now be used in the Editor even when the mod is turned off
+    No longer adds the LifeSupportModule part module or resources in code. Instead it uses a ModuleManager config file.
+    Bug fix: was not using enough electricity at high time warps.
+    Bug fix: should not have been requiring Oxygen for craft flying below a reasonable altitude. The check no longer requires the vessel to have electricity or be landed.
+    Added tweakables so the TAC Converters can be toggled on and off in the editor
+    TAC Converters can now be "alwaysOn"
+    TAC Converters config files are now in units per second.
+    Rebalanced for "1 unit = 1 liter"
+	Note: This release is not compatible with previous releases. It will break your saved-game.
+v0.8
+	Integrated with the Toolbar mod from blizzy78
+v0.7
+	Changes
+    Updated to 0.23.
+    The active vessel is now always listed first in the monitoring window.
+    Added a Build Aid window that you can use in the editor to see how many days the food/water/oxygen supplies on the vessel will last with the currently assigned crew and the maximum number of crew the vessel can hold.
+    Implemented a work around for the part zooming bug in the editor.
+v0.6
+	Changes
+    Fixed issue with EVA'ing before launch
+    Fixed issue with turning off resource flow. All calculations and estimates will ignore any parts with resource flow turned off.
+    Added a placeholder part that can extract Oxygen from IntakeAir. You will need an Intake part to get the air. Only works on Kerbin and Laythe because those are the only two that have Oxygen in their atmospheres.
+    Added a placeholder part that splits Water into Oxygen and Waste (hydrogen).
+    I found and fixed the bug that Shimmy ran into on his live stream that caused twice as much resources to be consumed when switching vessels. What was happening: when switching between vessels in the Map View, the Flight scene would get reloaded but the old instance of my class was not destroyed until after a new instance was created. For a brief moment, two instances existed and it would consume twice the resources that it should have based on the amount of time since you last loaded the vessel. So if you were gone for 4 hours, it would consume 8 hours of supplies :(. It's fixed now though :D!
+    The consumption calculations and the converters no longer use ElectricCharge while the vessel is unloaded. Unfortunately, the game does not seem to track ElectricCharge very well while the vessel is unloaded. I have seen some strange jumps in the amount on a vessel even without my mod installed. So things will only require ElectricCharge if on the active vessel or anything within the load range (2.4km).
+    Various other bug fixes.
