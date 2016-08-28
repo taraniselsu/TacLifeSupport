@@ -660,7 +660,11 @@ namespace Tac
 
             // Only fill the suit to 30-90% full
             double fillAmount = UnityEngine.Random.Range(0.3f, 0.9f);
-
+            part.AddResource(PartResourceLibrary.Instance.GetDefinition(globalSettings.ElectricityId).Config);
+            part.AddResource(PartResourceLibrary.Instance.GetDefinition(globalSettings.FoodId).Config);
+            part.AddResource(PartResourceLibrary.Instance.GetDefinition(globalSettings.WaterId).Config);
+            part.AddResource(PartResourceLibrary.Instance.GetDefinition(globalSettings.OxygenId).Config);
+            
             part.TakeResource(globalSettings.ElectricityId, -fillAmount * globalSettings.EvaElectricityConsumptionRate * globalSettings.EvaDefaultResourceAmount);
             part.TakeResource(globalSettings.FoodId, -fillAmount * globalSettings.FoodConsumptionRate * globalSettings.EvaDefaultResourceAmount);
             part.TakeResource(globalSettings.WaterId, -fillAmount * globalSettings.WaterConsumptionRate * globalSettings.EvaDefaultResourceAmount);

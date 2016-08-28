@@ -114,7 +114,7 @@
   <PropertyGroup>
     <AssemblyMajorVersion>0</AssemblyMajorVersion>
     <AssemblyMinorVersion>12</AssemblyMinorVersion>
-    <AssemblyBuildNumber>3</AssemblyBuildNumber>
+    <AssemblyBuildNumber>4</AssemblyBuildNumber>
     <AssemblyFileMajorVersion>$(AssemblyMajorVersion)</AssemblyFileMajorVersion>
     <AssemblyFileMinorVersion>$(AssemblyMinorVersion)</AssemblyFileMinorVersion>
     <AssemblyFileBuildNumber>$(AssemblyBuildNumber)</AssemblyFileBuildNumber>
@@ -128,7 +128,7 @@
   <PropertyGroup>
     <!-- Needed for the WriteAvcVersion build target -->
     <ModName>TAC Life Support</ModName>
-    <ModUrl>http://ksp-avc.cybutek.net/version.php?id=335</ModUrl>
+    <ModUrl>http://ksp-avc.cybutek.net/version.php?id=9</ModUrl>
     <DownloadUrl>https://github.com/KSP-RO/TacLifeSupport/releases</DownloadUrl>
     <ChangelogUrl>https://github.com/KSP-RO/TacLifeSupport/wiki/Changes</ChangelogUrl>
     <KspVersionMajor>1</KspVersionMajor>
@@ -224,9 +224,9 @@
         ) else (
         echo Packaging build
         )
-        if exist "$(BaseDir)\Release\$(ProjectName)_$(VersionNum).zip" del "$(BaseDir)\Release\$(ProjectName)_$(VersionNum).zip"
+        if exist "$(BaseDir)\Release\$(ProjectName)_$(VersionNum).zip" del "$(BaseDir)\Release\$(ProjectName)_V$(AssemblyMajorVersion).$(AssemblyMinorVersion).$(AssemblyBuildNumber).zip"
 
-        %25ZA_DIR%257za.exe a -tzip -r "$(BaseDir)\Release\$(ProjectName)_$(VersionNum).zip" "$(BaseDir)\Release\$(ProjectName)_$(VersionNum)"
+        %25ZA_DIR%257za.exe a -tzip -r "$(BaseDir)\Release\$(ProjectName)_V$(AssemblyMajorVersion).$(AssemblyMinorVersion).$(AssemblyBuildNumber).zip" "$(BaseDir)\Release\$(ProjectName)_$(VersionNum)"
       </PostBuildEvent>
     </PropertyGroup>
     <ItemGroup>
@@ -250,6 +250,9 @@
     <CallTarget Targets="GitInfo" />
   </Target>
   <Target Name="AfterBuild">
+    <PropertyGroup>
+      <Split>$(VersionNum.Split('.'))</Split>
+    </PropertyGroup>
     <CallTarget Targets="PostBuildMacros" />
     <CallTarget Targets="TacPostBuild" />
     <CallTarget Targets="Package" />

@@ -1,8 +1,8 @@
 Thunder Aerospace Corporation's Life Support for the Kerbal Space Program, by Taranis Elsu
 
-Updated by Danny Farnsworth
+Updated by Danny Farnsworth, Jamie Leighton
 
-(C) Copyright 2016, Taranis Elsu, Danny Farnsworth
+(C) Copyright 2016, Taranis Elsu, Danny Farnsworth, Jamie Leighton
 
 Kerbal Space Program is Copyright (C) 2016 Squad. See http://kerbalspaceprogram.com/. This
 project is in no way associated with nor endorsed by Squad.
@@ -19,6 +19,7 @@ Non-commercial - You may not use this work for commercial purposes.
 Share Alike - If you alter, transform, or build upon this work, you may distribute the
 resulting work only under the same or similar license to the CC BY-NC-SA 3.0 license.
 
+Includes code by Jamie Leighton (JPLRepo), licensed under the MIT license.
 
 Includes HexCan parts from Greys, licensed CC-BY 3.0. Used with permission. See
 Readme-HexCans.txt and LICENSE-HexCans.txt in the HexCans directory.

@@ -114,12 +114,20 @@ namespace Tac
                 tacMenuAppLToolBar.chgAppIconStockToolBar(tmpUseAppLauncher);
             }
 
+            
             GUI.enabled = true;
+
+            var tmpEditorFilter = GUILayout.Toggle(gameSettings.UseEditorFilter, new GUIContent("Use Editor Category Filter", "If On TAC LS Editor Category Filter Icon is active"));
+            if (tmpEditorFilter != gameSettings.UseEditorFilter)
+            {
+                gameSettings.UseEditorFilter = tmpEditorFilter;
+                TACEditorFilter.Instance.Setup();
+            }
 
             if (gameSettings.Enabled)
             {
+                
                 GUILayout.Space(10);
-
                 //string[] killOptions = { "Die", "Hibernate" };
                 //int oldValue = (gameSettings.HibernateInsteadOfKill) ? 1 : 0;
 

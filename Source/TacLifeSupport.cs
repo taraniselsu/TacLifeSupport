@@ -30,7 +30,6 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using UnityEngine;
-using File = KSP.IO.File;
 
 namespace Tac
 {
@@ -105,13 +104,17 @@ namespace Tac
         {
             base.OnLoad(gameNode);
             gameSettings.Load(gameNode);
+            if (HighLogic.LoadedScene == GameScenes.SPACECENTER)
+            {
+                TACEditorFilter.Instance.Setup();
+            }
             foreach (Savable s in children.Where(c => c is Savable))
             {
                 s.Load(gameNode);
             }
 
             // Load the global settings
-            if (File.Exists<TacLifeSupport>(globalConfigFilename))
+            if (File.Exists(globalConfigFilename))
             {
                 globalNode = ConfigNode.Load(globalConfigFilename);
                 globalSettings.Load(globalNode);
