@@ -1,4 +1,10 @@
-V0.12.3
+v0.12.4
+	Fixed Settings file not being read correctly and using default values. (Typo - fat fingers)
+	VAB/SPH Editor Category for TAC LS parts can be toggled on or off via the Settings menu (Hit the TAC LS icon in the Space Center).
+	https://github.com/KSP-RO/TacLifeSupport/issues/37
+	Fixed Rescue Kerbals when they EVA out (on rescue missions) to actually have Life Support resources. https://github.com/KSP-RO/TacLifeSupport/issues/37
+	Fixed CKAN version issues.
+v0.12.3
 	Added VAB/SPH Editor Category for TAC LS parts. https://github.com/KSP-RO/TacLifeSupport/issues/32
 	Added support for Stock Application Launcher Icons (also still supports blizzy Tollbar if that mod is installed), setting in the settings menu at the SpaceCenter can change this.
 	https://github.com/KSP-RO/TacLifeSupport/issues/31	

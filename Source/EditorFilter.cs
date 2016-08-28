@@ -2,16 +2,16 @@
 using KSP.UI.Screens;
 using RUI.Icons.Selectable;
 using UnityEngine;
-
+using System.Reflection;
 
 namespace Tac
 {
-    [KSPAddon(KSPAddon.Startup.MainMenu, true)]
+    [KSPAddon(KSPAddon.Startup.SpaceCentre, true)]
     public class TACEditorFilter : MonoBehaviour
     {
         // This class ass a Filter Icon to the Editor to show TACLS Parts
         private static List<AvailablePart> TacavPartItems = new List<AvailablePart>();
-
+        public static TACEditorFilter Instance;
         internal string category = "Filter by Function";
         internal string subCategoryTitle = "TAC LS Items";
         internal string defaultTitle = "Tac";
@@ -21,9 +21,43 @@ namespace Tac
         
         internal bool filter = true;
 
-        private void Awake()
+        public TACEditorFilter()
         {
-            Debug.Log("TACLS EditorFilter Awake");
+            if (Instance != null)
+            {
+                Destroy(this);
+            }
+            Instance = this;
+            DontDestroyOnLoad(this);
+        }
+
+        public void Setup()
+        {
+            this.Log("TACLS EditorFilter Setup");
+            GameEvents.onGUIEditorToolbarReady.Remove(SubCategories);
+            
+            if (!TacLifeSupport.Instance.gameSettings.UseEditorFilter)
+            {
+                this.Log("EditorFilter Option is Off");
+                PartCategorizer.Category Filter =
+                    PartCategorizer.Instance.filters.Find(f => f.button.categoryName == category);
+                if (Filter != null)
+                {
+                    PartCategorizer.Category subFilter =
+                        Filter.subcategories.Find(f => f.button.categoryName == subCategoryTitle);
+                    if (subFilter != null)
+                    {
+                        MethodInfo subFilterDeleteMethod =
+                            typeof(PartCategorizer.Category).GetMethod("DeleteSubcategory",
+                                BindingFlags.Instance | BindingFlags.NonPublic);
+                        subFilterDeleteMethod.Invoke(subFilter, null);
+                    }
+                }
+                GameEvents.onGUIEditorToolbarReady.Remove(SubCategories);
+                return;
+            }
+            
+            this.Log("EditorFilter Option is On");
             GameEvents.onGUIEditorToolbarReady.Add(SubCategories);
             /*
             //Attempt to add Module Manager callback  - find the base type
@@ -45,13 +79,13 @@ namespace Tac
                 
             }*/
             TacMMCallBack();
-            
-            Debug.Log("DFEditorFilter Awake Complete");
+
+            this.Log("DFEditorFilter Awake Complete");
         }
 
         public bool TacMMCallBack()
         {
-            Debug.Log("TACLS EditorFilter TacMMCallBack");
+            this.Log("TACLS EditorFilter TacMMCallBack");
             TacavPartItems.Clear();
             foreach (AvailablePart avPart in PartLoader.LoadedPartsList)
             {
@@ -61,7 +95,7 @@ namespace Tac
                     TacavPartItems.Add(avPart);
                 }
             }
-            Debug.Log("TACLS EditorFilter TacMMCallBack end");
+            this.Log("TACLS EditorFilter TacMMCallBack end");
             return true;
         }
 
