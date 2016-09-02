@@ -59,7 +59,7 @@ namespace Tac
             base.Resizable = false;
             this.globalSettings = globalSettings;
             this.gameSettings = gameSettings;
-            this.tacMenuAppLToolBar = TACMenuAppLToolBar;
+            tacMenuAppLToolBar = TACMenuAppLToolBar;
 
             version = Utilities.GetDllVersion(this);
         }

@@ -37,8 +37,8 @@ namespace Tac
 {
     class SpaceCenterManager : MonoBehaviour, Savable
     {
-        private GlobalSettings globalSettings;
-        private TacGameSettings gameSettings;
+        //private globalSettings TacLifeSupport.Instance.globalSettings;
+        //private gameSettings TacLifeSupport.Instance.gameSettings;
         private SavedGameConfigWindow configWindow;
         internal AppLauncherToolBar TACMenuAppLToolBar;
         private const string lockName = "TACLS_SpaceCenterLock";
@@ -48,14 +48,11 @@ namespace Tac
         public SpaceCenterManager()
         {
             this.Log("Constructor");
-            globalSettings = TacLifeSupport.Instance.globalSettings;
-            gameSettings = TacLifeSupport.Instance.gameSettings;
             TACMenuAppLToolBar = new AppLauncherToolBar("TACLifeSupport", "TAC Life Support",
                 Textures.PathToolbarIconsPath + "/TACgreenIconTB",
                 ApplicationLauncher.AppScenes.SPACECENTER,
                 (Texture)Textures.GrnApplauncherIcon, (Texture)Textures.GrnApplauncherIcon,
                 GameScenes.SPACECENTER);
-            configWindow = new SavedGameConfigWindow(TACMenuAppLToolBar, globalSettings, gameSettings);
         }
 
         void Awake()
@@ -65,29 +62,32 @@ namespace Tac
 
         void Start()
         {
-            this.Log("Start, new game = " + gameSettings.IsNewSave);
+            this.Log("Start, new game = " + TacLifeSupport.Instance.gameSettings.IsNewSave);
+            //globalSettings = TacLifeSupport.Instance.TacLifeSupport.Instance.globalSettings;
+            //gameSettings = TacLifeSupport.Instance.TacLifeSupport.Instance.gameSettings;
             //If Settings wants to use ToolBar mod, check it is installed and available. If not set the Setting to use Stock.
-            if (!ToolbarManager.ToolbarAvailable && !gameSettings.UseAppLauncher)
+            configWindow = new SavedGameConfigWindow(TACMenuAppLToolBar, TacLifeSupport.Instance.globalSettings, TacLifeSupport.Instance.gameSettings);
+            if (!ToolbarManager.ToolbarAvailable && !TacLifeSupport.Instance.gameSettings.UseAppLauncher)
             {
-                gameSettings.UseAppLauncher = true;
+                TacLifeSupport.Instance.gameSettings.UseAppLauncher = true;
             }
 
-            TACMenuAppLToolBar.Start(gameSettings.UseAppLauncher);
+            TACMenuAppLToolBar.Start(TacLifeSupport.Instance.gameSettings.UseAppLauncher);
 
             RSTUtils.Utilities.setScaledScreen();
 
-            if (gameSettings.IsNewSave)
+            if (TacLifeSupport.Instance.gameSettings.IsNewSave)
             {
                 this.Log("New save detected!");
                 TACMenuAppLToolBar.onAppLaunchToggle();
-                gameSettings.IsNewSave = false;
+                TacLifeSupport.Instance.gameSettings.IsNewSave = false;
             }
 
-            AddLifeSupport als = new AddLifeSupport(globalSettings);
+            AddLifeSupport als = new AddLifeSupport(TacLifeSupport.Instance.globalSettings);
             als.run();
 
             var crew = HighLogic.CurrentGame.CrewRoster.Crew;
-            var knownCrew = gameSettings.knownCrew;
+            var knownCrew = TacLifeSupport.Instance.gameSettings.knownCrew;
             foreach (ProtoCrewMember crewMember in crew)
             {
                 if (crewMember.rosterStatus != ProtoCrewMember.RosterStatus.Assigned && knownCrew.ContainsKey(crewMember.name))

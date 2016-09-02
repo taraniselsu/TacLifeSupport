@@ -136,7 +136,7 @@ namespace RSTUtils
                 this.toolBarName = toolBarName;
                 this.toolBarToolTip = toolBarToolTip;
                 this.toolBarTexturePath = toolBarTexturePath;
-                this.toolBarGameScenes = new GameScenesVisibility(gameScenes);
+                toolBarGameScenes = new GameScenesVisibility(gameScenes);
             }
             this.VisibleinScenes = VisibleinScenes;
             this.appbtnTexON = appbtnTexON;
@@ -301,7 +301,7 @@ namespace RSTUtils
         /// Sets the Applauncher Icon visible or not. To be extended in future to not require calling from Mod.
         /// Currently it is because I haven't incorporated the mod's Setting for Whether the user wants to use Stock AppLauncher or Toolbar.
         /// </summary>
-        /// <param name="visible">True if set to visible, false will turn it off</param>
+        /// <param name="visibleinScenes">True if set to visible, false will turn it off</param>
         public void setAppLSceneVisibility(ApplicationLauncher.AppScenes visibleinScenes)
         {
             VisibleinScenes = visibleinScenes;

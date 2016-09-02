@@ -33,100 +33,33 @@ namespace Tac
 {
     public class GlobalSettings
     {
-        private const string configNodeName = "GlobalSettings";
+        private const string configNodeName = "TACLSGlobalSettings";
 
-        public int MaxDeltaTime { get; set; }
-        public int ElectricityMaxDeltaTime { get; set; }
+        public int MaxDeltaTime;
+        public int ElectricityMaxDeltaTime; 
+        
+        public string Food;
+        public string Water;
+        public string Oxygen;
+        public string Electricity;
+        public string CO2;
+        public string Waste;
+        public string WasteWater;
 
-        private string food;
-        private string water;
-        private string oxygen;
-        private string electricity;
-        private string co2;
-        private string waste;
-        private string wasteWater;
-
-        public string Food
-        {
-            get { return food; }
-            private set
-            {
-                food = value;
-                FoodId = PartResourceLibrary.Instance.GetDefinition(food).id;
-            }
-        }
-        public string Water
-        {
-            get { return water; }
-            private set
-            {
-                water = value;
-                WaterId = PartResourceLibrary.Instance.GetDefinition(water).id;
-            }
-        }
-        public string Oxygen
-        {
-            get { return oxygen; }
-            private set
-            {
-                oxygen = value;
-                OxygenId = PartResourceLibrary.Instance.GetDefinition(oxygen).id;
-            }
-        }
-        public string Electricity
-        {
-            get { return electricity; }
-            private set
-            {
-                electricity = value;
-                ElectricityId = PartResourceLibrary.Instance.GetDefinition(electricity).id;
-            }
-        }
-        public string CO2
-        {
-            get { return co2; }
-            private set
-            {
-                co2 = value;
-                CO2Id = PartResourceLibrary.Instance.GetDefinition(co2).id;
-            }
-        }
-        public string Waste
-        {
-            get { return waste; }
-            private set
-            {
-                waste = value;
-                WasteId = PartResourceLibrary.Instance.GetDefinition(waste).id;
-            }
-        }
-        public string WasteWater
-        {
-            get { return wasteWater; }
-            private set
-            {
-                wasteWater = value;
-                WasteWaterId = PartResourceLibrary.Instance.GetDefinition(wasteWater).id;
-            }
-        }
-
-        public double FoodConsumptionRate { get; set; }
-        public double WaterConsumptionRate { get; set; }
-        public double OxygenConsumptionRate { get; set; }
-        public double ElectricityConsumptionRate { get; set; }
-        public double BaseElectricityConsumptionRate { get; set; }
-        public double EvaElectricityConsumptionRate { get; set; }
-        public double CO2ProductionRate { get; set; }
-        public double WasteProductionRate { get; set; }
-        public double WasteWaterProductionRate { get; set; }
-
-        public double EvaDefaultResourceAmount { get; set; }
-
-        public double MaxTimeWithoutFood { get; set; }
-        public double MaxTimeWithoutWater { get; set; }
-        public double MaxTimeWithoutOxygen { get; set; }
-        public double MaxTimeWithoutElectricity { get; set; }
-
+        public double FoodConsumptionRate;
+        public double WaterConsumptionRate;
+        public double OxygenConsumptionRate;
+        public double ElectricityConsumptionRate;
+        public double BaseElectricityConsumptionRate;
+        public double EvaElectricityConsumptionRate;
+        public double CO2ProductionRate;
+        public double WasteProductionRate;
+        public double WasteWaterProductionRate;
+        public double EvaDefaultResourceAmount;
+        public double MaxTimeWithoutFood;
+        public double MaxTimeWithoutWater;
+        public double MaxTimeWithoutOxygen;
+        public double MaxTimeWithoutElectricity; 
         public int FoodId { get; private set; }
         public int WaterId { get; private set; }
         public int OxygenId { get; private set; }
@@ -151,6 +84,13 @@ namespace Tac
             CO2 = "CarbonDioxide";
             Waste = "Waste";
             WasteWater = "WasteWater";
+            FoodId = PartResourceLibrary.Instance.GetDefinition(Food).id;
+            WaterId = PartResourceLibrary.Instance.GetDefinition(Water).id;
+            OxygenId = PartResourceLibrary.Instance.GetDefinition(Oxygen).id;
+            ElectricityId = PartResourceLibrary.Instance.GetDefinition(Electricity).id;
+            CO2Id = PartResourceLibrary.Instance.GetDefinition(CO2).id;
+            WasteId = PartResourceLibrary.Instance.GetDefinition(Waste).id;
+            WasteWaterId = PartResourceLibrary.Instance.GetDefinition(WasteWater).id;
 
             // Consumption rates in units per Earth second
             // See the TacResources.cfg for conversions between units and metric tons.
@@ -180,39 +120,37 @@ namespace Tac
 
         public void Load(ConfigNode node)
         {
-            if (node.HasNode(configNodeName))
-            {
-                ConfigNode settingsNode = node.GetNode(configNodeName);
+            //if (node.HasNode(configNodeName))
+            //{
+                //ConfigNode settingsNode = node.GetNode(configNodeName);
 
-                MaxDeltaTime = Utilities.GetValue(settingsNode, "MaxDeltaTime", MaxDeltaTime);
-                ElectricityMaxDeltaTime = Utilities.GetValue(settingsNode, "ElectricityMaxDeltaTime", ElectricityMaxDeltaTime);
-
-                Food = Utilities.GetValue(settingsNode, "FoodResource", Food);
-                Water = Utilities.GetValue(settingsNode, "WaterResource", Water);
-                Oxygen = Utilities.GetValue(settingsNode, "OxygenResource", Oxygen);
-                CO2 = Utilities.GetValue(settingsNode, "CarbonDioxideResource", CO2);
-                Waste = Utilities.GetValue(settingsNode, "WasteResource", Waste);
-                WasteWater = Utilities.GetValue(settingsNode, "WasteWaterResource", WasteWater);
-
-                FoodConsumptionRate = Utilities.GetValue(settingsNode, "FoodConsumptionRate", FoodConsumptionRate);
-                WaterConsumptionRate = Utilities.GetValue(settingsNode, "WaterConsumptionRate", WaterConsumptionRate);
-                OxygenConsumptionRate = Utilities.GetValue(settingsNode, "OxygenConsumptionRate", OxygenConsumptionRate);
-                ElectricityConsumptionRate = Utilities.GetValue(settingsNode, "ElectricityConsumptionRate", ElectricityConsumptionRate);
-                BaseElectricityConsumptionRate = Utilities.GetValue(settingsNode, "BaseElectricityConsumptionRate", BaseElectricityConsumptionRate);
-                EvaElectricityConsumptionRate = Utilities.GetValue(settingsNode, "EvaElectricityConsumptionRate", EvaElectricityConsumptionRate);
-                CO2ProductionRate = Utilities.GetValue(settingsNode, "CO2ProductionRate", CO2ProductionRate);
-                WasteProductionRate = Utilities.GetValue(settingsNode, "WasteProductionRate", WasteProductionRate);
-                WasteWaterProductionRate = Utilities.GetValue(settingsNode, "WasteWaterProductionRate", WasteWaterProductionRate);
-
-                EvaDefaultResourceAmount = Utilities.GetValue(settingsNode, "EvaDefaultResourceAmount", EvaDefaultResourceAmount);
-
-                MaxTimeWithoutFood = Utilities.GetValue(settingsNode, "MaxTimeWithoutFood", MaxTimeWithoutFood);
-                MaxTimeWithoutWater = Utilities.GetValue(settingsNode, "MaxTimeWithoutWater", MaxTimeWithoutWater);
-                MaxTimeWithoutOxygen = Utilities.GetValue(settingsNode, "MaxTimeWithoutOxygen", MaxTimeWithoutOxygen);
-                MaxTimeWithoutElectricity = Utilities.GetValue(settingsNode, "MaxTimeWithoutElectricity", MaxTimeWithoutElectricity);
-            }
+            node.TryGetValue("MaxDeltaTime", ref MaxDeltaTime);
+            node.TryGetValue("ElectricityMaxDeltaTime", ref ElectricityMaxDeltaTime);
+            node.TryGetValue("FoodResource", ref Food);
+            node.TryGetValue("WaterResource", ref Water);
+            node.TryGetValue("OxygenResource", ref Oxygen);
+            node.TryGetValue("CarbonDioxideResource", ref CO2);
+            node.TryGetValue("WasteResource", ref Waste);
+            node.TryGetValue("WasteWaterResource", ref WasteWater);
+            node.TryGetValue("FoodConsumptionRate", ref FoodConsumptionRate);
+            node.TryGetValue("WaterConsumptionRate", ref WaterConsumptionRate);
+            node.TryGetValue("OxygenConsumptionRate", ref OxygenConsumptionRate);
+            node.TryGetValue("ElectricityConsumptionRate", ref ElectricityConsumptionRate);
+            node.TryGetValue("BaseElectricityConsumptionRate", ref BaseElectricityConsumptionRate);
+            node.TryGetValue("EvaElectricityConsumptionRate", ref EvaElectricityConsumptionRate);
+            node.TryGetValue("CO2ProductionRate", ref CO2ProductionRate);
+            node.TryGetValue("WasteProductionRate", ref WasteProductionRate);
+            node.TryGetValue("WasteWaterProductionRate", ref WasteWaterProductionRate);
+            node.TryGetValue("EvaDefaultResourceAmount", ref EvaDefaultResourceAmount);
+            node.TryGetValue("MaxTimeWithoutFood", ref MaxTimeWithoutFood);
+            node.TryGetValue("MaxTimeWithoutWater", ref MaxTimeWithoutWater);
+            node.TryGetValue("MaxTimeWithoutOxygen", ref MaxTimeWithoutOxygen);
+            node.TryGetValue("MaxTimeWithoutElectricity", ref MaxTimeWithoutElectricity);
+            //}
         }
-
+        /*
+        // Save the global settings - No Longer required as these are the base settings and never change.
+        // Any values from globalsettings that the user changes are now written into the gamesettings sfs save file above.
         public void Save(ConfigNode node)
         {
             ConfigNode settingsNode;
@@ -252,6 +190,6 @@ namespace Tac
             settingsNode.AddValue("MaxTimeWithoutWater", MaxTimeWithoutWater);
             settingsNode.AddValue("MaxTimeWithoutOxygen", MaxTimeWithoutOxygen);
             settingsNode.AddValue("MaxTimeWithoutElectricity", MaxTimeWithoutElectricity);
-        }
+        }*/
     }
 }

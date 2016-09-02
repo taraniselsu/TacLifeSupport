@@ -55,7 +55,7 @@ namespace Tac
         {
             this.windowTitle = windowTitle;
             this.windowId = windowTitle.GetHashCode() + new System.Random().Next(65536);
-            this.TACMenuAppLToolBar = tacMenuAppLToolBar;
+            TACMenuAppLToolBar = tacMenuAppLToolBar;
 
             configNodeName = windowTitle.Replace(" ", "");
 
@@ -78,7 +78,7 @@ namespace Tac
 
         public virtual void SetVisible(bool newValue)
         {
-            this.visible = newValue;
+            visible = newValue;
         }
 
         public void OnGUI()
@@ -218,9 +218,9 @@ namespace Tac
                     //if (GUI.Button(new Rect(windowPos.width - 24, 4, 20, 20), "X", closeButtonStyle))
                     //{
                     //SetVisible(false);
-                    if (this.GetType() == typeof(RosterWindow))
+                    if (GetType() == typeof(RosterWindow))
                     {
-                        this.SetVisible(false);
+                        SetVisible(false);
                     }
                     else
                     {

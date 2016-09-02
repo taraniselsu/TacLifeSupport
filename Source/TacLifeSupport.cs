@@ -50,21 +50,20 @@ namespace Tac
         public TacGameSettings gameSettings { get; private set; }
         public GlobalSettings globalSettings { get; private set; }
 
-        private readonly string globalConfigFilename;
-        private ConfigNode globalNode = new ConfigNode();
+        //private readonly string globalConfigFilename;
+        private ConfigNode[] globalNodes;
         internal bool globalConfigChanged = false;
 
         private readonly List<Component> children = new List<Component>();
 
+        
         public TacLifeSupport()
         {
             this.Log("Constructor");
             Instance = this;
-            gameSettings = new TacGameSettings();
-            globalSettings = new GlobalSettings();
 
             //globalConfigFilename = IOUtils.GetFilePathFor(this.GetType(), "LifeSupport.cfg");
-            globalConfigFilename = Path.Combine(Textures.AssemblyFolder, "LifeSupport.cfg").Replace("\\", "/");
+            //globalConfigFilename = Path.Combine(Textures.AssemblyFolder, "LifeSupport.cfg").Replace("\\", "/");
         }
 
         public override void OnAwake()
@@ -103,6 +102,31 @@ namespace Tac
         public override void OnLoad(ConfigNode gameNode)
         {
             base.OnLoad(gameNode);
+            
+            globalSettings = new GlobalSettings();
+            // Load the global settings before the Game save settings as game save settings override the global settings.
+            //if (File.Exists(globalConfigFilename))
+            //{
+                
+            globalNodes = GameDatabase.Instance.GetConfigNodes("TACLSGlobalSettings");
+            if (globalNodes!= null)
+            {
+                foreach (ConfigNode node in globalNodes)
+                {
+                    //globalNode = ConfigNode.Load(globalConfigFilename);
+                    globalSettings.Load(node);
+                    //foreach (Savable s in children.Where(c => c is Savable))
+                    //{
+                    //    s.Load(node);
+                    //}
+                }
+            }
+            else
+            {
+                this.LogError("Could not find TACLSGlobalSettings node!");
+            }
+            //}
+            gameSettings = new TacGameSettings();
             gameSettings.Load(gameNode);
             if (HighLogic.LoadedScene == GameScenes.SPACECENTER)
             {
@@ -113,18 +137,7 @@ namespace Tac
                 s.Load(gameNode);
             }
 
-            // Load the global settings
-            if (File.Exists(globalConfigFilename))
-            {
-                globalNode = ConfigNode.Load(globalConfigFilename);
-                globalSettings.Load(globalNode);
-                //foreach (Savable s in children.Where(c => c is Savable))
-                //{
-                //    s.Load(globalNode);
-                //}
-            }
-
-            this.Log("OnLoad: " + gameNode + "\n" + globalNode);
+            this.Log("OnLoad: " + gameNode);
         }
 
         public override void OnSave(ConfigNode gameNode)
@@ -136,18 +149,20 @@ namespace Tac
                 s.Save(gameNode);
             }
 
-            // Save the global settings
-            if (globalConfigChanged)
-            {
-                globalSettings.Save(globalNode);
-                //foreach (Savable s in children.Where(c => c is Savable))
-                //{
-                //    s.Save(globalNode);
-                //}
-                globalNode.Save(globalConfigFilename);
-                globalConfigChanged = false;
-            }
-            this.Log("OnSave: " + gameNode + "\n" + globalNode);
+            // Save the global settings - No Longer required as these are the base settings and never change.
+            // Any values from globalsettings that the user changes are now written into the gamesettings sfs save file above.
+            //if (globalConfigChanged)
+            //{
+            //    globalSettings.Save(globalNode);
+            //foreach (Savable s in children.Where(c => c is Savable))
+            //{
+            //    s.Save(globalNode);
+            //}
+            //    globalNode.Save(globalConfigFilename);
+            //    globalConfigChanged = false;
+            //}
+            //this.Log("OnSave: " + gameNode + "\n" + globalNode);
+            this.Log("OnSave: " + gameNode);
         }
 
         private void OnGameSceneLoadRequested(GameScenes gameScene)

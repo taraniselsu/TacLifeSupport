@@ -37,7 +37,7 @@ namespace Tac
         internal static Texture2D BtnResizeHeight = new Texture2D(16, 16, TextureFormat.ARGB32, false);
         internal static Texture2D BtnResizeWidth = new Texture2D(16, 16, TextureFormat.ARGB32, false);
 
-        internal static String PathIconsPath = System.IO.Path.Combine(Textures.AssemblyFolder, "Textures").Replace("\\", "/");
+        internal static String PathIconsPath = System.IO.Path.Combine(AssemblyFolder, "Textures").Replace("\\", "/");
         internal static String PathToolbarIconsPath = PathIconsPath.Substring(PathIconsPath.ToLower().IndexOf("/gamedata/") + 10);
 
 
