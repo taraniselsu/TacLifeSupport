@@ -1,6 +1,5 @@
 ﻿
 
-using HighlightingSystem;
 /**
 * REPOSoftTech KSP Utilities
 * (C) Copyright 2015, Jamie Leighton
@@ -19,6 +18,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Text;
+using Highlighting;
 using UnityEngine;
 using Object = UnityEngine.Object;
 using Random = System.Random;
@@ -802,24 +802,20 @@ namespace RSTUtils
 		{
 			if (on)
 			{
-				if (part.highlighter == null)
+				if (part.HighlightActive)
 				{
 					var color = XKCDColors.Yellow;
-					var model = part.FindModelTransform("model");
-					part.highlighter = model.gameObject.AddComponent<Highlighter>();
-					part.highlighter.ConstantOn(color);
 					part.SetHighlightColor(color);
 					part.SetHighlight(true, false);
 				}
 			}
 			else
 			{
-				if (part.highlighter != null)
+				if (part.HighlightActive)
 				{
 					part.SetHighlightDefault();
-					part.highlighter.gameObject.DestroyGameObjectImmediate();
-					part.highlighter = null;
-				}
+                    part.SetHighlight(false, false);
+                }
 			}
 		}
 
@@ -840,16 +836,7 @@ namespace RSTUtils
 		#endregion Temperature
 
 		#region Resources
-
-		private static List<PartResource> resources;
-		//Resources
-		public static double GetAvailableResource(Part part, String resourceName)
-		{
-			resources = new List<PartResource>();
-			part.GetConnectedResources(PartResourceLibrary.Instance.GetDefinition(resourceName).id, ResourceFlowMode.ALL_VESSEL, resources);
-			return resources.Sum(pr => pr.amount);
-		}
-
+        
 		public const int MAX_TRANSFER_ATTEMPTS = 4;
 
 		private static double totalReceived;
