@@ -833,37 +833,38 @@ namespace RSTUtils
 			return celsius + 273.15f;
 		}
 
-		#endregion Temperature
+        #endregion Temperature
 
-		#region Resources
-        
-		public const int MAX_TRANSFER_ATTEMPTS = 4;
+        #region Resources
 
-		private static double totalReceived;
-		private static double requestAmount;
-		private static double received;
-		public static double RequestResource(Part cvp, String name, double amount)
-		{
-			if (amount <= 0.0)
-				return 0.0;
-			totalReceived = 0.0;
-			requestAmount = amount;
-			for (int attempts = 0; (attempts < MAX_TRANSFER_ATTEMPTS) && (amount > 0.000000000001); attempts++)
-			{
-				received = cvp.RequestResource(name, requestAmount, ResourceFlowMode.ALL_VESSEL);
-				//Log_Debug("requestResource attempt " + attempts);
-				//Log_Debug("requested power = " + requestAmount.ToString("0.0000000000000000000000"));
-				//Log_Debug("received power = " + received.ToString("0.0000000000000000000000"));
-				totalReceived += received;
-				amount -= received;
-				//Log_Debug("amount = " + amount.ToString("0.0000000000000000000000"));
-				if (received <= 0.0)
-					requestAmount = amount * 0.5;
-				else
-					requestAmount = amount;
-			}
-			return totalReceived;
-		}
+        internal static bool requireResource(Vessel craft, string res, double resAmount, bool ConsumeResource, out double resavail)
+        {
+            if (!craft.loaded)
+            {
+                resavail = 0;
+                return false; // Unloaded resource checking is unreliable.
+            }
+            double amount, maxamount;
+            craft.resourcePartSet.GetConnectedResourceTotals(PartResourceLibrary.Instance.GetDefinition(res).id, out amount, out maxamount, true);
+            if (amount < resAmount)
+            {
+                resavail = amount;
+                return false;
+            }
+            if (!ConsumeResource)
+            {
+                resavail = amount;
+                return true;
+            }
+            var amountdrawn = craft.RequestResource(craft.rootPart, PartResourceLibrary.Instance.GetDefinition(res).id, resAmount, true);
+            if (amountdrawn < resAmount * 0.99)
+            {
+                resavail = amountdrawn;
+                return false;
+            }
+            resavail = amountdrawn;
+            return true;
+        }
 
         /// <summary>
         /// Converts Stock EC units to SI units (W,kW,mW)
