@@ -24,6 +24,7 @@
  * is purely coincidental.
  */
 
+using System.Collections.Generic;
 using System.Linq;
 using KSP.UI;
 using RSTUtils;
@@ -237,7 +238,8 @@ namespace Tac
                     VesselCrewManifest manifest = dialog.GetManifest();
                     if (manifest != null)
                     {
-                        foreach (PartCrewManifest pcm in manifest)
+                        List<PartCrewManifest> manifests = manifest.GetCrewableParts();
+                        foreach (PartCrewManifest pcm in manifests)
                         {
                             int partCrewCount = pcm.GetPartCrew().Count(c => c != null);
                             if (partCrewCount > 0)
