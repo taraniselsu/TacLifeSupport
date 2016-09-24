@@ -34,29 +34,22 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Assembly-CSharp">
-      <HintPath>$(KSP)\Assembly-CSharp.dll</HintPath>
+    <Reference Include="Assembly-CSharp, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\KSPDLLs - 1.2\Assembly-CSharp.dll</HintPath>
     </Reference>
-    <Reference Include="KSPCore">
-      <HintPath>$(KSP)\KSPCore.dll</HintPath>
-    </Reference>
-    <Reference Include="Assembly-CSharp-firstpass">
-      <HintPath>$(KSP)\Assembly-CSharp-firstpass.dll</HintPath>
-    </Reference>
-    <Reference Include="KSPUtil">
-      <HintPath>$(KSP)\KSPUtil.dll</HintPath>
-    </Reference>
-    <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
-    <Reference Include="UnityEngine">
-      <HintPath>$(KSP)\UnityEngine.dll</HintPath>
+    <Reference Include="UnityEngine, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\KSPDLLs - 1.2\UnityEngine.dll</HintPath>
     </Reference>
-    <Reference Include="UnityEngine.UI">
-      <HintPath>$(KSP)\UnityEngine.UI.dll</HintPath>
+    <Reference Include="UnityEngine.UI, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\KSPDLLs - 1.2\UnityEngine.UI.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
@@ -132,14 +125,14 @@
     <DownloadUrl>https://github.com/KSP-RO/TacLifeSupport/releases</DownloadUrl>
     <ChangelogUrl>https://github.com/KSP-RO/TacLifeSupport/wiki/Changes</ChangelogUrl>
     <KspVersionMajor>1</KspVersionMajor>
-    <KspVersionMinor>1</KspVersionMinor>
-    <KspVersionPatch>3</KspVersionPatch>
+    <KspVersionMinor>2</KspVersionMinor>
+    <KspVersionPatch>0</KspVersionPatch>
     <KspMinVersionMajor>1</KspMinVersionMajor>
-    <KspMinVersionMinor>1</KspMinVersionMinor>
-    <KspMinVersionPatch>3</KspMinVersionPatch>
+    <KspMinVersionMinor>2</KspMinVersionMinor>
+    <KspMinVersionPatch>0</KspMinVersionPatch>
     <KspMaxVersionMajor>1</KspMaxVersionMajor>
-    <KspMaxVersionMinor>1</KspMaxVersionMinor>
-    <KspMaxVersionPatch>3</KspMaxVersionPatch>
+    <KspMaxVersionMinor>2</KspMaxVersionMinor>
+    <KspMaxVersionPatch>0</KspMaxVersionPatch>
   </PropertyGroup>
   <Target Name="GitInfo">
     <!-- Get the current git SHA1 -->
@@ -245,7 +238,6 @@
     <Exec Command="$(PostBuildEvent)" />
     <Message Text="Distribution Zip file created" />
   </Target>
-  
   <Target Name="BeforeBuild">
     <CallTarget Targets="GitInfo" />
   </Target>

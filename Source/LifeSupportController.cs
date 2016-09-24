@@ -288,6 +288,23 @@ namespace Tac
             }
         }
 
+        private bool CheckFrozenKerbals(string kerbalName)
+        {
+            try
+            {
+                if (DFWrapper.DeepFreezeAPI.FrozenKerbals.ContainsKey(kerbalName))
+                    return true;
+                else
+                    return false;
+            }
+            catch (Exception ex)
+            {
+                this.Log("Error attempting to check for FrozenKerbal: " + kerbalName + " in DeepFreeze");
+                this.Log(ex.Message);
+                return false;
+            }
+        }
+
         private void ConsumeResources(double currentTime, Vessel vessel, VesselInfo vesselInfo)
         {
             ConsumeElectricity(currentTime, vessel, vesselInfo);
@@ -351,6 +368,18 @@ namespace Tac
 
                 crewMemberInfo.lastFood += deltaTime - ((desiredFood - foodObtained) / TacLifeSupport.Instance.globalSettings.FoodConsumptionRate);
                 crewMemberInfo.hibernating = false;
+                ProtoCrewMember kerbal = HighLogic.CurrentGame.CrewRoster.Crew.FirstOrDefault(a => a.name == crewMemberInfo.name);
+                if (kerbal.type != crewMemberInfo.crewType)
+                {
+                    if (IsDFInstalled && DFWrapper.APIReady)
+                    {
+                        if (!CheckFrozenKerbals(kerbal.name))
+                        {
+                            kerbal.type = crewMemberInfo.crewType;
+                            kerbal.RegisterExperienceTraits(part);
+                        }
+                    }
+                }
             }
             else
             {
@@ -364,6 +393,13 @@ namespace Tac
                     else
                     {
                         crewMemberInfo.hibernating = true;
+                        ProtoCrewMember kerbal = HighLogic.CurrentGame.CrewRoster.Crew.FirstOrDefault(a => a.name == crewMemberInfo.name);
+                        if (kerbal != null)
+                        {
+                            kerbal.type = ProtoCrewMember.KerbalType.Tourist;
+                            kerbal.UnregisterExperienceTraits(part);
+                        }
+
                     }
                 }
             }
@@ -382,6 +418,18 @@ namespace Tac
 
                 crewMemberInfo.lastWater += deltaTime - ((desiredWater - waterObtained) / TacLifeSupport.Instance.globalSettings.WaterConsumptionRate);
                 crewMemberInfo.hibernating = false;
+                ProtoCrewMember kerbal = HighLogic.CurrentGame.CrewRoster.Crew.FirstOrDefault(a => a.name == crewMemberInfo.name);
+                if (kerbal.type != crewMemberInfo.crewType)
+                {
+                    if (IsDFInstalled && DFWrapper.APIReady)
+                    {
+                        if (!CheckFrozenKerbals(kerbal.name))
+                        {
+                            kerbal.type = crewMemberInfo.crewType;
+                            kerbal.RegisterExperienceTraits(part);
+                        }
+                    }
+                }
             }
             else
             {
@@ -395,6 +443,12 @@ namespace Tac
                     else
                     {
                         crewMemberInfo.hibernating = true;
+                        ProtoCrewMember kerbal = HighLogic.CurrentGame.CrewRoster.Crew.FirstOrDefault(a => a.name == crewMemberInfo.name);
+                        if (kerbal != null)
+                        {
+                            kerbal.type = ProtoCrewMember.KerbalType.Tourist;
+                            kerbal.UnregisterExperienceTraits(part);
+                        }
                     }
                 }
             }

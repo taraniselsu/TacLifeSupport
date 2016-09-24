@@ -1,3 +1,13 @@
+v0.12.5
+	 Re-compiled for KSP 1.2 (will not work on earlier versions)
+	 Support for different life support settings per save game, and also support MM override by Realism Overhaul.
+	 So LifeSupport.Cfg file is now base settings for start of a NEW save only.
+	 Once a save is started copies of these fields are persisted into the sfs save file.
+	 Changes to existing saves must then only be made in-game and these changes are persisted into the sfs save file.
+	 Hibernation mechanic changes:
+		Hibernation vs Death is now toggled via the TAC LS settings menu at the Space Center
+		Crew in hibernation are changed to Tourists so they cannot perform normal crew functions
+		When food/water is restored to vessel crew become normal crew again.
 v0.12.4
 	Fixed Settings file not being read correctly and using default values. (Typo - fat fingers)
 	VAB/SPH Editor Category for TAC LS parts can be toggled on or off via the Settings menu (Hit the TAC LS icon in the Space Center).

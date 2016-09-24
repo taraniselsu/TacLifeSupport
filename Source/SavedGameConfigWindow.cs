@@ -128,14 +128,14 @@ namespace Tac
             {
                 
                 GUILayout.Space(10);
-                //string[] killOptions = { "Die", "Hibernate" };
-                //int oldValue = (gameSettings.HibernateInsteadOfKill) ? 1 : 0;
+                string[] killOptions = { "Die", "Hibernate" };
+                int oldValue = (gameSettings.HibernateInsteadOfKill) ? 1 : 0;
 
-                //GUILayout.BeginHorizontal();
-                //GUILayout.Label("When resources run out, Kerbals ", labelStyle);
-                //int newValue = GUILayout.SelectionGrid(oldValue, killOptions, 2);
-                //GUILayout.EndHorizontal();
-                //gameSettings.HibernateInsteadOfKill = (newValue == 1);
+                GUILayout.BeginHorizontal();
+                GUILayout.Label("When resources run out, Kerbals ", labelStyle);
+                int newValue = GUILayout.SelectionGrid(oldValue, killOptions, 2);
+                GUILayout.EndHorizontal();
+                gameSettings.HibernateInsteadOfKill = (newValue == 1);
 
                 if (!gameSettings.HibernateInsteadOfKill && HighLogic.CurrentGame.Parameters.Difficulty.MissingCrewsRespawn)
                 {
