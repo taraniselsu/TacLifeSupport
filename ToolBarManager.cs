@@ -22,6 +22,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using UnityEngine;
 
@@ -809,18 +810,18 @@ namespace RSTUtils
         {
             Type type = null;
             AssemblyLoader.loadedAssemblies.TypeOperation(t =>
-               
-               {
-                   if (t.FullName == name)
-                       type = t;
-               }
+
+            {
+                if (t.FullName == name)
+                    type = t;
+            }
             );
 
             if (type != null)
             {
                 return type;
             }
-            throw new ArgumentException(string.Format("Couldn't find type '{0}'!", name));
+            return null;
         }
 
         internal static PropertyInfo getProperty(Type type, string name)

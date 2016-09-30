@@ -1,17 +1,24 @@
 ﻿
 
-/**
-* REPOSoftTech KSP Utilities
-* (C) Copyright 2015, Jamie Leighton
-*
-* Kerbal Space Program is Copyright (C) 2013 Squad. See http://kerbalspaceprogram.com/. This
-* project is in no way associated with nor endorsed by Squad.
-* 
-*
-* Licensed under the Attribution-NonCommercial-ShareAlike (CC BY-NC-SA 4.0) creative commons license. 
-* See <https://creativecommons.org/licenses/by-nc-sa/4.0/> for full details (except where else specified in this file).
-*
-*/
+/*
+ * (C) Copyright 2016, Jamie Leighton (JPLRepo)
+ * REPOSoft Technologies 
+ * Kerbal Space Program is Copyright (C) 2013 Squad. See http://kerbalspaceprogram.com/. This
+ * project is in no way associated with nor endorsed by Squad.
+ *
+ *  This file is part of RST Utils. My attempt at creating my own KSP Mod base Architecture.
+ *
+ *  RST Utils is free software: you can redistribute it and/or modify
+ *  it under the terms of the MIT License 
+ *
+ *  RST Utils is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  
+ *
+ *  You should have received a copy of the MIT License
+ *  along with RST Utils.  If not, see <http://opensource.org/licenses/MIT>.
+ *
+ */
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -814,8 +821,8 @@ namespace RSTUtils
 				if (part.HighlightActive)
 				{
 					part.SetHighlightDefault();
-                    part.SetHighlight(false, false);
-                }
+					part.SetHighlight(false, false);
+				}
 			}
 		}
 
@@ -833,62 +840,87 @@ namespace RSTUtils
 			return celsius + 273.15f;
 		}
 
-        #endregion Temperature
+		#endregion Temperature
 
-        #region Resources
+		#region Resources
 
-        internal static bool requireResource(Vessel craft, string res, double resAmount, bool ConsumeResource, out double resavail)
-        {
-            if (!craft.loaded)
-            {
-                resavail = 0;
-                return false; // Unloaded resource checking is unreliable.
-            }
-            double amount, maxamount;
-            craft.resourcePartSet.GetConnectedResourceTotals(PartResourceLibrary.Instance.GetDefinition(res).id, out amount, out maxamount, true);
-            if (amount < resAmount)
-            {
-                resavail = amount;
-                return false;
-            }
-            if (!ConsumeResource)
-            {
-                resavail = amount;
-                return true;
-            }
-            var amountdrawn = craft.RequestResource(craft.rootPart, PartResourceLibrary.Instance.GetDefinition(res).id, resAmount, true);
-            if (amountdrawn < resAmount * 0.99)
-            {
-                resavail = amountdrawn;
-                return false;
-            }
-            resavail = amountdrawn;
-            return true;
-        }
+		internal static bool requireResource(Vessel craft, string res, double resAmount, bool ConsumeResource, bool pulling, out double resavail, out double maxavail)
+		{
+			int resID = PartResourceLibrary.Instance.GetDefinition(res).id;
+			bool result = requireResourceID(craft, resID, resAmount, ConsumeResource, pulling, out resavail, out maxavail);
+			return result;
+		}
 
-        /// <summary>
-        /// Converts Stock EC units to SI units (W,kW,mW)
-        /// </summary>
-        /// <param name="EC">input EC units amount</param>
-        /// <param name="Unit">OUTPUT Unit string</param>
-        /// <returns>converted SI units amount</returns>
-	    public static double ConvertECtoSI(double EC, out string Unit)
-	    {
-            double outputECSI = EC;
-            outputECSI *= 1000; //Watts (W)
-	        Unit = "W";
-	        if (outputECSI > 1000)
-	        {
-	            outputECSI /= 1000; //KiloWatts
-	            Unit = "kW";
-	        }
-	        if (outputECSI > 1000)
-	        {
-                outputECSI /= 1000; //MegaWatts
-                Unit = "mW";
-            }
-	        return outputECSI;
-	    }
+		/// <summary>
+		/// Can be used to get amount of a resource there is, amount of space for a resource there is, or push/pull resource.
+		/// </summary>
+		/// <param name="craft">this is the vessel</param>
+		/// <param name="res">this is the hash of the resource name</param>
+		/// <param name="resAmount">amount of the resource</param>
+		/// <param name="ConsumeResource">true to push/pull</param>
+		/// <param name="pulling">true if pulling false if pushing</param>
+		/// <param name="resavail">amount of the resource available or push/pulled</param>
+		/// <param name="maxavail">max amount of resource vessel can store</param>
+		/// <returns>bool if successful or not</returns>
+		internal static bool requireResourceID(Vessel craft, int res, double resAmount, bool ConsumeResource, bool pulling, out double resavail, out double maxavail)
+		{
+			if (!craft.loaded)
+			{
+				resavail = 0;
+				maxavail = 0;
+				return false; // Unloaded resource checking is unreliable.
+			}
+			double amount, maxamount;
+			//Get how much of the resource is available and capacity
+			craft.resourcePartSet.GetConnectedResourceTotals(res, out amount, out maxamount, pulling);
+			//If we are pulling and the amount avail is less than the amount we want. return what's available but don't take the resource
+			//If we are not pulling is the amount avail (space available) greater than the amount we want. if not return what's available but don't store it.
+			//So in both cases amount must be >= the anout we want.
+			resavail = amount;
+			maxavail = maxamount;
+			if (amount < resAmount)
+			{
+				return false;
+			}
+			//If we are not consuming the resource (or storing) just return how much there is.
+			if (!ConsumeResource)
+			{
+				return true;
+			}
+			//Now we push or pull
+			var amountdrawn = craft.RequestResource(craft.rootPart, res, resAmount, pulling);
+			if (amountdrawn < resAmount * 0.99)
+			{
+				resavail = amountdrawn;
+				return false;
+			}
+			resavail = amountdrawn;
+			return true;
+		}
+
+		/// <summary>
+		/// Converts Stock EC units to SI units (W,kW,mW)
+		/// </summary>
+		/// <param name="EC">input EC units amount</param>
+		/// <param name="Unit">OUTPUT Unit string</param>
+		/// <returns>converted SI units amount</returns>
+		public static double ConvertECtoSI(double EC, out string Unit)
+		{
+			double outputECSI = EC;
+			outputECSI *= 1000; //Watts (W)
+			Unit = "W";
+			if (outputECSI > 1000)
+			{
+				outputECSI /= 1000; //KiloWatts
+				Unit = "kW";
+			}
+			if (outputECSI > 1000)
+			{
+				outputECSI /= 1000; //MegaWatts
+				Unit = "mW";
+			}
+			return outputECSI;
+		}
 
 		#endregion Resources
 
@@ -1262,7 +1294,7 @@ namespace RSTUtils
 			Active,
 			MissingResource,
 			OutputFull,
-            ZeroEfficiency
+			ZeroEfficiency
 
 		}
 
@@ -1278,10 +1310,10 @@ namespace RSTUtils
 			if (tmpRegRc.status.ToLower().Contains("inactive")) returnStatus = ISRUStatus.Inactive; //Status is inactive, it's inactive.. Not sure how but sometimes this remains on load even when it's inactive? Hence the test above.
 			if (tmpRegRc.status.ToLower().Contains("missing")) returnStatus = ISRUStatus.MissingResource; //Missing an Input resource makes this appear in the status.
 			if (tmpRegRc.status.ToLower().Contains("full")) returnStatus = ISRUStatus.OutputFull; //If the vessel has nowhere to store the output, full appears in the status.
-            if (tmpRegRc.status.ToLower().Contains("output cap")) returnStatus = ISRUStatus.OutputFull; //If the vessel has nowhere to store the output, output cap: x% appears in the status.
-            if (tmpRegRc.status.ToLower().Contains("load")) returnStatus = ISRUStatus.Active; //a Percentage Load indicates it is active and actually processing... except when it gets stuck on this.
-		    if (tmpRegRc.status.ToLower().Contains("zero efficiency")) returnStatus = ISRUStatus.ZeroEfficiency; //Efficiency has reduced to zero (heat factor?).
-            if (tmpRegRc.status.ToLower().Contains("operational")) returnStatus = ISRUStatus.Active; //a new status with KSP 1.1.3.
+			if (tmpRegRc.status.ToLower().Contains("output cap")) returnStatus = ISRUStatus.OutputFull; //If the vessel has nowhere to store the output, output cap: x% appears in the status.
+			if (tmpRegRc.status.ToLower().Contains("load")) returnStatus = ISRUStatus.Active; //a Percentage Load indicates it is active and actually processing... except when it gets stuck on this.
+			if (tmpRegRc.status.ToLower().Contains("zero efficiency")) returnStatus = ISRUStatus.ZeroEfficiency; //Efficiency has reduced to zero (heat factor?).
+			if (tmpRegRc.status.ToLower().Contains("operational")) returnStatus = ISRUStatus.Active; //a new status with KSP 1.1.3.
 			return returnStatus;
 		}
 
@@ -1340,16 +1372,16 @@ namespace RSTUtils
 			}
 		}
 
-        internal static bool IsROInstalled
-        {
-            get
-            {
-                return IsModInstalled("RealismOverhaul");
+		internal static bool IsROInstalled
+		{
+			get
+			{
+				return IsModInstalled("RealismOverhaul");
 
-            }
-        }
+			}
+		}
 
-        internal static bool IsOPMInstalled
+		internal static bool IsOPMInstalled
 		{
 			get
 			{
