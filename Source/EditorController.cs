@@ -1,8 +1,10 @@
 ﻿/**
  * Thunder Aerospace Corporation's Life Support for Kerbal Space Program.
- * Written by Taranis Elsu.
+ * Originally Written by Taranis Elsu.
+ * This version written and maintained by JPLRepo (Jamie Leighton)
  * 
  * (C) Copyright 2013, Taranis Elsu
+ * (C) Copyright 2016, Jamie Leighton
  * 
  * Kerbal Space Program is Copyright (C) 2013 Squad. See http://kerbalspaceprogram.com/. This
  * project is in no way associated with nor endorsed by Squad.
@@ -24,10 +26,7 @@
  * is purely coincidental.
  */
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+
 using KSP.UI.Screens;
 using RSTUtils;
 using UnityEngine;
@@ -49,19 +48,19 @@ namespace Tac
                 ApplicationLauncher.AppScenes.SPH | ApplicationLauncher.AppScenes.VAB,
                 (Texture)Textures.GrnApplauncherIcon, (Texture)Textures.GrnApplauncherIcon,
                 GameScenes.EDITOR);
-            window = new BuildAidWindow(TACMenuAppLToolBar, TacLifeSupport.Instance.globalSettings);
+            window = new BuildAidWindow(TACMenuAppLToolBar, TacStartOnce.globalSettings);
         }
 
         void Start()
         {
             this.Log("Start");
             //If Settings wants to use ToolBar mod, check it is installed and available. If not set the Setting to use Stock.
-            if (!ToolbarManager.ToolbarAvailable && !TacLifeSupport.Instance.gameSettings.UseAppLauncher)
+            if (!ToolbarManager.ToolbarAvailable && !HighLogic.CurrentGame.Parameters.CustomParams<TAC_SettingsParms>().UseAppLToolbar)
             {
-                TacLifeSupport.Instance.gameSettings.UseAppLauncher = true;
+                HighLogic.CurrentGame.Parameters.CustomParams<TAC_SettingsParms>().UseAppLToolbar = true;
             }
 
-            TACMenuAppLToolBar.Start(TacLifeSupport.Instance.gameSettings.UseAppLauncher);
+            TACMenuAppLToolBar.Start(HighLogic.CurrentGame.Parameters.CustomParams<TAC_SettingsParms>().UseAppLToolbar);
 
             RSTUtils.Utilities.setScaledScreen();
 

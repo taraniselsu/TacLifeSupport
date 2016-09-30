@@ -1,8 +1,10 @@
 ﻿/**
  * Thunder Aerospace Corporation's Life Support for Kerbal Space Program.
- * Written by Taranis Elsu.
+ * Originally Written by Taranis Elsu.
+ * This version written and maintained by JPLRepo (Jamie Leighton)
  * 
  * (C) Copyright 2013, Taranis Elsu
+ * (C) Copyright 2016, Jamie Leighton
  * 
  * Kerbal Space Program is Copyright (C) 2013 Squad. See http://kerbalspaceprogram.com/. This
  * project is in no way associated with nor endorsed by Squad.
@@ -36,58 +38,14 @@ namespace Tac
         private const string configNodeName = "SavedGameSettings";
 
         public bool IsNewSave;
-        public bool Enabled;
-        public bool UseAppLauncher;
-        public bool UseEditorFilter;
-        public bool HibernateInsteadOfKill;
-        public double RespawnDelay;
-
-        public int MaxDeltaTime;
-        public int ElectricityMaxDeltaTime;
-        public double FoodConsumptionRate;
-        public double WaterConsumptionRate;
-        public double OxygenConsumptionRate;
-        public double ElectricityConsumptionRate;
-        public double BaseElectricityConsumptionRate;
-        public double EvaElectricityConsumptionRate;
-        public double CO2ProductionRate;
-        public double WasteProductionRate;
-        public double WasteWaterProductionRate;
-        public double EvaDefaultResourceAmount;
-        public double MaxTimeWithoutFood;
-        public double MaxTimeWithoutWater;
-        public double MaxTimeWithoutOxygen;
-        public double MaxTimeWithoutElectricity; 
-
+        
         public Dictionary<string, CrewMemberInfo> knownCrew { get; private set; }
         public Dictionary<Guid, VesselInfo> knownVessels { get; private set; }
 
         public TacGameSettings()
         {
             IsNewSave = true;
-            Enabled = true;
-            UseAppLauncher = true;
-            UseEditorFilter = true;
-            HibernateInsteadOfKill = false;
-            RespawnDelay = 9203545.0; // 1 Kerbin year (the game's default is too short at only 36 minutes)
-
-            MaxDeltaTime = TacLifeSupport.Instance.globalSettings.MaxDeltaTime;
-            ElectricityMaxDeltaTime = TacLifeSupport.Instance.globalSettings.ElectricityMaxDeltaTime;
-            FoodConsumptionRate = TacLifeSupport.Instance.globalSettings.FoodConsumptionRate;
-            WaterConsumptionRate = TacLifeSupport.Instance.globalSettings.WaterConsumptionRate;
-            OxygenConsumptionRate = TacLifeSupport.Instance.globalSettings.OxygenConsumptionRate;
-            ElectricityConsumptionRate = TacLifeSupport.Instance.globalSettings.ElectricityConsumptionRate;
-            BaseElectricityConsumptionRate = TacLifeSupport.Instance.globalSettings.BaseElectricityConsumptionRate;
-            EvaElectricityConsumptionRate = TacLifeSupport.Instance.globalSettings.EvaElectricityConsumptionRate;
-            CO2ProductionRate = TacLifeSupport.Instance.globalSettings.CO2ProductionRate;
-            WasteProductionRate = TacLifeSupport.Instance.globalSettings.WasteProductionRate;
-            WasteWaterProductionRate = TacLifeSupport.Instance.globalSettings.WasteWaterProductionRate;
-            EvaDefaultResourceAmount = TacLifeSupport.Instance.globalSettings.EvaDefaultResourceAmount;
-            MaxTimeWithoutFood = TacLifeSupport.Instance.globalSettings.MaxTimeWithoutFood;
-            MaxTimeWithoutWater = TacLifeSupport.Instance.globalSettings.MaxTimeWithoutWater;
-            MaxTimeWithoutOxygen = TacLifeSupport.Instance.globalSettings.MaxTimeWithoutOxygen;
-            MaxTimeWithoutElectricity = TacLifeSupport.Instance.globalSettings.MaxTimeWithoutElectricity;
-
+            
             knownCrew = new Dictionary<string, CrewMemberInfo>();
             knownVessels = new Dictionary<Guid, VesselInfo>();
         }
@@ -99,44 +57,6 @@ namespace Tac
                 ConfigNode settingsNode = node.GetNode(configNodeName);
 
                 settingsNode.TryGetValue("IsNewSave", ref IsNewSave);
-                settingsNode.TryGetValue("Enabled", ref Enabled);
-                settingsNode.TryGetValue("UseAppLauncher", ref UseAppLauncher);
-                settingsNode.TryGetValue("UseEditorFilter", ref UseEditorFilter);
-                settingsNode.TryGetValue("HibernateInsteadOfKill", ref HibernateInsteadOfKill);
-                settingsNode.TryGetValue("RespawnDelay", ref RespawnDelay);
-                settingsNode.TryGetValue("MaxDeltaTime", ref MaxDeltaTime);
-                settingsNode.TryGetValue("ElectricityMaxDeltaTime", ref ElectricityMaxDeltaTime);
-                settingsNode.TryGetValue("FoodConsumptionRate", ref FoodConsumptionRate);
-                settingsNode.TryGetValue("WaterConsumptionRate", ref WaterConsumptionRate);
-                settingsNode.TryGetValue("OxygenConsumptionRate", ref OxygenConsumptionRate);
-                settingsNode.TryGetValue("ElectricityConsumptionRate", ref ElectricityConsumptionRate);
-                settingsNode.TryGetValue("BaseElectricityConsumptionRate", ref BaseElectricityConsumptionRate);
-                settingsNode.TryGetValue("EvaElectricityConsumptionRate", ref EvaElectricityConsumptionRate);
-                settingsNode.TryGetValue("CO2ProductionRate", ref CO2ProductionRate);
-                settingsNode.TryGetValue("WasteProductionRate", ref WasteProductionRate);
-                settingsNode.TryGetValue("WasteWaterProductionRate", ref WasteWaterProductionRate);
-                settingsNode.TryGetValue("EvaDefaultResourceAmount", ref EvaDefaultResourceAmount);
-                settingsNode.TryGetValue("MaxTimeWithoutFood", ref MaxTimeWithoutFood);
-                settingsNode.TryGetValue("MaxTimeWithoutWater", ref MaxTimeWithoutWater);
-                settingsNode.TryGetValue("MaxTimeWithoutOxygen", ref MaxTimeWithoutOxygen);
-                settingsNode.TryGetValue("MaxTimeWithoutElectricity", ref MaxTimeWithoutElectricity);
-
-                TacLifeSupport.Instance.globalSettings.MaxDeltaTime = MaxDeltaTime;
-                TacLifeSupport.Instance.globalSettings.ElectricityMaxDeltaTime = ElectricityMaxDeltaTime;
-                TacLifeSupport.Instance.globalSettings.FoodConsumptionRate = FoodConsumptionRate;
-                TacLifeSupport.Instance.globalSettings.WaterConsumptionRate = WaterConsumptionRate;
-                TacLifeSupport.Instance.globalSettings.OxygenConsumptionRate = OxygenConsumptionRate;
-                TacLifeSupport.Instance.globalSettings.ElectricityConsumptionRate = ElectricityConsumptionRate;
-                TacLifeSupport.Instance.globalSettings.BaseElectricityConsumptionRate = BaseElectricityConsumptionRate;
-                TacLifeSupport.Instance.globalSettings.EvaElectricityConsumptionRate = EvaElectricityConsumptionRate;
-                TacLifeSupport.Instance.globalSettings.CO2ProductionRate = CO2ProductionRate;
-                TacLifeSupport.Instance.globalSettings.WasteProductionRate = WasteProductionRate;
-                TacLifeSupport.Instance.globalSettings.WasteWaterProductionRate = WasteWaterProductionRate;
-                TacLifeSupport.Instance.globalSettings.EvaDefaultResourceAmount = EvaDefaultResourceAmount;
-                TacLifeSupport.Instance.globalSettings.MaxTimeWithoutFood = MaxTimeWithoutFood;
-                TacLifeSupport.Instance.globalSettings.MaxTimeWithoutWater = MaxTimeWithoutWater;
-                TacLifeSupport.Instance.globalSettings.MaxTimeWithoutOxygen = MaxTimeWithoutOxygen;
-                TacLifeSupport.Instance.globalSettings.MaxTimeWithoutElectricity = MaxTimeWithoutElectricity;
 
                 knownCrew.Clear();
                 var crewNodes = settingsNode.GetNodes(CrewMemberInfo.ConfigNodeName);
@@ -162,23 +82,6 @@ namespace Tac
 
         public void Save(ConfigNode node)
         {
-            MaxDeltaTime = TacLifeSupport.Instance.globalSettings.MaxDeltaTime;
-            ElectricityMaxDeltaTime = TacLifeSupport.Instance.globalSettings.ElectricityMaxDeltaTime;
-            FoodConsumptionRate = TacLifeSupport.Instance.globalSettings.FoodConsumptionRate;
-            WaterConsumptionRate = TacLifeSupport.Instance.globalSettings.WaterConsumptionRate;
-            OxygenConsumptionRate = TacLifeSupport.Instance.globalSettings.OxygenConsumptionRate;
-            ElectricityConsumptionRate = TacLifeSupport.Instance.globalSettings.ElectricityConsumptionRate;
-            BaseElectricityConsumptionRate = TacLifeSupport.Instance.globalSettings.BaseElectricityConsumptionRate;
-            EvaElectricityConsumptionRate = TacLifeSupport.Instance.globalSettings.EvaElectricityConsumptionRate;
-            CO2ProductionRate = TacLifeSupport.Instance.globalSettings.CO2ProductionRate;
-            WasteProductionRate = TacLifeSupport.Instance.globalSettings.WasteProductionRate;
-            WasteWaterProductionRate = TacLifeSupport.Instance.globalSettings.WasteWaterProductionRate;
-            EvaDefaultResourceAmount = TacLifeSupport.Instance.globalSettings.EvaDefaultResourceAmount;
-            MaxTimeWithoutFood = TacLifeSupport.Instance.globalSettings.MaxTimeWithoutFood;
-            MaxTimeWithoutWater = TacLifeSupport.Instance.globalSettings.MaxTimeWithoutWater;
-            MaxTimeWithoutOxygen = TacLifeSupport.Instance.globalSettings.MaxTimeWithoutOxygen;
-            MaxTimeWithoutElectricity = TacLifeSupport.Instance.globalSettings.MaxTimeWithoutElectricity;
-            
             ConfigNode settingsNode;
             if (node.HasNode(configNodeName))
             {
@@ -190,28 +93,7 @@ namespace Tac
             }
 
             settingsNode.AddValue("IsNewSave", IsNewSave);
-            settingsNode.AddValue("Enabled", Enabled);
-            settingsNode.AddValue("UseAppLauncher", UseAppLauncher);
-            settingsNode.AddValue("UseEditorFilter", UseEditorFilter);
-            settingsNode.AddValue("HibernateInsteadOfKill", HibernateInsteadOfKill);
-            settingsNode.AddValue("RespawnDelay", RespawnDelay);
-            settingsNode.AddValue("MaxDeltaTime", MaxDeltaTime);
-            settingsNode.AddValue("ElectricityMaxDeltaTime", ElectricityMaxDeltaTime);
-            settingsNode.AddValue("FoodConsumptionRate", FoodConsumptionRate);
-            settingsNode.AddValue("WaterConsumptionRate", WaterConsumptionRate);
-            settingsNode.AddValue("OxygenConsumptionRate", OxygenConsumptionRate);
-            settingsNode.AddValue("ElectricityConsumptionRate", ElectricityConsumptionRate);
-            settingsNode.AddValue("BaseElectricityConsumptionRate", BaseElectricityConsumptionRate);
-            settingsNode.AddValue("EvaElectricityConsumptionRate", EvaElectricityConsumptionRate);
-            settingsNode.AddValue("CO2ProductionRate", CO2ProductionRate);
-            settingsNode.AddValue("WasteProductionRate", WasteProductionRate);
-            settingsNode.AddValue("WasteWaterProductionRate", WasteWaterProductionRate);
-            settingsNode.AddValue("EvaDefaultResourceAmount", EvaDefaultResourceAmount);
-            settingsNode.AddValue("MaxTimeWithoutFood", MaxTimeWithoutFood);
-            settingsNode.AddValue("MaxTimeWithoutWater", MaxTimeWithoutWater);
-            settingsNode.AddValue("MaxTimeWithoutOxygen", MaxTimeWithoutOxygen);
-            settingsNode.AddValue("MaxTimeWithoutElectricity", MaxTimeWithoutElectricity);
-
+            
             foreach (CrewMemberInfo crewMemberInfo in knownCrew.Values)
             {
                 crewMemberInfo.Save(settingsNode);

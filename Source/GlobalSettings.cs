@@ -1,8 +1,10 @@
 ﻿/**
  * Thunder Aerospace Corporation's Life Support for Kerbal Space Program.
- * Written by Taranis Elsu.
+ * Originally Written by Taranis Elsu.
+ * This version written and maintained by JPLRepo (Jamie Leighton)
  * 
  * (C) Copyright 2013, Taranis Elsu
+ * (C) Copyright 2016, Jamie Leighton
  * 
  * Kerbal Space Program is Copyright (C) 2013 Squad. See http://kerbalspaceprogram.com/. This
  * project is in no way associated with nor endorsed by Squad.
@@ -45,7 +47,6 @@ namespace Tac
         public string CO2;
         public string Waste;
         public string WasteWater;
-
         public double FoodConsumptionRate;
         public double WaterConsumptionRate;
         public double OxygenConsumptionRate;
@@ -148,48 +149,6 @@ namespace Tac
             node.TryGetValue("MaxTimeWithoutElectricity", ref MaxTimeWithoutElectricity);
             //}
         }
-        /*
-        // Save the global settings - No Longer required as these are the base settings and never change.
-        // Any values from globalsettings that the user changes are now written into the gamesettings sfs save file above.
-        public void Save(ConfigNode node)
-        {
-            ConfigNode settingsNode;
-            if (node.HasNode(configNodeName))
-            {
-                settingsNode = node.GetNode(configNodeName);
-                settingsNode.ClearData();
-            }
-            else
-            {
-                settingsNode = node.AddNode(configNodeName);
-            }
-
-            settingsNode.AddValue("MaxDeltaTime", MaxDeltaTime);
-            settingsNode.AddValue("ElectricityMaxDeltaTime", ElectricityMaxDeltaTime);
-
-            settingsNode.AddValue("FoodResource", Food);
-            settingsNode.AddValue("WaterResource", Water);
-            settingsNode.AddValue("OxygenResource", Oxygen);
-            settingsNode.AddValue("CarbonDioxideResource", CO2);
-            settingsNode.AddValue("WasteResource", Waste);
-            settingsNode.AddValue("WasteWaterResource", WasteWater);
-
-            settingsNode.AddValue("FoodConsumptionRate", FoodConsumptionRate);
-            settingsNode.AddValue("WaterConsumptionRate", WaterConsumptionRate);
-            settingsNode.AddValue("OxygenConsumptionRate", OxygenConsumptionRate);
-            settingsNode.AddValue("ElectricityConsumptionRate", ElectricityConsumptionRate);
-            settingsNode.AddValue("BaseElectricityConsumptionRate", BaseElectricityConsumptionRate);
-            settingsNode.AddValue("EvaElectricityConsumptionRate", EvaElectricityConsumptionRate);
-            settingsNode.AddValue("CO2ProductionRate", CO2ProductionRate);
-            settingsNode.AddValue("WasteProductionRate", WasteProductionRate);
-            settingsNode.AddValue("WasteWaterProductionRate", WasteWaterProductionRate);
-
-            settingsNode.AddValue("EvaDefaultResourceAmount", EvaDefaultResourceAmount);
-
-            settingsNode.AddValue("MaxTimeWithoutFood", MaxTimeWithoutFood);
-            settingsNode.AddValue("MaxTimeWithoutWater", MaxTimeWithoutWater);
-            settingsNode.AddValue("MaxTimeWithoutOxygen", MaxTimeWithoutOxygen);
-            settingsNode.AddValue("MaxTimeWithoutElectricity", MaxTimeWithoutElectricity);
-        }*/
+        
     }
 }

@@ -1,4 +1,16 @@
-﻿using System.Collections.Generic;
+﻿/**
+* REPOSoftTech KSP Utilities
+* (C) Copyright 2015, Jamie Leighton
+*
+* Kerbal Space Program is Copyright (C) 2013 Squad. See http://kerbalspaceprogram.com/. This
+* project is in no way associated with nor endorsed by Squad.
+* 
+*
+* Licensed under the Attribution-NonCommercial-ShareAlike (CC BY-NC-SA 4.0) creative commons license. 
+* See <https://creativecommons.org/licenses/by-nc-sa/4.0/> for full details (except where else specified in this file).
+*
+*/
+using System.Collections.Generic;
 using KSP.UI.Screens;
 using RUI.Icons.Selectable;
 using UnityEngine;
@@ -20,8 +32,8 @@ namespace Tac
         //create and the icons
         
         internal bool filter = true;
-
-        public TACEditorFilter()
+        
+        public void Awake()
         {
             if (Instance != null)
             {
@@ -35,8 +47,10 @@ namespace Tac
         {
             this.Log("TACLS EditorFilter Setup");
             GameEvents.onGUIEditorToolbarReady.Remove(SubCategories);
-            
-            if (!TacLifeSupport.Instance.gameSettings.UseEditorFilter)
+
+            TacMMCallBack();
+
+            if (!HighLogic.CurrentGame.Parameters.CustomParams<TAC_SettingsParms>().EditorFilter)
             {
                 this.Log("EditorFilter Option is Off");
                 PartCategorizer.Category Filter =
@@ -54,6 +68,7 @@ namespace Tac
                     }
                 }
                 GameEvents.onGUIEditorToolbarReady.Remove(SubCategories);
+                AddPartUtilitiesCat();
                 return;
             }
             
@@ -78,8 +93,8 @@ namespace Tac
                 }
                 
             }*/
-            TacMMCallBack();
-
+            //TacMMCallBack();
+            RemovePartUtilitiesCat();
             this.Log("DFEditorFilter Awake Complete");
         }
 
@@ -99,6 +114,24 @@ namespace Tac
             return true;
         }
 
+        private void RemovePartUtilitiesCat()
+        {
+            foreach (AvailablePart avPart in TacavPartItems)
+            {
+                //PartCategorizer.Instance.subcategoryFunctionUtility.RemovePart(avPart);
+                avPart.category = PartCategories.none;
+            }
+        }
+
+        private void AddPartUtilitiesCat()
+        {
+            foreach (AvailablePart avPart in TacavPartItems)
+            {
+                //PartCategorizer.Instance.subcategoryFunctionUtility.AddPart(avPart);
+                avPart.category = PartCategories.Utility;
+            }
+        }
+
         private bool EditorItemsFilter(AvailablePart avPart)
         {
             if (TacavPartItems.Contains(avPart))
@@ -113,6 +146,7 @@ namespace Tac
             Icon filterTacLS = new Icon("TACLSEditor", Textures.EditorCatIcon, Textures.EditorCatIcon, true);
             PartCategorizer.Category Filter = PartCategorizer.Instance.filters.Find(f => f.button.categoryName == category);
             PartCategorizer.AddCustomSubcategoryFilter(Filter, subCategoryTitle, filterTacLS, p => EditorItemsFilter(p));
+            //RemovePartUtilitiesCat();
             //RUIToggleButtonTyped button = Filter.button.activeButton;
             //button.SetFalse(button, RUIToggleButtonTyped.ClickType.FORCED);
             //button.SetTrue(button, RUIToggleButtonTyped.ClickType.FORCED);

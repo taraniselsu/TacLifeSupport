@@ -38,6 +38,7 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\KSPDLLs - 1.2\Assembly-CSharp.dll</HintPath>
     </Reference>
+    <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
@@ -53,11 +54,11 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="..\..\REPOSoftTechKSPUtils\ToolBarManager.cs">
+      <Link>ToolBarManager.cs</Link>
+    </Compile>
     <Compile Include="..\TacLib\Source\Logging.cs">
       <Link>Logging.cs</Link>
-    </Compile>
-    <Compile Include="..\TacLib\Source\PartExtensions.cs">
-      <Link>PartExtensions.cs</Link>
     </Compile>
     <Compile Include="..\TacLib\Source\PopupWindow.cs">
       <Link>PopupWindow.cs</Link>
@@ -79,7 +80,7 @@
     <Compile Include="InstallChecker.cs" />
     <Compile Include="RectExtentions.cs" />
     <Compile Include="RSTutilities.cs" />
-    <Compile Include="SavedGameConfigWindow.cs" />
+    <Compile Include="SettingsParams.cs" />
     <Compile Include="SpaceCenterManager.cs" />
     <Compile Include="TacLifeSupport.cs" />
     <Compile Include="TacGenericConverter.cs" />
@@ -91,7 +92,6 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="GlobalSettings.cs" />
     <Compile Include="Textures.cs" />
-    <Compile Include="ToolBarManager.cs" />
     <Compile Include="VesselInfo.cs" />
   </ItemGroup>
   <ItemGroup>

@@ -1,8 +1,10 @@
 ﻿/**
  * Thunder Aerospace Corporation's Life Support for Kerbal Space Program.
- * Written by Taranis Elsu.
+ * Originally Written by Taranis Elsu.
+ * This version written and maintained by JPLRepo (Jamie Leighton)
  * 
  * (C) Copyright 2013, Taranis Elsu
+ * (C) Copyright 2016, Jamie Leighton
  * 
  * Kerbal Space Program is Copyright (C) 2013 Squad. See http://kerbalspaceprogram.com/. This
  * project is in no way associated with nor endorsed by Squad.
@@ -24,35 +26,17 @@
  * is purely coincidental.
  */
 
-using KSP.IO;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using KSP.UI.Screens;
 using RSTUtils;
 using UnityEngine;
 
 namespace Tac
 {
-    class SpaceCenterManager : MonoBehaviour, Savable
+    class SpaceCenterManager : MonoBehaviour//, Savable
     {
-        //private globalSettings TacLifeSupport.Instance.globalSettings;
-        //private gameSettings TacLifeSupport.Instance.gameSettings;
-        private SavedGameConfigWindow configWindow;
-        internal AppLauncherToolBar TACMenuAppLToolBar;
-        private const string lockName = "TACLS_SpaceCenterLock";
-        private const ControlTypes desiredLock = ControlTypes.KSC_FACILITIES;
-        
-
         public SpaceCenterManager()
         {
-            this.Log("Constructor");
-            TACMenuAppLToolBar = new AppLauncherToolBar("TACLifeSupport", "TAC Life Support",
-                Textures.PathToolbarIconsPath + "/TACgreenIconTB",
-                ApplicationLauncher.AppScenes.SPACECENTER,
-                (Texture)Textures.GrnApplauncherIcon, (Texture)Textures.GrnApplauncherIcon,
-                GameScenes.SPACECENTER);
+            //this.Log("Constructor");
         }
 
         void Awake()
@@ -63,27 +47,23 @@ namespace Tac
         void Start()
         {
             this.Log("Start, new game = " + TacLifeSupport.Instance.gameSettings.IsNewSave);
-            //globalSettings = TacLifeSupport.Instance.TacLifeSupport.Instance.globalSettings;
-            //gameSettings = TacLifeSupport.Instance.TacLifeSupport.Instance.gameSettings;
-            //If Settings wants to use ToolBar mod, check it is installed and available. If not set the Setting to use Stock.
-            configWindow = new SavedGameConfigWindow(TACMenuAppLToolBar, TacLifeSupport.Instance.globalSettings, TacLifeSupport.Instance.gameSettings);
-            if (!ToolbarManager.ToolbarAvailable && !TacLifeSupport.Instance.gameSettings.UseAppLauncher)
-            {
-                TacLifeSupport.Instance.gameSettings.UseAppLauncher = true;
-            }
-
-            TACMenuAppLToolBar.Start(TacLifeSupport.Instance.gameSettings.UseAppLauncher);
-
-            RSTUtils.Utilities.setScaledScreen();
-
+            
             if (TacLifeSupport.Instance.gameSettings.IsNewSave)
             {
                 this.Log("New save detected!");
-                TACMenuAppLToolBar.onAppLaunchToggle();
+                //TACMenuAppLToolBar.onAppLaunchToggle();
+                Vector2 anchormin = new Vector2(0.5f, 0.5f);
+                Vector2 anchormax = new Vector2(0.5f, 0.5f);
+                string msg = "TAC LS Config Settings are now available via the KSP Settings - Difficulty Options Window.";
+                string title = "TAC Life Support";
+                UISkinDef skin = HighLogic.UISkin;
+                DialogGUIBase[] dialogGUIBase = new DialogGUIBase[1];
+                dialogGUIBase[0] = new DialogGUIButton("Ok", delegate{});
+                PopupDialog.SpawnPopupDialog(anchormin, anchormax, new MultiOptionDialog(msg, title, skin, dialogGUIBase), false, HighLogic.UISkin, true, string.Empty);
                 TacLifeSupport.Instance.gameSettings.IsNewSave = false;
             }
-
-            AddLifeSupport als = new AddLifeSupport(TacLifeSupport.Instance.globalSettings);
+            
+            AddLifeSupport als = new AddLifeSupport();
             als.run();
 
             var crew = HighLogic.CurrentGame.CrewRoster.Crew;
@@ -97,50 +77,10 @@ namespace Tac
                 }
             }
         }
-
-        void Update()
-        {
-            if (configWindow.IsVisible() && configWindow.Contains(Event.current.mousePosition))
-            {
-                if (InputLockManager.GetControlLock(lockName) != desiredLock)
-                {
-                    InputLockManager.SetControlLock(desiredLock, lockName);
-                }
-            }
-            else
-            {
-                if (InputLockManager.GetControlLock(lockName) == desiredLock)
-                {
-                    InputLockManager.RemoveControlLock(lockName);
-                }
-            }
-        }
-
-        public void Load(ConfigNode globalNode)
-        {
-            configWindow.Load(globalNode);
-        }
-
-        public void Save(ConfigNode globalNode)
-        {
-            configWindow.Save(globalNode);
-        }
-
-        void OnGUI()
-        {
-            configWindow.SetVisible(TACMenuAppLToolBar.GuiVisible);
-            configWindow?.OnGUI();
-        }
-
+        
         void OnDestroy()
         {
             this.Log("OnDestroy");
-            TACMenuAppLToolBar.Destroy();
-            // Make sure we remove our locks
-            if (InputLockManager.GetControlLock(lockName) == desiredLock)
-            {
-                InputLockManager.RemoveControlLock(lockName);
-            }
         }
     }
 }

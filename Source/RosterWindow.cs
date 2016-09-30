@@ -1,8 +1,10 @@
 ﻿/**
  * Thunder Aerospace Corporation's Life Support for Kerbal Space Program.
- * Written by Taranis Elsu.
+ * Originally Written by Taranis Elsu.
+ * This version written and maintained by JPLRepo (Jamie Leighton)
  * 
  * (C) Copyright 2013, Taranis Elsu
+ * (C) Copyright 2016, Jamie Leighton
  * 
  * Kerbal Space Program is Copyright (C) 2013 Squad. See http://kerbalspaceprogram.com/. This
  * project is in no way associated with nor endorsed by Squad.
@@ -90,12 +92,24 @@ namespace Tac
             foreach (CrewMemberInfo crewInfo in gameSettings.knownCrew.Values)
             {
                 GUILayout.Label(crewInfo.name + " (" + crewInfo.vesselName + ")", headerStyle);
-                GUILayout.Label("  Last updated: " + Utilities.FormatTime(currentTime - crewInfo.lastUpdate), labelStyle);
-                GUILayout.Label("  Last food: " + Utilities.FormatTime(currentTime - crewInfo.lastFood), getStyle(crewInfo.lastUpdate, crewInfo.lastFood, globalSettings.MaxTimeWithoutFood));
-                GUILayout.Label("  Last water: " + Utilities.FormatTime(currentTime - crewInfo.lastWater), getStyle(crewInfo.lastUpdate, crewInfo.lastWater, globalSettings.MaxTimeWithoutWater));
-                if (gameSettings.HibernateInsteadOfKill || crewInfo.hibernating)
+                GUILayout.BeginHorizontal();
+                GUILayout.Label("  Last updated: ", labelStyle, GUILayout.Width(100));
+                GUILayout.Label(Utilities.FormatTime(currentTime - crewInfo.lastUpdate), labelStyle);
+                GUILayout.EndHorizontal();
+                GUILayout.BeginHorizontal();
+                GUILayout.Label("  Last food: ", labelStyle, GUILayout.Width(100));
+                GUILayout.Label(Utilities.FormatTime(currentTime - crewInfo.lastFood), getStyle(crewInfo.lastUpdate, crewInfo.lastFood, HighLogic.CurrentGame.Parameters.CustomParams<TAC_SettingsParms_Sec3>().MaxTimeWithoutFood));
+                GUILayout.EndHorizontal();
+                GUILayout.BeginHorizontal();
+                GUILayout.Label("  Last water: ", labelStyle, GUILayout.Width(100));
+                GUILayout.Label(Utilities.FormatTime(currentTime - crewInfo.lastWater), getStyle(crewInfo.lastUpdate, crewInfo.lastWater, HighLogic.CurrentGame.Parameters.CustomParams<TAC_SettingsParms_Sec3>().MaxTimeWithoutWater));
+                GUILayout.EndHorizontal();
+                if (HighLogic.CurrentGame.Parameters.CustomParams<TAC_SettingsParms>().hibernate != "Die" || crewInfo.hibernating)
                 {
-                    GUILayout.Label("  Hibernating: " + crewInfo.hibernating, labelStyle);
+                    GUILayout.BeginHorizontal();
+                    GUILayout.Label("  Hibernating: ", labelStyle, GUILayout.Width(100));
+                    GUILayout.Label(crewInfo.hibernating.ToString(), labelStyle);
+                    GUILayout.EndHorizontal();
                 }
                 GUILayout.Space(10);
             }

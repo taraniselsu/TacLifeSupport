@@ -1,8 +1,10 @@
 ﻿/**
  * Thunder Aerospace Corporation's Life Support for Kerbal Space Program.
- * Written by Taranis Elsu.
+ * Originally Written by Taranis Elsu.
+ * This version written and maintained by JPLRepo (Jamie Leighton)
  * 
  * (C) Copyright 2013, Taranis Elsu
+ * (C) Copyright 2016, Jamie Leighton
  * 
  * Kerbal Space Program is Copyright (C) 2013 Squad. See http://kerbalspaceprogram.com/. This
  * project is in no way associated with nor endorsed by Squad.
@@ -24,12 +26,8 @@
  * is purely coincidental.
  */
 
-using KSP.IO;
 using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using UnityEngine;
 
 namespace Tac
 {
@@ -38,17 +36,17 @@ namespace Tac
         private static bool initialized = false;
         private GlobalSettings globalSettings;
 
-        public AddLifeSupport(GlobalSettings globalSettings)
+        public AddLifeSupport()
         {
-            this.Log("Constructor");
-            this.globalSettings = globalSettings;
+            this.Log("AddLifeSupport Constructor");
+            this.globalSettings = TacStartOnce.globalSettings;
         }
 
         public void run()
         {
             if (!initialized)
             {
-                this.Log("run");
+                this.Log("run AddLifeSupport");
                 initialized = true;
 
                 try
@@ -73,14 +71,19 @@ namespace Tac
             this.Log("Adding resources to " + part.name + "/" + prefabPart.partInfo.title);
 
             EvaAddPartModule(prefabPart);
+            var settings = HighLogic.CurrentGame.Parameters.CustomParams<TAC_SettingsParms_Sec2>();
+            EvaAddResource(prefabPart, settings.EvaElectricityConsumptionRate, globalSettings.Electricity, false);
+            EvaAddResource(prefabPart, settings.FoodConsumptionRate, globalSettings.Food, false);
+            EvaAddResource(prefabPart, settings.WaterConsumptionRate, globalSettings.Water, false);
+            EvaAddResource(prefabPart, settings.OxygenConsumptionRate, globalSettings.Oxygen, false);
+            EvaAddResource(prefabPart, settings.CO2ProductionRate, globalSettings.CO2, false);
+            EvaAddResource(prefabPart, settings.WasteProductionRate, globalSettings.Waste, false);
+            EvaAddResource(prefabPart, settings.WasteWaterProductionRate, globalSettings.WasteWater, false);
+            for (int i = 0; i < prefabPart.Resources.Count; i++)
+            {
+                this.Log("Resource " + prefabPart.Resources[i].resourceName);
+            }
 
-            EvaAddResource(prefabPart, globalSettings.EvaElectricityConsumptionRate, globalSettings.Electricity, false);
-            EvaAddResource(prefabPart, globalSettings.FoodConsumptionRate, globalSettings.Food, false);
-            EvaAddResource(prefabPart, globalSettings.WaterConsumptionRate, globalSettings.Water, false);
-            EvaAddResource(prefabPart, globalSettings.OxygenConsumptionRate, globalSettings.Oxygen, false);
-            EvaAddResource(prefabPart, globalSettings.CO2ProductionRate, globalSettings.CO2, false);
-            EvaAddResource(prefabPart, globalSettings.WasteProductionRate, globalSettings.Waste, false);
-            EvaAddResource(prefabPart, globalSettings.WasteWaterProductionRate, globalSettings.WasteWater, false);
         }
 
         private void EvaAddPartModule(Part part)
@@ -111,24 +114,22 @@ namespace Tac
         {
             try
             {
-                double max = rate * globalSettings.EvaDefaultResourceAmount;
-                PartResource resource = part.gameObject.AddComponent<PartResource>();
-                resource.SetInfo(PartResourceLibrary.Instance.resourceDefinitions[name]);
-                resource.maxAmount = max;
-                resource.flowState = true;
-                resource.flowMode = PartResource.FlowMode.Both;
-                resource.part = part;
-
+                double max = rate * HighLogic.CurrentGame.Parameters.CustomParams<TAC_SettingsParms_Sec3>().EvaDefaultResourceAmount;
+                ConfigNode resourceNode = new ConfigNode("RESOURCE");
+                resourceNode.AddValue("name", name);
+                resourceNode.AddValue("maxAmount", max);
                 if (full)
                 {
-                    resource.amount = max;
+                    resourceNode.AddValue("amount", max);
                 }
                 else
                 {
-                    resource.amount = 0;
+                    resourceNode.AddValue("amount", 0);
                 }
-
-                part.Resources.list.Add(resource);
+                resourceNode.AddValue("isTweakable", false);
+                PartResource resource = part.AddResource(resourceNode);
+                resource.flowState = true;
+                resource.flowMode = PartResource.FlowMode.Both;
             }
             catch (Exception ex)
             {

@@ -1,8 +1,10 @@
 ﻿/**
  * Thunder Aerospace Corporation's Life Support for Kerbal Space Program.
- * Written by Taranis Elsu.
+ * Originally Written by Taranis Elsu.
+ * This version written and maintained by JPLRepo (Jamie Leighton)
  * 
  * (C) Copyright 2013, Taranis Elsu
+ * (C) Copyright 2016, Jamie Leighton
  * 
  * Kerbal Space Program is Copyright (C) 2013 Squad. See http://kerbalspaceprogram.com/. This
  * project is in no way associated with nor endorsed by Squad.
@@ -141,9 +143,9 @@ namespace Tac
                 return;
             }
 
-            GlobalSettings globalSettings = TacLifeSupport.Instance.globalSettings;
+            GlobalSettings globalSettings = TacStartOnce.globalSettings;
 
-            double deltaTime = Math.Min(Planetarium.GetUniversalTime() - lastUpdateTime, globalSettings.MaxDeltaTime);
+            double deltaTime = Math.Min(Planetarium.GetUniversalTime() - lastUpdateTime, HighLogic.CurrentGame.Parameters.CustomParams<TAC_SettingsParms_Sec3>().MaxDeltaTime);
             lastUpdateTime += deltaTime;
 
             if (converterEnabled)
@@ -155,7 +157,7 @@ namespace Tac
                 }
 
                 double desiredAmount = conversionRate * deltaTime;
-                double maxElectricityDesired = Math.Min(desiredAmount, conversionRate * Math.Max(globalSettings.ElectricityMaxDeltaTime, TimeWarp.fixedDeltaTime)); // Limit the max electricity consumed when reloading a vessel
+                double maxElectricityDesired = Math.Min(desiredAmount, conversionRate * Math.Max(HighLogic.CurrentGame.Parameters.CustomParams<TAC_SettingsParms_Sec3>().ElectricityMaxDeltaTime, TimeWarp.fixedDeltaTime)); // Limit the max electricity consumed when reloading a vessel
 
                 // Limit the resource amounts so that we do not produce more than we have room for, nor consume more than is available
                 foreach (ResourceRatio output in outputResourceList)
@@ -166,12 +168,16 @@ namespace Tac
                         {
                             // Special handling for electricity
                             double desiredElectricity = maxElectricityDesired * output.ratio;
-                            double availableSpace = -part.IsResourceAvailable(output.resource, -desiredElectricity);
+                            double availableElectricity = 0;
+                            double availableSpace = 0;
+                            part.GetConnectedResourceTotals(output.resource.id, out availableElectricity, out availableSpace, false); 
                             desiredAmount = desiredAmount * (availableSpace / desiredElectricity);
                         }
                         else
                         {
-                            double availableSpace = -part.IsResourceAvailable(output.resource, -desiredAmount * output.ratio);
+                            double availableResource = 0;
+                            double availableSpace = 0;
+                            part.GetConnectedResourceTotals(output.resource.id, out availableResource, out availableSpace, false); 
                             desiredAmount = availableSpace / output.ratio;
                         }
 
@@ -190,13 +196,17 @@ namespace Tac
                     {
                         // Special handling for electricity
                         double desiredElectricity = maxElectricityDesired * input.ratio;
-                        double amountAvailable = part.IsResourceAvailable(input.resource, desiredElectricity);
-                        desiredAmount = desiredAmount * (amountAvailable / desiredElectricity);
+                        double availableElectricity = 0;
+                        double availableSpace = 0;
+                        part.GetConnectedResourceTotals(input.resource.id, out availableElectricity, out availableSpace);
+                        desiredAmount = desiredAmount * (availableElectricity / desiredElectricity);
                     }
                     else
                     {
-                        double amountAvailable = part.IsResourceAvailable(input.resource, desiredAmount * input.ratio);
-                        desiredAmount = amountAvailable / input.ratio;
+                        double availableResource = 0;
+                        double availableSpace = 0;
+                        part.GetConnectedResourceTotals(input.resource.id, out availableResource, out availableSpace); 
+                        desiredAmount = availableResource / input.ratio;
                     }
 
                     if (desiredAmount <= 0.000000001)
@@ -219,7 +229,7 @@ namespace Tac
                         desired = desiredAmount * input.ratio;
                     }
 
-                    double actual = part.TakeResource(input.resource, desired);
+                    double actual = part.RequestResource(input.resource.id, desired);
 
                     if (actual < (desired * 0.999))
                     {
@@ -239,7 +249,7 @@ namespace Tac
                         desired = desiredAmount * output.ratio;
                     }
 
-                    double actual = -part.TakeResource(output.resource.id, -desired);
+                    double actual = -part.RequestResource(output.resource.id, -desired);
 
                     if (actual < (desired * 0.999) && !output.allowExtra)
                     {

@@ -1,8 +1,10 @@
 ﻿/**
  * Thunder Aerospace Corporation's Life Support for Kerbal Space Program.
- * Written by Taranis Elsu.
+ * Originally Written by Taranis Elsu.
+ * This version written and maintained by JPLRepo (Jamie Leighton)
  * 
  * (C) Copyright 2013, Taranis Elsu
+ * (C) Copyright 2016, Jamie Leighton
  * 
  * Kerbal Space Program is Copyright (C) 2013 Squad. See http://kerbalspaceprogram.com/. This
  * project is in no way associated with nor endorsed by Squad.
@@ -36,6 +38,30 @@ namespace Tac
     [KSPAddon(KSPAddon.Startup.MainMenu, true)]
     public class TacStartOnce : MonoBehaviour
     {
+        public static GlobalSettings globalSettings { get; set; }
+        public static TacStartOnce Instance;
+        
+        public void Awake()
+        {
+            Instance = this;
+            DontDestroyOnLoad(this);
+
+            globalSettings = new GlobalSettings();
+            ConfigNode[] globalNodes;
+            globalNodes = GameDatabase.Instance.GetConfigNodes("TACLSGlobalSettings");
+            if (globalNodes != null)
+            {
+                foreach (ConfigNode node in globalNodes)
+                {
+                    globalSettings.Load(node);
+                }
+            }
+            else
+            {
+                this.LogError("Could not find TACLSGlobalSettings node!");
+            }
+        }
+
         public void Start()
         {
             Textures.LoadIconAssets();
@@ -47,10 +73,8 @@ namespace Tac
     {
         public static TacLifeSupport Instance { get; private set; }
 
-        public TacGameSettings gameSettings { get; private set; }
-        public GlobalSettings globalSettings { get; private set; }
-
-        //private readonly string globalConfigFilename;
+        public TacGameSettings gameSettings { get; set; }
+        
         private ConfigNode[] globalNodes;
         internal bool globalConfigChanged = false;
 
@@ -59,11 +83,8 @@ namespace Tac
         
         public TacLifeSupport()
         {
-            this.Log("Constructor");
+            //this.Log("Constructor");
             Instance = this;
-
-            //globalConfigFilename = IOUtils.GetFilePathFor(this.GetType(), "LifeSupport.cfg");
-            //globalConfigFilename = Path.Combine(Textures.AssemblyFolder, "LifeSupport.cfg").Replace("\\", "/");
         }
 
         public override void OnAwake()
@@ -103,29 +124,6 @@ namespace Tac
         {
             base.OnLoad(gameNode);
             
-            globalSettings = new GlobalSettings();
-            // Load the global settings before the Game save settings as game save settings override the global settings.
-            //if (File.Exists(globalConfigFilename))
-            //{
-                
-            globalNodes = GameDatabase.Instance.GetConfigNodes("TACLSGlobalSettings");
-            if (globalNodes!= null)
-            {
-                foreach (ConfigNode node in globalNodes)
-                {
-                    //globalNode = ConfigNode.Load(globalConfigFilename);
-                    globalSettings.Load(node);
-                    //foreach (Savable s in children.Where(c => c is Savable))
-                    //{
-                    //    s.Load(node);
-                    //}
-                }
-            }
-            else
-            {
-                this.LogError("Could not find TACLSGlobalSettings node!");
-            }
-            //}
             gameSettings = new TacGameSettings();
             gameSettings.Load(gameNode);
             if (HighLogic.LoadedScene == GameScenes.SPACECENTER)
@@ -148,20 +146,7 @@ namespace Tac
             {
                 s.Save(gameNode);
             }
-
-            // Save the global settings - No Longer required as these are the base settings and never change.
-            // Any values from globalsettings that the user changes are now written into the gamesettings sfs save file above.
-            //if (globalConfigChanged)
-            //{
-            //    globalSettings.Save(globalNode);
-            //foreach (Savable s in children.Where(c => c is Savable))
-            //{
-            //    s.Save(globalNode);
-            //}
-            //    globalNode.Save(globalConfigFilename);
-            //    globalConfigChanged = false;
-            //}
-            //this.Log("OnSave: " + gameNode + "\n" + globalNode);
+            
             this.Log("OnSave: " + gameNode);
         }
 

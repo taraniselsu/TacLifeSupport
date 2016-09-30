@@ -22,6 +22,7 @@ namespace TacDFWrapper
         protected static System.Type KerbalInfoType;
         protected static System.Type DeepFreezerType;
         protected static System.Type FrznCrewMbrType;
+        protected static System.Type DFGameSettingsType;
         protected static Object actualDF = null;
 
         /// <summary>
@@ -74,10 +75,7 @@ namespace TacDFWrapper
                 LogFormatted("Attempting to Grab DeepFreeze Types...");
 
                 //find the base type
-                DFType = AssemblyLoader.loadedAssemblies
-                    .Select(a => a.assembly.GetExportedTypes())
-                    .SelectMany(t => t)
-                    .FirstOrDefault(t => t.FullName == "DF.DeepFreeze");
+                DFType = getType("DF.DeepFreeze"); 
 
                 if (DFType == null)
                 {
@@ -86,11 +84,16 @@ namespace TacDFWrapper
 
                 LogFormatted("DeepFreeze Version:{0}", DFType.Assembly.GetName().Version.ToString());
 
+                //now the DFGameSettings Type
+                DFGameSettingsType = getType("DF.DFGameSettings");
+
+                if (DFGameSettingsType == null)
+                {
+                    return false;
+                }
+
                 //now the KerbalInfo Type
-                KerbalInfoType = AssemblyLoader.loadedAssemblies
-                    .Select(a => a.assembly.GetExportedTypes())
-                    .SelectMany(t => t)
-                    .FirstOrDefault(t => t.FullName == "DF.KerbalInfo");
+                KerbalInfoType = getType("DF.KerbalInfo"); 
 
                 if (KerbalInfoType == null)
                 {
@@ -98,22 +101,16 @@ namespace TacDFWrapper
                 }
 
                 //now the DeepFreezer (partmodule) Type
-                DeepFreezerType = AssemblyLoader.loadedAssemblies
-                    .Select(a => a.assembly.GetExportedTypes())
-                    .SelectMany(t => t)
-                    .FirstOrDefault(t => t.FullName == "DF.DeepFreezer");
-
+                DeepFreezerType = getType("DF.DeepFreezer");
+                
                 if (DeepFreezerType == null)
                 {
                     return false;
                 }
 
                 //now the FrznCrewMbr Type
-                FrznCrewMbrType = AssemblyLoader.loadedAssemblies
-                    .Select(a => a.assembly.GetExportedTypes())
-                    .SelectMany(t => t)
-                    .FirstOrDefault(t => t.FullName == "DF.FrznCrewMbr");
-
+                FrznCrewMbrType = getType("DF.FrznCrewMbr");
+                
                 if (FrznCrewMbrType == null)
                 {
                     return false;
@@ -151,6 +148,24 @@ namespace TacDFWrapper
             }
         }
 
+        internal static Type getType(string name)
+        {
+            Type type = null;
+            AssemblyLoader.loadedAssemblies.TypeOperation(t =>
+
+            {
+                if (t.FullName == name)
+                    type = t;
+            }
+            );
+
+            if (type != null)
+            {
+                return type;
+            }
+            return null;
+        }
+
         /// <summary>
         /// The API Class that is an analogue of the real DeepFreeze. This lets you access all the API-able properties and Methods of the DeepFreeze
         /// </summary>
@@ -175,6 +190,7 @@ namespace TacDFWrapper
                     FrozenKerbalsMethod = DFType.GetMethod("get_FrozenKerbals", BindingFlags.Public | BindingFlags.Instance);
                     actualFrozenKerbals = FrozenKerbalsMethod.Invoke(actualDFAPI, null);
                     LogFormatted("Success: " + (actualFrozenKerbals != null).ToString());
+
                 }
                 catch (Exception ex)
                 {
@@ -207,6 +223,7 @@ namespace TacDFWrapper
 
             private Object actualFrozenKerbals;
             private MethodInfo FrozenKerbalsMethod;
+            private FieldInfo FrozenkerbalsField;
 
             /// <summary>
             /// The dictionary of Frozen Kerbals that are currently active in game
@@ -220,9 +237,14 @@ namespace TacDFWrapper
                 {
                     if (FrozenKerbalsMethod == null)
                         return null;
-                    //Object tstfrozenkerbals = DFType.GetField("FrozenKerbals", BindingFlags.Public | BindingFlags.Static).GetValue(null);
                     FieldInfo gamesettingsfield = DFType.GetField("DFgameSettings", BindingFlags.Instance | BindingFlags.NonPublic);
-                    Object gamesettings = gamesettingsfield.GetValue(actualDFAPI);
+                    object gamesettings;
+                    if (gamesettingsfield != null)
+                        gamesettings = gamesettingsfield.GetValue(actualDFAPI);
+                    FrozenkerbalsField = DFGameSettingsType.GetField("KnownFrozenKerbals",
+                        BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+
+
                     actualFrozenKerbals = FrozenKerbalsMethod.Invoke(actualDFAPI, null);
                     Dictionary<string, KerbalInfo> returnvalue = new Dictionary<string, KerbalInfo>();
                     returnvalue = ExtractFrozenKerbalDict(actualFrozenKerbals);
@@ -240,7 +262,7 @@ namespace TacDFWrapper
                 Dictionary<string, KerbalInfo> DictToReturn = new Dictionary<string, KerbalInfo>();
                 try
                 {
-                    foreach (var item in (IDictionary)actualFrozenKerbals)
+                    foreach (var item in actualFrozenKerbals as IDictionary)
                     {
                         var typeitem = item.GetType();
                         PropertyInfo[] itemprops = typeitem.GetProperties(BindingFlags.Instance | BindingFlags.Public);
