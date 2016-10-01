@@ -840,11 +840,22 @@ namespace RSTUtils
 			return celsius + 273.15f;
 		}
 
-		#endregion Temperature
+        #endregion Temperature
 
-		#region Resources
+        #region Resources
 
-		internal static bool requireResource(Vessel craft, string res, double resAmount, bool ConsumeResource, bool pulling, out double resavail, out double maxavail)
+        /// <summary>
+        /// Can be used to get amount of a resource there is, amount of space for a resource there is, or push/pull resource.
+        /// </summary>
+        /// <param name="craft">this is the vessel</param>
+        /// <param name="res">this is the string resource name</param>
+        /// <param name="resAmount">amount of the resource</param>
+        /// <param name="ConsumeResource">true to push/pull</param>
+        /// <param name="pulling">true if pulling false if pushing</param>
+        /// <param name="resavail">amount of the resource available or push/pulled</param>
+        /// <param name="maxavail">max amount of resource vessel can store</param>
+        /// <returns>bool if successful or not</returns>
+        internal static bool requireResource(Vessel craft, string res, double resAmount, bool ConsumeResource, bool pulling, out double resavail, out double maxavail)
 		{
 			int resID = PartResourceLibrary.Instance.GetDefinition(res).id;
 			bool result = requireResourceID(craft, resID, resAmount, ConsumeResource, pulling, out resavail, out maxavail);
