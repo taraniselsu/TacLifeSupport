@@ -167,6 +167,7 @@ namespace Tac
 
             double currentTime = Planetarium.GetUniversalTime();
             var allVessels = FlightGlobals.Vessels;
+            var loadedVessels = FlightGlobals.VesselsLoaded;
             var knownVessels = TacLifeSupport.Instance.gameSettings.knownVessels;
 
             var vesselsToDelete = new List<Guid>();
@@ -232,9 +233,9 @@ namespace Tac
 
             vesselsToDelete.ForEach(id => knownVessels.Remove(id));
 
-            foreach (Vessel vessel in allVessels.Where(v => v.loaded))
+            foreach (Vessel vessel in loadedVessels)
             {
-                if (!knownVessels.ContainsKey(vessel.id) && vessel.parts.Any(p => p.protoModuleCrew.Count > 0) && IsLaunched(vessel))
+                if (!knownVessels.ContainsKey(vessel.id) && vessel.GetVesselCrew().Count > 0 && IsLaunched(vessel))
                 {
                     this.Log("New vessel: " + vessel.vesselName + " (" + vessel.id + ")");
                     var knownCrew = TacLifeSupport.Instance.gameSettings.knownCrew;
@@ -365,12 +366,12 @@ namespace Tac
                 double desiredFood = settings_sec2.FoodConsumptionRate * deltaTime;
                 double foodObtained, foodSpace = 0;
                 RSTUtils.Utilities.requireResourceID(vessel, globalsettings.FoodId,
-                    Math.Min(desiredFood, vesselInfo.remainingFood/vesselInfo.numCrew), true, true, out foodObtained, out foodSpace);
+                    Math.Min(desiredFood, vesselInfo.remainingFood/vesselInfo.numCrew), true, true, false, out foodObtained, out foodSpace);
                 
                 double wasteProduced = foodObtained * settings_sec2.WasteProductionRate / settings_sec2.FoodConsumptionRate;
                 double wasteObtained, wasteSpace = 0;
                 RSTUtils.Utilities.requireResourceID(vessel, globalsettings.WasteId,
-                    -wasteProduced, true, false, out wasteObtained, out wasteSpace);
+                    -wasteProduced, true, false, false, out wasteObtained, out wasteSpace);
                 
                 crewMemberInfo.lastFood += deltaTime - ((desiredFood - foodObtained) / settings_sec2.FoodConsumptionRate);
 
@@ -430,12 +431,12 @@ namespace Tac
                 double desiredWater = settings_sec2.WaterConsumptionRate * deltaTime;
                 double waterObtained, waterSpace = 0;
                 RSTUtils.Utilities.requireResourceID(vessel, globalsettings.WaterId,
-                    Math.Min(desiredWater, vesselInfo.remainingWater / vesselInfo.numCrew), true, true, out waterObtained, out waterSpace);
+                    Math.Min(desiredWater, vesselInfo.remainingWater / vesselInfo.numCrew), true, true, false, out waterObtained, out waterSpace);
                 
                 double wasteWaterProduced = waterObtained * settings_sec2.WasteWaterProductionRate / settings_sec2.WaterConsumptionRate;
                 double wasteWaterObtained, wasteWaterSpace = 0;
                 RSTUtils.Utilities.requireResourceID(vessel, globalsettings.WasteWaterId,
-                    -wasteWaterProduced, true, false, out wasteWaterObtained, out wasteWaterSpace);
+                    -wasteWaterProduced, true, false, false, out wasteWaterObtained, out wasteWaterSpace);
                 
                 crewMemberInfo.lastWater += deltaTime - ((desiredWater - waterObtained) / settings_sec2.WaterConsumptionRate);
                 if (crewMemberInfo.hibernating)
@@ -498,12 +499,12 @@ namespace Tac
                         double desiredOxygen = rate * deltaTime;
                         double oxygenObtained, oxygenSpace = 0;
                         RSTUtils.Utilities.requireResourceID(vessel, globalsettings.OxygenId,
-                            desiredOxygen, true, true, out oxygenObtained, out oxygenSpace);
+                            desiredOxygen, true, true, false, out oxygenObtained, out oxygenSpace);
                         
                         double co2Production = oxygenObtained * settings_sec2.CO2ProductionRate / settings_sec2.OxygenConsumptionRate;
                         double co2Obtained, co2Space = 0;
                         RSTUtils.Utilities.requireResourceID(vessel, globalsettings.CO2Id,
-                            -co2Production, true, false, out co2Obtained, out co2Space);
+                            -co2Production, true, false, false, out co2Obtained, out co2Space);
                         
                         vesselInfo.lastOxygen += deltaTime - ((desiredOxygen - oxygenObtained) / rate);
                     }
@@ -542,7 +543,7 @@ namespace Tac
                     double desiredElectricity = rate * deltaTime;
                     double electricityObtained, electricitySpace = 0;
                     RSTUtils.Utilities.requireResourceID(vessel, globalsettings.ElectricityId,
-                        desiredElectricity, true, true, out electricityObtained, out electricitySpace);
+                        desiredElectricity, true, true, false, out electricityObtained, out electricitySpace);
                     
                     vesselInfo.lastElectricity = currentTime - ((desiredElectricity - electricityObtained) / rate);
                 }
@@ -570,54 +571,26 @@ namespace Tac
             int crewCapacity = 0;
             vesselInfo.ClearAmounts();
 
-            foreach (Part part in vessel.parts)
+            crewCapacity = vessel.GetCrewCapacity();
+            vesselInfo.numCrew = vessel.GetCrewCount();
+
+            for (int i = 0; i < vessel.parts.Count; i++)
             {
-                crewCapacity += part.CrewCapacity;
-                if (part.protoModuleCrew.Count > 0)
+                if (vessel.parts[i].protoModuleCrew.Count > 0)
                 {
-                    vesselInfo.numCrew += part.protoModuleCrew.Count;
                     ++vesselInfo.numOccupiedParts;
                 }
-
-                foreach (PartResource resource in part.Resources)
-                {
-                    if (resource.flowState)
-                    {
-                        if (resource.info.id == globalsettings.FoodId)
-                        {
-                            vesselInfo.remainingFood += resource.amount;
-                            vesselInfo.maxFood += resource.maxAmount;
-                        }
-                        else if (resource.info.id == globalsettings.WaterId)
-                        {
-                            vesselInfo.remainingWater += resource.amount;
-                            vesselInfo.maxWater += resource.maxAmount;
-                        }
-                        else if (resource.info.id == globalsettings.OxygenId)
-                        {
-                            vesselInfo.remainingOxygen += resource.amount;
-                            vesselInfo.maxOxygen += resource.maxAmount;
-                        }
-                        else if (resource.info.id == globalsettings.ElectricityId)
-                        {
-                            vesselInfo.remainingElectricity += resource.amount;
-                            vesselInfo.maxElectricity += resource.maxAmount;
-                        }
-                        else if (resource.info.id == globalsettings.CO2Id)
-                        {
-                            vesselInfo.remainingCO2 += resource.amount;
-                        }
-                        else if (resource.info.id == globalsettings.WasteId)
-                        {
-                            vesselInfo.remainingWaste += resource.amount;
-                        }
-                        else if (resource.info.id == globalsettings.WasteWaterId)
-                        {
-                            vesselInfo.remainingWasteWater += resource.amount;
-                        }
-                    }
-                }
             }
+            vessel.GetConnectedResourceTotals(globalsettings.FoodId, out vesselInfo.remainingFood, out vesselInfo.maxFood);
+            vessel.GetConnectedResourceTotals(globalsettings.WaterId, out vesselInfo.remainingWater, out vesselInfo.maxWater);
+            vessel.GetConnectedResourceTotals(globalsettings.OxygenId, out vesselInfo.remainingOxygen, out vesselInfo.maxOxygen);
+            vessel.GetConnectedResourceTotals(globalsettings.ElectricityId, out vesselInfo.remainingElectricity, out vesselInfo.maxElectricity);
+            double maxCO2 = 0f;
+            double maxWaste = 0f;
+            double maxWasteWater = 0f;
+            vessel.GetConnectedResourceTotals(globalsettings.CO2Id, out vesselInfo.remainingCO2, out maxCO2);
+            vessel.GetConnectedResourceTotals(globalsettings.WasteId, out vesselInfo.remainingWaste, out maxWaste);
+            vessel.GetConnectedResourceTotals(globalsettings.WasteWaterId, out vesselInfo.remainingWasteWater, out maxWasteWater);
 
             return crewCapacity;
         }
@@ -733,15 +706,15 @@ namespace Tac
 
             double foodObtained, waterObtained, oxygenObtained, electricityObtained, foodGiven, waterGiven, oxygenGiven, electricityGiven = 0;
             double foodSpace, waterSpace, oxygenSpace, electricitySpace = 0;
-            RSTUtils.Utilities.requireResourceID(lastVessel, globalsettings.FoodId, Math.Min(desiredFood, lastVesselInfo.remainingFood / numCrew), true, true, out foodObtained, out foodSpace);
-            RSTUtils.Utilities.requireResourceID(lastVessel, globalsettings.WaterId, Math.Min(desiredWater, lastVesselInfo.remainingWater / numCrew), true, true, out waterObtained, out waterSpace);
-            RSTUtils.Utilities.requireResourceID(lastVessel, globalsettings.OxygenId, Math.Min(desiredOxygen, lastVesselInfo.remainingOxygen / numCrew), true, true, out oxygenObtained, out oxygenSpace);
-            RSTUtils.Utilities.requireResourceID(lastVessel, globalsettings.ElectricityId, Math.Min(desiredElectricity, lastVesselInfo.remainingElectricity / numCrew), true, true, out electricityObtained, out electricitySpace);
+            RSTUtils.Utilities.requireResourceID(lastVessel, globalsettings.FoodId, Math.Min(desiredFood, lastVesselInfo.remainingFood / numCrew), true, true, false, out foodObtained, out foodSpace);
+            RSTUtils.Utilities.requireResourceID(lastVessel, globalsettings.WaterId, Math.Min(desiredWater, lastVesselInfo.remainingWater / numCrew), true, true, false, out waterObtained, out waterSpace);
+            RSTUtils.Utilities.requireResourceID(lastVessel, globalsettings.OxygenId, Math.Min(desiredOxygen, lastVesselInfo.remainingOxygen / numCrew), true, true, false, out oxygenObtained, out oxygenSpace);
+            RSTUtils.Utilities.requireResourceID(lastVessel, globalsettings.ElectricityId, Math.Min(desiredElectricity, lastVesselInfo.remainingElectricity / numCrew), true, true, false, out electricityObtained, out electricitySpace);
 
-            RSTUtils.Utilities.requireResourceID(newVessel, globalsettings.FoodId, -foodObtained, true, false, out foodGiven, out foodSpace);
-            RSTUtils.Utilities.requireResourceID(newVessel, globalsettings.WaterId, -waterObtained, true, false, out waterGiven, out waterSpace);
-            RSTUtils.Utilities.requireResourceID(newVessel, globalsettings.OxygenId, -oxygenObtained, true, false, out oxygenGiven, out oxygenSpace);
-            RSTUtils.Utilities.requireResourceID(newVessel, globalsettings.ElectricityId, -electricityObtained, true, false, out electricityGiven, out electricitySpace);
+            RSTUtils.Utilities.requireResourceID(newVessel, globalsettings.FoodId, -foodObtained, true, false, false, out foodGiven, out foodSpace);
+            RSTUtils.Utilities.requireResourceID(newVessel, globalsettings.WaterId, -waterObtained, true, false, false, out waterGiven, out waterSpace);
+            RSTUtils.Utilities.requireResourceID(newVessel, globalsettings.OxygenId, -oxygenObtained, true, false, false, out oxygenGiven, out oxygenSpace);
+            RSTUtils.Utilities.requireResourceID(newVessel, globalsettings.ElectricityId, -electricityObtained, true, false, false, out electricityGiven, out electricitySpace);
         }
 
         private void FillRescueEvaSuit(Vessel vessel)
@@ -758,10 +731,10 @@ namespace Tac
 
             double foodObtained, waterObtained, oxygenObtained, electricityObtained = 0;
             double foodSpace, waterSpace, oxygenSpace, electricitySpace = 0;
-            RSTUtils.Utilities.requireResourceID(vessel, globalsettings.ElectricityId, -fillAmount * settings_sec2.EvaElectricityConsumptionRate * settings_sec3.EvaDefaultResourceAmount, true, false, out electricityObtained, out electricitySpace);
-            RSTUtils.Utilities.requireResourceID(vessel, globalsettings.FoodId, -fillAmount * settings_sec2.FoodConsumptionRate * settings_sec3.EvaDefaultResourceAmount, true, false, out foodObtained, out foodSpace);
-            RSTUtils.Utilities.requireResourceID(vessel, globalsettings.WaterId, -fillAmount * settings_sec2.WaterConsumptionRate * settings_sec3.EvaDefaultResourceAmount, true, false, out waterObtained, out waterSpace);
-            RSTUtils.Utilities.requireResourceID(vessel, globalsettings.OxygenId, -fillAmount * settings_sec2.OxygenConsumptionRate * settings_sec3.EvaDefaultResourceAmount, true, false, out oxygenObtained, out oxygenSpace);
+            RSTUtils.Utilities.requireResourceID(vessel, globalsettings.ElectricityId, -fillAmount * settings_sec2.EvaElectricityConsumptionRate * settings_sec3.EvaDefaultResourceAmount, true, false, false, out electricityObtained, out electricitySpace);
+            RSTUtils.Utilities.requireResourceID(vessel, globalsettings.FoodId, -fillAmount * settings_sec2.FoodConsumptionRate * settings_sec3.EvaDefaultResourceAmount, true, false, false, out foodObtained, out foodSpace);
+            RSTUtils.Utilities.requireResourceID(vessel, globalsettings.WaterId, -fillAmount * settings_sec2.WaterConsumptionRate * settings_sec3.EvaDefaultResourceAmount, true, false, false, out waterObtained, out waterSpace);
+            RSTUtils.Utilities.requireResourceID(vessel, globalsettings.OxygenId, -fillAmount * settings_sec2.OxygenConsumptionRate * settings_sec3.EvaDefaultResourceAmount, true, false, false, out oxygenObtained, out oxygenSpace);
             
         }
 
@@ -778,14 +751,14 @@ namespace Tac
             }
             double foodObtained, waterObtained, oxygenObtained, electricityObtained, co2Obtained, wasteObtained, wastewaterObtained = 0;
             double foodSpace, waterSpace, oxygenSpace, electricitySpace = 0;
-            RSTUtils.Utilities.requireResourceID(newVessel, globalsettings.ElectricityId, -lastVesselInfo.remainingElectricity, true, false, out electricityObtained, out electricitySpace);
-            RSTUtils.Utilities.requireResourceID(newVessel, globalsettings.FoodId, -lastVesselInfo.remainingFood, true, false, out foodObtained, out foodSpace);
-            RSTUtils.Utilities.requireResourceID(newVessel, globalsettings.WaterId, -lastVesselInfo.remainingWater, true, false, out waterObtained, out waterSpace);
-            RSTUtils.Utilities.requireResourceID(newVessel, globalsettings.OxygenId, -lastVesselInfo.remainingOxygen, true, false, out oxygenObtained, out oxygenSpace);
+            RSTUtils.Utilities.requireResourceID(newVessel, globalsettings.ElectricityId, -lastVesselInfo.remainingElectricity, true, false, false, out electricityObtained, out electricitySpace);
+            RSTUtils.Utilities.requireResourceID(newVessel, globalsettings.FoodId, -lastVesselInfo.remainingFood, true, false, false, out foodObtained, out foodSpace);
+            RSTUtils.Utilities.requireResourceID(newVessel, globalsettings.WaterId, -lastVesselInfo.remainingWater, true, false, false, out waterObtained, out waterSpace);
+            RSTUtils.Utilities.requireResourceID(newVessel, globalsettings.OxygenId, -lastVesselInfo.remainingOxygen, true, false, false, out oxygenObtained, out oxygenSpace);
 
-            RSTUtils.Utilities.requireResourceID(newVessel, globalsettings.CO2Id, -lastVesselInfo.remainingCO2, true, false, out co2Obtained, out oxygenSpace);
-            RSTUtils.Utilities.requireResourceID(newVessel, globalsettings.WasteId, -lastVesselInfo.remainingWaste, true, false, out wasteObtained, out foodSpace);
-            RSTUtils.Utilities.requireResourceID(newVessel, globalsettings.WasteWaterId, -lastVesselInfo.remainingWasteWater, true, false, out wastewaterObtained, out waterSpace);
+            RSTUtils.Utilities.requireResourceID(newVessel, globalsettings.CO2Id, -lastVesselInfo.remainingCO2, true, false, false, out co2Obtained, out oxygenSpace);
+            RSTUtils.Utilities.requireResourceID(newVessel, globalsettings.WasteId, -lastVesselInfo.remainingWaste, true, false, false, out wasteObtained, out foodSpace);
+            RSTUtils.Utilities.requireResourceID(newVessel, globalsettings.WasteWaterId, -lastVesselInfo.remainingWasteWater, true, false, false, out wastewaterObtained, out waterSpace);
             
         }
         

@@ -54,6 +54,9 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="..\..\REPOSoftTechKSPUtils\RSTutilities.cs">
+      <Link>RSTutilities.cs</Link>
+    </Compile>
     <Compile Include="..\..\REPOSoftTechKSPUtils\ToolBarManager.cs">
       <Link>ToolBarManager.cs</Link>
     </Compile>
@@ -79,7 +82,6 @@
     <Compile Include="EditorController.cs" />
     <Compile Include="InstallChecker.cs" />
     <Compile Include="RectExtentions.cs" />
-    <Compile Include="RSTutilities.cs" />
     <Compile Include="SettingsParams.cs" />
     <Compile Include="SpaceCenterManager.cs" />
     <Compile Include="TacLifeSupport.cs" />

@@ -77,9 +77,7 @@ namespace Tac
             {
                 if (HighLogic.LoadedScene == GameScenes.MAINMENU || HighLogic.LoadedScene == GameScenes.SETTINGS || HighLogic.LoadedScene == GameScenes.SPACECENTER)
                 {
-                    //if (member.Name != "TempinKelvin" && member.Name != "StripLightsActive" && member.Name != "ToolTips" &&
-                    //    member.Name != "UseAppLToolbar" && member.Name != "DebugLogging")
-                        return true;
+                    return true;
                 }
             }
             return false;
@@ -93,8 +91,7 @@ namespace Tac
             {
                 if (enabled && hibernate != "Die")
                     return true;
-                else
-                    return false;
+                return false;
             }
             if (enabled)
                 return true;
@@ -131,40 +128,40 @@ namespace Tac
         }
 
         [GameParameters.CustomFloatParameterUI("Food Consumption Rate",
-            toolTip = "Amt of food consumed per Kerbal (units per second).", minValue = 0.00000001f, maxValue = 0.001f, displayFormat = "F11", stepCount = 10000)]
-        public float FoodConsumptionRate = 0.000016927083333f;
+            toolTip = "Amt of food consumed per Kerbal (units per Day).", minValue = 0.01f, maxValue = 4f, displayFormat = "F6", stepCount = 1000)]
+        public float FoodConsumptionRate = 0.365625f;
 
         [GameParameters.CustomFloatParameterUI("Water Consumption Rate",
-            toolTip = "Amt of water consumed per Kerbal (units per second).", minValue = 0.000001f, maxValue = 0.001f, displayFormat = "F11", stepCount = 10000)]
-        public float WaterConsumptionRate = 0.000011188078704f;
+            toolTip = "Amt of water consumed per Kerbal (units per Day).", minValue = 0.01f, maxValue = 2f, displayFormat = "F6", stepCount = 1000)]
+        public float WaterConsumptionRate = 0.2416625f;
 
         [GameParameters.CustomFloatParameterUI("Oxygen Consumption Rate",
-            toolTip = "Amt of oxygen consumed per Kerbal (units per second).", minValue = 0.0001f, maxValue = 0.100f, displayFormat = "F11", stepCount = 10000)]
-        public float OxygenConsumptionRate = 0.001713537562385f;
+            toolTip = "Amt of oxygen consumed per Kerbal (units per Day).", minValue = 10f, maxValue = 250f, displayFormat = "F6", stepCount = 1000)]
+        public float OxygenConsumptionRate = 37.01241f;
 
         [GameParameters.CustomFloatParameterUI("Base Electricity Rate",
-            toolTip = "Base Electricity Consumption Rate (units per second).", minValue = 0.0001f, maxValue = 0.100f, displayFormat = "F11", stepCount = 10000)]
-        public float BaseElectricityConsumptionRate = 0.02125f;
+            toolTip = "Base Electricity Consumption Rate (units per Day).", minValue = 300f, maxValue = 2000f, displayFormat = "F1", stepCount = 1000)]
+        public float BaseElectricityConsumptionRate = 459f;
 
         [GameParameters.CustomFloatParameterUI("Kerbal Electricity Rate",
-            toolTip = "Per Kerbal Electricity Consumption Rate (units per second).", minValue = 0.0001f, maxValue = 0.100f, displayFormat = "F11", stepCount = 10000)]
-        public float ElectricityConsumptionRate = 0.014166666666667f;
+            toolTip = "Per Kerbal Electricity Consumption Rate (units per Day).", minValue = 100f, maxValue = 1000f, displayFormat = "F1", stepCount = 1000)]
+        public float ElectricityConsumptionRate = 306f;
 
         [GameParameters.CustomFloatParameterUI("EVA Electricity Rate",
-            toolTip = "EVA Electricity Consumption Rate (units per second).", minValue = 0.0001f, maxValue = 0.100f, displayFormat = "F11", stepCount = 10000)]
-        public float EvaElectricityConsumptionRate = 0.00425f;
+            toolTip = "EVA Electricity Consumption Rate (units per Day).", minValue = 5f, maxValue = 1000f, displayFormat = "F1", stepCount = 1000)]
+        public float EvaElectricityConsumptionRate = 91.8f;
 
         [GameParameters.CustomFloatParameterUI("CarbonDioxide Production Rate",
-            toolTip = "Per Kerbal CarbonDioxide Production Rate (units per second).", minValue = 0.0001f, maxValue = 0.100f, displayFormat = "F11", stepCount = 10000)]
-        public float CO2ProductionRate = 0.00148012889876f;
+            toolTip = "Per Kerbal CarbonDioxide Production Rate (units per Day).", minValue = 1f, maxValue = 300f, displayFormat = "F6", stepCount = 300)]
+        public float CO2ProductionRate = 31.97978f;
 
         [GameParameters.CustomFloatParameterUI("Waste Production Rate",
-            toolTip = "Per Kerbal Waste Production Rate (units per second).", minValue = 0.00000001f, maxValue = 0.001f, displayFormat = "F11", stepCount = 10000)]
-        public float WasteProductionRate = 0.000001539351852f;
+            toolTip = "Per Kerbal Waste Production Rate (units per Day).", minValue = 0.01f, maxValue = 4f, displayFormat = "F6", stepCount = 1000)]
+        public float WasteProductionRate = 0.03325f;
 
         [GameParameters.CustomFloatParameterUI("Waste Water Production Rate",
-            toolTip = "Per Kerbal Waste Water Production Rate (units per second).", minValue = 0.00000001f, maxValue = 0.001f, displayFormat = "F11", stepCount = 10000)]
-        public float WasteWaterProductionRate = 0.000014247685185f;
+            toolTip = "Per Kerbal Waste Water Production Rate (units per Day).", minValue = 0.1f, maxValue = 4f, displayFormat = "F6", stepCount = 1000)]
+        public float WasteWaterProductionRate = 0.30775f;
 
         public override void SetDifficultyPreset(GameParameters.Preset preset)
         {
@@ -195,8 +192,6 @@ namespace Tac
                 if (HighLogic.LoadedScene == GameScenes.MAINMENU || HighLogic.LoadedScene == GameScenes.SETTINGS ||
                     HighLogic.LoadedScene == GameScenes.SPACECENTER)
                 {
-                    //if (member.Name != "TempinKelvin" && member.Name != "StripLightsActive" && member.Name != "ToolTips" &&
-                    //    member.Name != "UseAppLToolbar" && member.Name != "DebugLogging")
                     return true;
                 }
             }
@@ -207,8 +202,7 @@ namespace Tac
         {
             if (parameters.CustomParams<TAC_SettingsParms>().enabled)
                 return true;
-            else
-                return false;
+            return false;
         }
 
         public override void OnLoad(ConfigNode node)
@@ -217,15 +211,30 @@ namespace Tac
             {
                 TacStartOnce.Instance.Awake();
             }
-            FoodConsumptionRate = (float)TacStartOnce.globalSettings.FoodConsumptionRate;
-            WaterConsumptionRate = (float) TacStartOnce.globalSettings.WaterConsumptionRate;
-            OxygenConsumptionRate = (float) TacStartOnce.globalSettings.OxygenConsumptionRate;
-            BaseElectricityConsumptionRate = (float) TacStartOnce.globalSettings.BaseElectricityConsumptionRate;
-            ElectricityConsumptionRate = (float) TacStartOnce.globalSettings.ElectricityConsumptionRate;
-            EvaElectricityConsumptionRate = (float) TacStartOnce.globalSettings.EvaElectricityConsumptionRate;
-            CO2ProductionRate = (float) TacStartOnce.globalSettings.CO2ProductionRate;
-            WasteProductionRate = (float) TacStartOnce.globalSettings.WasteProductionRate;
-            WasteWaterProductionRate = (float) TacStartOnce.globalSettings.WasteWaterProductionRate;
+            var hoursDay = GameSettings.KERBIN_TIME ? 6 : 24;
+            FoodConsumptionRate = (float)(TacStartOnce.globalSettings.FoodConsumptionRate / 60 / 60 / hoursDay);
+            WaterConsumptionRate = (float) (TacStartOnce.globalSettings.WaterConsumptionRate / 60 / 60 / hoursDay);
+            OxygenConsumptionRate = (float) (TacStartOnce.globalSettings.OxygenConsumptionRate / 60 / 60 / hoursDay);
+            BaseElectricityConsumptionRate = (float) (TacStartOnce.globalSettings.BaseElectricityConsumptionRate / 60 / 60 / hoursDay);
+            ElectricityConsumptionRate = (float) (TacStartOnce.globalSettings.ElectricityConsumptionRate / 60 / 60 / hoursDay);
+            EvaElectricityConsumptionRate = (float) (TacStartOnce.globalSettings.EvaElectricityConsumptionRate / 60 / 60 / hoursDay);
+            CO2ProductionRate = (float) (TacStartOnce.globalSettings.CO2ProductionRate / 60 / 60 / hoursDay);
+            WasteProductionRate = (float) (TacStartOnce.globalSettings.WasteProductionRate / 60 / 60 / hoursDay);
+            WasteWaterProductionRate = (float) (TacStartOnce.globalSettings.WasteWaterProductionRate / 60 / 60 / hoursDay);
+        }
+
+        public override void OnSave(ConfigNode node)
+        {
+            var hoursDay = GameSettings.KERBIN_TIME ? 6 : 24;
+            TacStartOnce.globalSettings.FoodConsumptionRate = (FoodConsumptionRate * 60 * 60 * hoursDay);
+            TacStartOnce.globalSettings.WaterConsumptionRate = (WaterConsumptionRate * 60 * 60 * hoursDay);
+            TacStartOnce.globalSettings.OxygenConsumptionRate = (OxygenConsumptionRate * 60 * 60 * hoursDay);
+            TacStartOnce.globalSettings.BaseElectricityConsumptionRate = (BaseElectricityConsumptionRate * 60 * 60 * hoursDay);
+            TacStartOnce.globalSettings.ElectricityConsumptionRate = (ElectricityConsumptionRate * 60 * 60 * hoursDay);
+            TacStartOnce.globalSettings.EvaElectricityConsumptionRate = (EvaElectricityConsumptionRate * 60 * 60 * hoursDay);
+            TacStartOnce.globalSettings.CO2ProductionRate = (CO2ProductionRate * 60 * 60 * hoursDay);
+            TacStartOnce.globalSettings.WasteProductionRate = (WasteProductionRate * 60 * 60 * hoursDay);
+            TacStartOnce.globalSettings.WasteWaterProductionRate = (WasteWaterProductionRate * 60 * 60 * hoursDay);
         }
     }
 
@@ -238,26 +247,26 @@ namespace Tac
         public override string Section { get { return "TAC Life Support"; } }
         public override int SectionOrder { get { return 3; } }
         
-        [GameParameters.CustomFloatParameterUI("Max Delta Time", toolTip = "This is the maximum time multiplier used between resource calculations.", minValue = 10000, maxValue = 300000, stepCount = 10000)]
-        public float MaxDeltaTime = 86400f;
+        [GameParameters.CustomIntParameterUI("Max Delta Time", toolTip = "This is the maximum time multiplier used between resource calculations.", minValue = 10000, maxValue = 200000)]
+        public int MaxDeltaTime = 86400;
 
-        [GameParameters.CustomFloatParameterUI("Max Delta Time (Electricity)", toolTip = "This is the maximum time multiplier used between Electricity calculations.", minValue = 1, maxValue = 5)]
-        public float ElectricityMaxDeltaTime = 1f;
+        [GameParameters.CustomIntParameterUI("Max Delta Time (Electricity)", toolTip = "This is the maximum time multiplier used between Electricity calculations.", minValue = 1, maxValue = 5)]
+        public int ElectricityMaxDeltaTime = 1;
 
-        [GameParameters.CustomFloatParameterUI("Max time without Food", toolTip = "The maximum amount of time a Kerbal can go without food (in secs).", minValue = 0, maxValue = 2000000, stepCount = 10000)]
-        public float MaxTimeWithoutFood = 1296000f;
+        [GameParameters.CustomIntParameterUI("Max time without Food", toolTip = "The maximum amount of time a Kerbal can go without food (in hours).", minValue = 1, maxValue = 400)]
+        public int MaxTimeWithoutFood = 360;
 
-        [GameParameters.CustomFloatParameterUI("Max time without Water", toolTip = "The maximum amount of time a Kerbal can go without water (in secs).", minValue = 0, maxValue = 500000, stepCount = 10000)]
-        public float MaxTimeWithoutWater = 129600f;
+        [GameParameters.CustomIntParameterUI("Max time without Water", toolTip = "The maximum amount of time a Kerbal can go without water (in hours).", minValue = 1, maxValue = 200)]
+        public int MaxTimeWithoutWater = 36;
 
-        [GameParameters.CustomFloatParameterUI("Max time without Oxygen", toolTip = "The maximum amount of time a Kerbal can go without oxygen (in secs).", minValue = 0, maxValue = 30000, stepCount = 1000)]
-        public float MaxTimeWithoutOxygen = 7200f;
+        [GameParameters.CustomIntParameterUI("Max time without Oxygen", toolTip = "The maximum amount of time a Kerbal can go without oxygen (in hours).", minValue = 1, maxValue = 100)]
+        public int MaxTimeWithoutOxygen = 2;
 
-        [GameParameters.CustomFloatParameterUI("Max time without Electricity", toolTip = "The maximum amount of time a Kerbal can go without electricity (in secs).", minValue = 0, maxValue = 30000, stepCount = 1000)]
-        public float MaxTimeWithoutElectricity = 7200f;
+        [GameParameters.CustomIntParameterUI("Max time without Electricity", toolTip = "The maximum amount of time a Kerbal can go without electricity (in hours).", minValue = 1, maxValue = 100)]
+        public int MaxTimeWithoutElectricity = 2;
 
-        [GameParameters.CustomFloatParameterUI("Default amount for EVA suits", toolTip = "The amount of each resource EVA suits will take with them (in units).", minValue = 0, maxValue = 100000, stepCount = 10000)]
-        public float EvaDefaultResourceAmount = 21600f;
+        [GameParameters.CustomIntParameterUI("Default amount for EVA suits", toolTip = "The amount of each resource EVA suits will take with them (in units).", minValue = 0, maxValue = 100000)]
+        public int EvaDefaultResourceAmount = 21600;
 
         
 
@@ -289,8 +298,6 @@ namespace Tac
             {
                 if (HighLogic.LoadedScene == GameScenes.MAINMENU || HighLogic.LoadedScene == GameScenes.SETTINGS || HighLogic.LoadedScene == GameScenes.SPACECENTER)
                 {
-                    //if (member.Name != "TempinKelvin" && member.Name != "StripLightsActive" && member.Name != "ToolTips" &&
-                    //    member.Name != "UseAppLToolbar" && member.Name != "DebugLogging")
                     return true;
                 }
             }
@@ -301,8 +308,7 @@ namespace Tac
         {
             if (parameters.CustomParams<TAC_SettingsParms>().enabled)
                 return true;
-            else
-                return false;
+            return false;
         }
 
         public override void OnLoad(ConfigNode node)
@@ -311,14 +317,27 @@ namespace Tac
             {
                 TacStartOnce.Instance.Awake();
             }
+            //set values, converted from per second to per Day for UI.
+            MaxDeltaTime = TacStartOnce.globalSettings.MaxDeltaTime;
+            ElectricityMaxDeltaTime = TacStartOnce.globalSettings.ElectricityMaxDeltaTime;
+            MaxTimeWithoutFood = (int)TacStartOnce.globalSettings.MaxTimeWithoutFood * 60 * 60;
+            MaxTimeWithoutOxygen = (int)TacStartOnce.globalSettings.MaxTimeWithoutOxygen * 60 * 60;
+            MaxTimeWithoutWater = (int)TacStartOnce.globalSettings.MaxTimeWithoutWater * 60 * 60;
+            MaxTimeWithoutElectricity = (int)TacStartOnce.globalSettings.MaxTimeWithoutElectricity * 60 * 60;
+            EvaDefaultResourceAmount = (int)TacStartOnce.globalSettings.EvaDefaultResourceAmount;
+        }
 
-            MaxDeltaTime = (float)TacStartOnce.globalSettings.MaxDeltaTime;
-            ElectricityMaxDeltaTime = (float) TacStartOnce.globalSettings.ElectricityMaxDeltaTime;
-            MaxTimeWithoutFood = (float) TacStartOnce.globalSettings.MaxTimeWithoutFood;
-            MaxTimeWithoutOxygen = (float) TacStartOnce.globalSettings.MaxTimeWithoutOxygen;
-            MaxTimeWithoutWater = (float) TacStartOnce.globalSettings.MaxTimeWithoutWater;
-            MaxTimeWithoutElectricity = (float) TacStartOnce.globalSettings.MaxTimeWithoutElectricity;
-            EvaDefaultResourceAmount = (float) TacStartOnce.globalSettings.EvaDefaultResourceAmount;
+        public override void OnSave(ConfigNode node)
+        {
+            
+            //Convert Hourly amounts from UI back to per second.
+            TacStartOnce.globalSettings.MaxDeltaTime = MaxDeltaTime;
+            TacStartOnce.globalSettings.ElectricityMaxDeltaTime = ElectricityMaxDeltaTime;
+            TacStartOnce.globalSettings.MaxTimeWithoutFood = MaxTimeWithoutFood / 60 / 60;
+            TacStartOnce.globalSettings.MaxTimeWithoutOxygen = MaxTimeWithoutOxygen / 60 / 60;
+            TacStartOnce.globalSettings.MaxTimeWithoutWater = MaxTimeWithoutWater / 60 / 60;
+            TacStartOnce.globalSettings.MaxTimeWithoutElectricity = MaxTimeWithoutElectricity / 60 / 60;
+            TacStartOnce.globalSettings.EvaDefaultResourceAmount = EvaDefaultResourceAmount;
         }
     }
 
