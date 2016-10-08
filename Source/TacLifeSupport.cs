@@ -99,6 +99,8 @@ namespace Tac
                 this.Log("Adding SpaceCenterManager");
                 var c = gameObject.AddComponent<SpaceCenterManager>();
                 children.Add(c);
+                var d = gameObject.AddComponent<LifeSupportController>();
+                children.Add(d);
             }
             else if (HighLogic.LoadedScene == GameScenes.TRACKSTATION)
             {
@@ -135,7 +137,7 @@ namespace Tac
                 s.Load(gameNode);
             }
 
-            this.Log("OnLoad: " + gameNode);
+            //this.Log("OnLoad: " + gameNode);
         }
 
         public override void OnSave(ConfigNode gameNode)
@@ -147,7 +149,7 @@ namespace Tac
                 s.Save(gameNode);
             }
             
-            this.Log("OnSave: " + gameNode);
+            //this.Log("OnSave: " + gameNode);
         }
 
         private void OnGameSceneLoadRequested(GameScenes gameScene)

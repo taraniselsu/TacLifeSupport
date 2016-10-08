@@ -45,19 +45,18 @@ namespace Tac
         private double seaLevelPressure = 101.325;
         private bool IsDFInstalled = false;
         private GlobalSettings globalsettings;
-        TAC_SettingsParms settings_sec1 = HighLogic.CurrentGame.Parameters.CustomParams<TAC_SettingsParms>();
-        TAC_SettingsParms_Sec2 settings_sec2 = HighLogic.CurrentGame.Parameters.CustomParams<TAC_SettingsParms_Sec2>();
-        TAC_SettingsParms_Sec3 settings_sec3 = HighLogic.CurrentGame.Parameters.CustomParams<TAC_SettingsParms_Sec3>();
+        private TAC_SettingsParms settings_sec1;
 
         void Awake()
         {
             this.Log("Awake");
             globalsettings = TacStartOnce.globalSettings;
+            settings_sec1 = HighLogic.CurrentGame.Parameters.CustomParams<TAC_SettingsParms>();
             TACMenuAppLToolBar = new AppLauncherToolBar("TACLifeSupport", "TAC Life Support",
                 Textures.PathToolbarIconsPath + "/TACgreenIconTB",
-                ApplicationLauncher.AppScenes.TRACKSTATION | ApplicationLauncher.AppScenes.FLIGHT,
+                ApplicationLauncher.AppScenes.TRACKSTATION | ApplicationLauncher.AppScenes.FLIGHT | ApplicationLauncher.AppScenes.SPACECENTER,
                 (Texture)Textures.GrnApplauncherIcon, (Texture)Textures.GrnApplauncherIcon,
-                GameScenes.TRACKSTATION , GameScenes.FLIGHT);
+                GameScenes.TRACKSTATION , GameScenes.FLIGHT, GameScenes.SPACECENTER);
 
             
             //Check if DeepFreeze is installed and set bool.
@@ -80,7 +79,7 @@ namespace Tac
             if (rosterWindow == null)
                 rosterWindow = new RosterWindow(TACMenuAppLToolBar, globalsettings, TacLifeSupport.Instance.gameSettings);
             if (monitoringWindow == null)
-                monitoringWindow = new LifeSupportMonitoringWindow(TACMenuAppLToolBar, this, globalsettings, TacLifeSupport.Instance.gameSettings, rosterWindow);
+                monitoringWindow = new LifeSupportMonitoringWindow(TACMenuAppLToolBar, TacLifeSupport.Instance.gameSettings, rosterWindow);
 
             if (settings_sec1.enabled)
             {
@@ -130,13 +129,16 @@ namespace Tac
 
         void OnGUI()
         {
-            monitoringWindow.SetVisible(TACMenuAppLToolBar.GuiVisible);
-            if (!TACMenuAppLToolBar.GuiVisible && rosterWindow.IsVisible())
+            if (settings_sec1.enabled)
             {
-                rosterWindow.SetVisible(false);
+                monitoringWindow.SetVisible(TACMenuAppLToolBar.GuiVisible);
+                if (!TACMenuAppLToolBar.GuiVisible && rosterWindow.IsVisible())
+                {
+                    rosterWindow.SetVisible(false);
+                }
+                rosterWindow?.OnGUI();
+                monitoringWindow?.OnGUI();
             }
-            rosterWindow?.OnGUI();
-            monitoringWindow?.OnGUI();
         }
 
         void FixedUpdate()
@@ -211,17 +213,17 @@ namespace Tac
 
                 if (vesselInfo.numCrew > 0)
                 {
-                    double foodRate = settings_sec2.FoodConsumptionRate * vesselInfo.numCrew;
+                    double foodRate = globalsettings.FoodConsumptionRate * vesselInfo.numCrew;
                     vesselInfo.estimatedTimeFoodDepleted = vesselInfo.lastFood + (vesselInfo.remainingFood / foodRate);
                     double estimatedFood = vesselInfo.remainingFood - ((currentTime - vesselInfo.lastFood) * foodRate);
                     ShowWarnings(vesselInfo.vesselName, estimatedFood, vesselInfo.maxFood, foodRate, globalsettings.Food, ref vesselInfo.foodStatus);
 
-                    double waterRate = settings_sec2.WaterConsumptionRate * vesselInfo.numCrew;
+                    double waterRate = globalsettings.WaterConsumptionRate * vesselInfo.numCrew;
                     vesselInfo.estimatedTimeWaterDepleted = vesselInfo.lastWater + (vesselInfo.remainingWater / waterRate);
                     double estimatedWater = vesselInfo.remainingWater - ((currentTime - vesselInfo.lastWater) * waterRate);
                     ShowWarnings(vesselInfo.vesselName, estimatedWater, vesselInfo.maxWater, waterRate, globalsettings.Water, ref vesselInfo.waterStatus);
 
-                    double oxygenRate = settings_sec2.OxygenConsumptionRate * vesselInfo.numCrew;
+                    double oxygenRate = globalsettings.OxygenConsumptionRate * vesselInfo.numCrew;
                     vesselInfo.estimatedTimeOxygenDepleted = vesselInfo.lastOxygen + (vesselInfo.remainingOxygen / oxygenRate);
                     double estimatedOxygen = vesselInfo.remainingOxygen - ((currentTime - vesselInfo.lastOxygen) * oxygenRate);
                     ShowWarnings(vesselInfo.vesselName, estimatedOxygen, vesselInfo.maxOxygen, oxygenRate, globalsettings.Oxygen, ref vesselInfo.oxygenStatus);
@@ -360,20 +362,20 @@ namespace Tac
 
         private void ConsumeFood(double currentTime, Vessel vessel, VesselInfo vesselInfo, ProtoCrewMember crewMember, CrewMemberInfo crewMemberInfo, Part part)
         {
-            if (vesselInfo.remainingFood >= settings_sec2.FoodConsumptionRate)
+            if (vesselInfo.remainingFood >= globalsettings.FoodConsumptionRate)
             {
-                double deltaTime = Math.Min(currentTime - crewMemberInfo.lastFood, settings_sec3.MaxDeltaTime);
-                double desiredFood = settings_sec2.FoodConsumptionRate * deltaTime;
+                double deltaTime = Math.Min(currentTime - crewMemberInfo.lastFood, globalsettings.MaxDeltaTime);
+                double desiredFood = globalsettings.FoodConsumptionRate * deltaTime;
                 double foodObtained, foodSpace = 0;
                 RSTUtils.Utilities.requireResourceID(vessel, globalsettings.FoodId,
                     Math.Min(desiredFood, vesselInfo.remainingFood/vesselInfo.numCrew), true, true, false, out foodObtained, out foodSpace);
                 
-                double wasteProduced = foodObtained * settings_sec2.WasteProductionRate / settings_sec2.FoodConsumptionRate;
+                double wasteProduced = foodObtained * globalsettings.WasteProductionRate / globalsettings.FoodConsumptionRate;
                 double wasteObtained, wasteSpace = 0;
                 RSTUtils.Utilities.requireResourceID(vessel, globalsettings.WasteId,
                     -wasteProduced, true, false, false, out wasteObtained, out wasteSpace);
                 
-                crewMemberInfo.lastFood += deltaTime - ((desiredFood - foodObtained) / settings_sec2.FoodConsumptionRate);
+                crewMemberInfo.lastFood += deltaTime - ((desiredFood - foodObtained) / globalsettings.FoodConsumptionRate);
 
                 if (crewMemberInfo.hibernating)
                 {
@@ -402,7 +404,7 @@ namespace Tac
             else
             {
                 double timeWithoutFood = currentTime - crewMemberInfo.lastFood;
-                if (timeWithoutFood > (settings_sec3.MaxTimeWithoutFood + crewMemberInfo.respite))
+                if (timeWithoutFood > (globalsettings.MaxTimeWithoutFood + crewMemberInfo.respite))
                 {
                     if (settings_sec1.hibernate == "Die")
                     {
@@ -425,20 +427,20 @@ namespace Tac
 
         private void ConsumeWater(double currentTime, Vessel vessel, VesselInfo vesselInfo, ProtoCrewMember crewMember, CrewMemberInfo crewMemberInfo, Part part)
         {
-            if (vesselInfo.remainingWater >= settings_sec2.WaterConsumptionRate)
+            if (vesselInfo.remainingWater >= globalsettings.WaterConsumptionRate)
             {
-                double deltaTime = Math.Min(currentTime - crewMemberInfo.lastWater, settings_sec3.MaxDeltaTime);
-                double desiredWater = settings_sec2.WaterConsumptionRate * deltaTime;
+                double deltaTime = Math.Min(currentTime - crewMemberInfo.lastWater, globalsettings.MaxDeltaTime);
+                double desiredWater = globalsettings.WaterConsumptionRate * deltaTime;
                 double waterObtained, waterSpace = 0;
                 RSTUtils.Utilities.requireResourceID(vessel, globalsettings.WaterId,
                     Math.Min(desiredWater, vesselInfo.remainingWater / vesselInfo.numCrew), true, true, false, out waterObtained, out waterSpace);
                 
-                double wasteWaterProduced = waterObtained * settings_sec2.WasteWaterProductionRate / settings_sec2.WaterConsumptionRate;
+                double wasteWaterProduced = waterObtained * globalsettings.WasteWaterProductionRate / globalsettings.WaterConsumptionRate;
                 double wasteWaterObtained, wasteWaterSpace = 0;
                 RSTUtils.Utilities.requireResourceID(vessel, globalsettings.WasteWaterId,
                     -wasteWaterProduced, true, false, false, out wasteWaterObtained, out wasteWaterSpace);
                 
-                crewMemberInfo.lastWater += deltaTime - ((desiredWater - waterObtained) / settings_sec2.WaterConsumptionRate);
+                crewMemberInfo.lastWater += deltaTime - ((desiredWater - waterObtained) / globalsettings.WaterConsumptionRate);
                 if (crewMemberInfo.hibernating)
                 {
                     this.LogWarning("Removing hibernation status from crew member: " + crewMemberInfo.name);
@@ -466,7 +468,7 @@ namespace Tac
             else
             {
                 double timeWithoutWater = currentTime - crewMemberInfo.lastWater;
-                if (timeWithoutWater > (settings_sec3.MaxTimeWithoutWater + crewMemberInfo.respite))
+                if (timeWithoutWater > (globalsettings.MaxTimeWithoutWater + crewMemberInfo.respite))
                 {
                     if (settings_sec1.hibernate == "Die")
                     {
@@ -492,16 +494,16 @@ namespace Tac
             {
                 if (vesselInfo.numCrew > 0)
                 {
-                    if (vesselInfo.remainingOxygen >= settings_sec2.OxygenConsumptionRate)
+                    if (vesselInfo.remainingOxygen >= globalsettings.OxygenConsumptionRate)
                     {
-                        double deltaTime = Math.Min(currentTime - vesselInfo.lastOxygen, settings_sec3.MaxDeltaTime);
-                        double rate = settings_sec2.OxygenConsumptionRate * vesselInfo.numCrew;
+                        double deltaTime = Math.Min(currentTime - vesselInfo.lastOxygen, globalsettings.MaxDeltaTime);
+                        double rate = globalsettings.OxygenConsumptionRate * vesselInfo.numCrew;
                         double desiredOxygen = rate * deltaTime;
                         double oxygenObtained, oxygenSpace = 0;
                         RSTUtils.Utilities.requireResourceID(vessel, globalsettings.OxygenId,
                             desiredOxygen, true, true, false, out oxygenObtained, out oxygenSpace);
                         
-                        double co2Production = oxygenObtained * settings_sec2.CO2ProductionRate / settings_sec2.OxygenConsumptionRate;
+                        double co2Production = oxygenObtained * globalsettings.CO2ProductionRate / globalsettings.OxygenConsumptionRate;
                         double co2Obtained, co2Space = 0;
                         RSTUtils.Utilities.requireResourceID(vessel, globalsettings.CO2Id,
                             -co2Production, true, false, false, out co2Obtained, out co2Space);
@@ -511,7 +513,7 @@ namespace Tac
                     else
                     {
                         double timeWithoutOxygen = currentTime - vesselInfo.lastOxygen;
-                        if (timeWithoutOxygen > settings_sec3.MaxTimeWithoutOxygen)
+                        if (timeWithoutOxygen > globalsettings.MaxTimeWithoutOxygen)
                         {
                             List<ProtoCrewMember> crew = vessel.GetVesselCrew();
                             int crewMemberIndex = UnityEngine.Random.Range(0, crew.Count - 1);
@@ -539,7 +541,7 @@ namespace Tac
             {
                 if (vesselInfo.remainingElectricity >= rate)
                 {
-                    double deltaTime = Math.Min(currentTime - vesselInfo.lastElectricity, Math.Max(settings_sec3.ElectricityMaxDeltaTime, TimeWarp.fixedDeltaTime));
+                    double deltaTime = Math.Min(currentTime - vesselInfo.lastElectricity, Math.Max(globalsettings.ElectricityMaxDeltaTime, TimeWarp.fixedDeltaTime));
                     double desiredElectricity = rate * deltaTime;
                     double electricityObtained, electricitySpace = 0;
                     RSTUtils.Utilities.requireResourceID(vessel, globalsettings.ElectricityId,
@@ -550,7 +552,7 @@ namespace Tac
                 else if (NeedElectricity(vessel, vesselInfo))
                 {
                     double timeWithoutElectricity = currentTime - vesselInfo.lastElectricity;
-                    if (timeWithoutElectricity > settings_sec3.MaxTimeWithoutElectricity)
+                    if (timeWithoutElectricity > globalsettings.MaxTimeWithoutElectricity)
                     {
                         List<ProtoCrewMember> crew = vessel.GetVesselCrew();
                         int crewMemberIndex = UnityEngine.Random.Range(0, crew.Count - 1);
@@ -570,17 +572,9 @@ namespace Tac
         {
             int crewCapacity = 0;
             vesselInfo.ClearAmounts();
-
             crewCapacity = vessel.GetCrewCapacity();
             vesselInfo.numCrew = vessel.GetCrewCount();
-
-            for (int i = 0; i < vessel.parts.Count; i++)
-            {
-                if (vessel.parts[i].protoModuleCrew.Count > 0)
-                {
-                    ++vesselInfo.numOccupiedParts;
-                }
-            }
+            vesselInfo.numOccupiedParts = vessel.crewedParts;
             vessel.GetConnectedResourceTotals(globalsettings.FoodId, out vesselInfo.remainingFood, out vesselInfo.maxFood);
             vessel.GetConnectedResourceTotals(globalsettings.WaterId, out vesselInfo.remainingWater, out vesselInfo.maxWater);
             vessel.GetConnectedResourceTotals(globalsettings.OxygenId, out vesselInfo.remainingOxygen, out vesselInfo.maxOxygen);
@@ -672,11 +666,11 @@ namespace Tac
         {
             if (!vessel.isEVA)
             {
-                return (settings_sec2.ElectricityConsumptionRate * vesselInfo.numCrew) + (settings_sec2.BaseElectricityConsumptionRate * vesselInfo.numOccupiedParts);
+                return (globalsettings.ElectricityConsumptionRate * vesselInfo.numCrew) + (globalsettings.BaseElectricityConsumptionRate * vesselInfo.numOccupiedParts);
             }
             else
             {
-                return settings_sec2.EvaElectricityConsumptionRate;
+                return globalsettings.EvaElectricityConsumptionRate;
             }
         }
 
@@ -687,10 +681,10 @@ namespace Tac
                 this.LogError("FillEvaSuit: new part does not have room for a Food resource.");
             }
 
-            double desiredFood = settings_sec2.FoodConsumptionRate * settings_sec3.EvaDefaultResourceAmount;
-            double desiredWater = settings_sec2.WaterConsumptionRate * settings_sec3.EvaDefaultResourceAmount;
-            double desiredOxygen = settings_sec2.OxygenConsumptionRate * settings_sec3.EvaDefaultResourceAmount;
-            double desiredElectricity = settings_sec2.EvaElectricityConsumptionRate * settings_sec3.EvaDefaultResourceAmount;
+            double desiredFood = globalsettings.FoodConsumptionRate * globalsettings.EvaDefaultResourceAmount;
+            double desiredWater = globalsettings.WaterConsumptionRate * globalsettings.EvaDefaultResourceAmount;
+            double desiredOxygen = globalsettings.OxygenConsumptionRate * globalsettings.EvaDefaultResourceAmount;
+            double desiredElectricity = globalsettings.EvaElectricityConsumptionRate * globalsettings.EvaDefaultResourceAmount;
 
             Vessel lastVessel = oldPart.vessel;
             Vessel newVessel = newPart.vessel;
@@ -731,10 +725,10 @@ namespace Tac
 
             double foodObtained, waterObtained, oxygenObtained, electricityObtained = 0;
             double foodSpace, waterSpace, oxygenSpace, electricitySpace = 0;
-            RSTUtils.Utilities.requireResourceID(vessel, globalsettings.ElectricityId, -fillAmount * settings_sec2.EvaElectricityConsumptionRate * settings_sec3.EvaDefaultResourceAmount, true, false, false, out electricityObtained, out electricitySpace);
-            RSTUtils.Utilities.requireResourceID(vessel, globalsettings.FoodId, -fillAmount * settings_sec2.FoodConsumptionRate * settings_sec3.EvaDefaultResourceAmount, true, false, false, out foodObtained, out foodSpace);
-            RSTUtils.Utilities.requireResourceID(vessel, globalsettings.WaterId, -fillAmount * settings_sec2.WaterConsumptionRate * settings_sec3.EvaDefaultResourceAmount, true, false, false, out waterObtained, out waterSpace);
-            RSTUtils.Utilities.requireResourceID(vessel, globalsettings.OxygenId, -fillAmount * settings_sec2.OxygenConsumptionRate * settings_sec3.EvaDefaultResourceAmount, true, false, false, out oxygenObtained, out oxygenSpace);
+            RSTUtils.Utilities.requireResourceID(vessel, globalsettings.ElectricityId, -fillAmount * globalsettings.EvaElectricityConsumptionRate * globalsettings.EvaDefaultResourceAmount, true, false, false, out electricityObtained, out electricitySpace);
+            RSTUtils.Utilities.requireResourceID(vessel, globalsettings.FoodId, -fillAmount * globalsettings.FoodConsumptionRate * globalsettings.EvaDefaultResourceAmount, true, false, false, out foodObtained, out foodSpace);
+            RSTUtils.Utilities.requireResourceID(vessel, globalsettings.WaterId, -fillAmount * globalsettings.WaterConsumptionRate * globalsettings.EvaDefaultResourceAmount, true, false, false, out waterObtained, out waterSpace);
+            RSTUtils.Utilities.requireResourceID(vessel, globalsettings.OxygenId, -fillAmount * globalsettings.OxygenConsumptionRate * globalsettings.EvaDefaultResourceAmount, true, false, false, out oxygenObtained, out oxygenSpace);
             
         }
 
@@ -806,7 +800,7 @@ namespace Tac
             if (rosterWindow == null)
                 rosterWindow = new RosterWindow(TACMenuAppLToolBar, globalsettings, TacLifeSupport.Instance.gameSettings);
             if (monitoringWindow == null)
-                monitoringWindow = new LifeSupportMonitoringWindow(TACMenuAppLToolBar, this, globalsettings, TacLifeSupport.Instance.gameSettings, rosterWindow);
+                monitoringWindow = new LifeSupportMonitoringWindow(TACMenuAppLToolBar, TacLifeSupport.Instance.gameSettings, rosterWindow);
 
             monitoringWindow.Load(globalNode);
             rosterWindow.Load(globalNode);

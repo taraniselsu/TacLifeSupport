@@ -98,11 +98,11 @@ namespace Tac
                 GUILayout.EndHorizontal();
                 GUILayout.BeginHorizontal();
                 GUILayout.Label("  Last food: ", labelStyle, GUILayout.Width(100));
-                GUILayout.Label(Utilities.FormatTime(currentTime - crewInfo.lastFood), getStyle(crewInfo.lastUpdate, crewInfo.lastFood, HighLogic.CurrentGame.Parameters.CustomParams<TAC_SettingsParms_Sec3>().MaxTimeWithoutFood));
+                GUILayout.Label(Utilities.FormatTime(currentTime - crewInfo.lastFood), getStyle(crewInfo.lastUpdate, crewInfo.lastFood, globalSettings.MaxTimeWithoutFood));
                 GUILayout.EndHorizontal();
                 GUILayout.BeginHorizontal();
                 GUILayout.Label("  Last water: ", labelStyle, GUILayout.Width(100));
-                GUILayout.Label(Utilities.FormatTime(currentTime - crewInfo.lastWater), getStyle(crewInfo.lastUpdate, crewInfo.lastWater, HighLogic.CurrentGame.Parameters.CustomParams<TAC_SettingsParms_Sec3>().MaxTimeWithoutWater));
+                GUILayout.Label(Utilities.FormatTime(currentTime - crewInfo.lastWater), getStyle(crewInfo.lastUpdate, crewInfo.lastWater, globalSettings.MaxTimeWithoutWater));
                 GUILayout.EndHorizontal();
                 if (HighLogic.CurrentGame.Parameters.CustomParams<TAC_SettingsParms>().hibernate != "Die" || crewInfo.hibernating)
                 {

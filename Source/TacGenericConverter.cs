@@ -145,7 +145,7 @@ namespace Tac
 
             GlobalSettings globalSettings = TacStartOnce.globalSettings;
 
-            double deltaTime = Math.Min(Planetarium.GetUniversalTime() - lastUpdateTime, HighLogic.CurrentGame.Parameters.CustomParams<TAC_SettingsParms_Sec3>().MaxDeltaTime);
+            double deltaTime = Math.Min(Planetarium.GetUniversalTime() - lastUpdateTime, TacStartOnce.globalSettings.MaxDeltaTime);
             lastUpdateTime += deltaTime;
 
             if (converterEnabled)
@@ -157,7 +157,7 @@ namespace Tac
                 }
 
                 double desiredAmount = conversionRate * deltaTime;
-                double maxElectricityDesired = Math.Min(desiredAmount, conversionRate * Math.Max(HighLogic.CurrentGame.Parameters.CustomParams<TAC_SettingsParms_Sec3>().ElectricityMaxDeltaTime, TimeWarp.fixedDeltaTime)); // Limit the max electricity consumed when reloading a vessel
+                double maxElectricityDesired = Math.Min(desiredAmount, conversionRate * Math.Max(TacStartOnce.globalSettings.ElectricityMaxDeltaTime, TimeWarp.fixedDeltaTime)); // Limit the max electricity consumed when reloading a vessel
 
                 // Limit the resource amounts so that we do not produce more than we have room for, nor consume more than is available
                 foreach (ResourceRatio output in outputResourceList)

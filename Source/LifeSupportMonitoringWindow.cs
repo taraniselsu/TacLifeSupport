@@ -49,7 +49,7 @@ namespace Tac
         private GUIStyle versionStyle;
         private Vector2 scrollPosition = Vector2.zero;
 
-        public LifeSupportMonitoringWindow(AppLauncherToolBar TACMenuAppLToolBar, LifeSupportController controller, GlobalSettings globalSettings, TacGameSettings gameSettings, RosterWindow rosterWindow)
+        public LifeSupportMonitoringWindow(AppLauncherToolBar TACMenuAppLToolBar,  TacGameSettings gameSettings, RosterWindow rosterWindow)
             : base(TACMenuAppLToolBar, "Life Support Monitoring", 300, 300)
         {
             this.gameSettings = gameSettings;
@@ -184,15 +184,15 @@ namespace Tac
                 GUILayout.Label(Utilities.FormatTime(vesselInfo.estimatedTimeFoodDepleted - currentTime), getStyle(vesselInfo.foodStatus));
                 GUILayout.EndHorizontal();
                 GUILayout.BeginHorizontal();
-                GUILayout.Label("  Water remaining:       ", getStyle(vesselInfo.foodStatus), GUILayout.Width(150));
+                GUILayout.Label("  Water remaining:       ", getStyle(vesselInfo.waterStatus), GUILayout.Width(150));
                 GUILayout.Label(Utilities.FormatTime(vesselInfo.estimatedTimeWaterDepleted - currentTime), getStyle(vesselInfo.waterStatus));
                 GUILayout.EndHorizontal();
                 GUILayout.BeginHorizontal();
-                GUILayout.Label("  Oxygen remaining:      ", getStyle(vesselInfo.foodStatus), GUILayout.Width(150));
+                GUILayout.Label("  Oxygen remaining:      ", getStyle(vesselInfo.oxygenStatus), GUILayout.Width(150));
                 GUILayout.Label(Utilities.FormatTime(vesselInfo.estimatedTimeOxygenDepleted - currentTime), getStyle(vesselInfo.oxygenStatus));
                 GUILayout.EndHorizontal();
                 GUILayout.BeginHorizontal();
-                GUILayout.Label("  Electricity remaining: ", getStyle(vesselInfo.foodStatus), GUILayout.Width(150));
+                GUILayout.Label("  Electricity remaining: ", getStyle(vesselInfo.electricityStatus), GUILayout.Width(150));
                 GUILayout.Label(Utilities.FormatTime(vesselInfo.estimatedTimeElectricityDepleted - currentTime), getStyle(vesselInfo.electricityStatus));
                 GUILayout.EndHorizontal();
             }

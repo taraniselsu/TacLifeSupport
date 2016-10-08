@@ -47,34 +47,32 @@ namespace Tac
         void Start()
         {
             this.Log("Start, new game = " + TacLifeSupport.Instance.gameSettings.IsNewSave);
-            
-            if (TacLifeSupport.Instance.gameSettings.IsNewSave)
+            if (HighLogic.CurrentGame.Parameters.CustomParams<TAC_SettingsParms>().enabled)
             {
-                this.Log("New save detected!");
-                //TACMenuAppLToolBar.onAppLaunchToggle();
-                Vector2 anchormin = new Vector2(0.5f, 0.5f);
-                Vector2 anchormax = new Vector2(0.5f, 0.5f);
-                string msg = "TAC LS Config Settings are now available via the KSP Settings - Difficulty Options Window.";
-                string title = "TAC Life Support";
-                UISkinDef skin = HighLogic.UISkin;
-                DialogGUIBase[] dialogGUIBase = new DialogGUIBase[1];
-                dialogGUIBase[0] = new DialogGUIButton("Ok", delegate{});
-                PopupDialog.SpawnPopupDialog(anchormin, anchormax, new MultiOptionDialog(msg, title, skin, dialogGUIBase), false, HighLogic.UISkin, true, string.Empty);
-                TacLifeSupport.Instance.gameSettings.IsNewSave = false;
-            }
-            
-            AddLifeSupport als = new AddLifeSupport();
-            als.run();
-
-            var crew = HighLogic.CurrentGame.CrewRoster.Crew;
-            var knownCrew = TacLifeSupport.Instance.gameSettings.knownCrew;
-            foreach (ProtoCrewMember crewMember in crew)
-            {
-                if (crewMember.rosterStatus != ProtoCrewMember.RosterStatus.Assigned && knownCrew.ContainsKey(crewMember.name))
+                if (TacLifeSupport.Instance.gameSettings.IsNewSave)
                 {
-                    this.Log("Deleting crew member: " + crewMember.name);
-                    knownCrew.Remove(crewMember.name);
+                    this.Log("New save detected!");
+                    //TACMenuAppLToolBar.onAppLaunchToggle();
+                    Vector2 anchormin = new Vector2(0.5f, 0.5f);
+                    Vector2 anchormax = new Vector2(0.5f, 0.5f);
+                    string msg =
+                        "TAC LS Config Settings are now available via the KSP Settings - Difficulty Options Window.";
+                    string title = "TAC Life Support";
+                    UISkinDef skin = HighLogic.UISkin;
+                    DialogGUIBase[] dialogGUIBase = new DialogGUIBase[1];
+                    dialogGUIBase[0] = new DialogGUIButton("Ok", delegate { });
+                    PopupDialog.SpawnPopupDialog(anchormin, anchormax,
+                        new MultiOptionDialog(msg, title, skin, dialogGUIBase), false, HighLogic.UISkin, true,
+                        string.Empty);
+                    TacLifeSupport.Instance.gameSettings.IsNewSave = false;
                 }
+
+                AddLifeSupport als = new AddLifeSupport();
+                als.run();
+            }
+            else
+            {
+                Destroy(this);
             }
         }
         

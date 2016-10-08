@@ -71,14 +71,13 @@ namespace Tac
             this.Log("Adding resources to " + part.name + "/" + prefabPart.partInfo.title);
 
             EvaAddPartModule(prefabPart);
-            var settings = HighLogic.CurrentGame.Parameters.CustomParams<TAC_SettingsParms_Sec2>();
-            EvaAddResource(prefabPart, settings.EvaElectricityConsumptionRate, globalSettings.Electricity, false);
-            EvaAddResource(prefabPart, settings.FoodConsumptionRate, globalSettings.Food, false);
-            EvaAddResource(prefabPart, settings.WaterConsumptionRate, globalSettings.Water, false);
-            EvaAddResource(prefabPart, settings.OxygenConsumptionRate, globalSettings.Oxygen, false);
-            EvaAddResource(prefabPart, settings.CO2ProductionRate, globalSettings.CO2, false);
-            EvaAddResource(prefabPart, settings.WasteProductionRate, globalSettings.Waste, false);
-            EvaAddResource(prefabPart, settings.WasteWaterProductionRate, globalSettings.WasteWater, false);
+            EvaAddResource(prefabPart, globalSettings.EvaElectricityConsumptionRate, globalSettings.Electricity, false);
+            EvaAddResource(prefabPart, globalSettings.FoodConsumptionRate, globalSettings.Food, false);
+            EvaAddResource(prefabPart, globalSettings.WaterConsumptionRate, globalSettings.Water, false);
+            EvaAddResource(prefabPart, globalSettings.OxygenConsumptionRate, globalSettings.Oxygen, false);
+            EvaAddResource(prefabPart, globalSettings.CO2ProductionRate, globalSettings.CO2, false);
+            EvaAddResource(prefabPart, globalSettings.WasteProductionRate, globalSettings.Waste, false);
+            EvaAddResource(prefabPart, globalSettings.WasteWaterProductionRate, globalSettings.WasteWater, false);
             for (int i = 0; i < prefabPart.Resources.Count; i++)
             {
                 this.Log("Resource " + prefabPart.Resources[i].resourceName);
@@ -114,7 +113,7 @@ namespace Tac
         {
             try
             {
-                double max = rate * HighLogic.CurrentGame.Parameters.CustomParams<TAC_SettingsParms_Sec3>().EvaDefaultResourceAmount;
+                double max = rate * TacStartOnce.globalSettings.EvaDefaultResourceAmount;
                 ConfigNode resourceNode = new ConfigNode("RESOURCE");
                 resourceNode.AddValue("name", name);
                 resourceNode.AddValue("maxAmount", max);
