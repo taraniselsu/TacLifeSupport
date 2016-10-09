@@ -37,10 +37,10 @@ namespace Tac
 {
     class LifeSupportMonitoringWindow : Window<LifeSupportMonitoringWindow>
     {
-        private readonly TacGameSettings gameSettings;
+        //private readonly TacGameSettings gameSettings;
         private readonly RosterWindow rosterWindow;
         private readonly string version;
-
+        
         private GUIStyle labelStyle;
         private GUIStyle warningStyle;
         private GUIStyle criticalStyle;
@@ -49,10 +49,10 @@ namespace Tac
         private GUIStyle versionStyle;
         private Vector2 scrollPosition = Vector2.zero;
 
-        public LifeSupportMonitoringWindow(AppLauncherToolBar TACMenuAppLToolBar,  TacGameSettings gameSettings, RosterWindow rosterWindow)
+        public LifeSupportMonitoringWindow(AppLauncherToolBar TACMenuAppLToolBar,  RosterWindow rosterWindow)
             : base(TACMenuAppLToolBar, "Life Support Monitoring", 300, 300)
         {
-            this.gameSettings = gameSettings;
+            //this.gameSettings = gameSettings;
             this.rosterWindow = rosterWindow;
             version = Utilities.GetDllVersion(this);
 
@@ -107,17 +107,17 @@ namespace Tac
             GUILayout.Space(4);
 
             double currentTime = Planetarium.GetUniversalTime();
-            var vesselsCopy = new List<KeyValuePair<Guid, VesselInfo>>(gameSettings.knownVessels);
-            vesselsCopy.Sort(new VesselSorter(FlightGlobals.ActiveVessel));
+            //var vesselsCopy = new List<KeyValuePair<Guid, VesselInfo>>(gameSettings.knownVessels);
+            //vesselsCopy.Sort(new VesselSorter(FlightGlobals.ActiveVessel));
 
             if (FlightGlobals.ready)
             {
                 // Draw the active vessel first, if any
                 Vessel activeVessel = FlightGlobals.ActiveVessel;
                 int skipCount = 0;
-                if (activeVessel != null && vesselsCopy.Count > 0)
+                if (activeVessel != null && LifeSupportController.Instance.knownVesselsList.Count > 0)
                 {
-                    var vessel = vesselsCopy[0];
+                    var vessel = LifeSupportController.Instance.knownVesselsList[0];
                     if (FlightGlobals.ActiveVessel.id == vessel.Key)
                     {
                         DrawVesselInfo(vessel.Value, currentTime);
@@ -142,7 +142,7 @@ namespace Tac
                     GUILayout.Space(10);
                 }
 
-                foreach (var vessel in vesselsCopy.Skip(skipCount))
+                foreach (var vessel in LifeSupportController.Instance.knownVesselsList.Skip(skipCount))
                 {
                     DrawVesselInfo(vessel.Value, currentTime);
                     GUILayout.Space(10);
@@ -150,7 +150,7 @@ namespace Tac
             }
             else
             {
-                foreach (var vessel in vesselsCopy)
+                foreach (var vessel in LifeSupportController.Instance.knownVesselsList)
                 {
                     DrawVesselInfo(vessel.Value, currentTime);
                     GUILayout.Space(10);

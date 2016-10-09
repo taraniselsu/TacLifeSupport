@@ -45,12 +45,20 @@ namespace Tac
         private double seaLevelPressure = 101.325;
         private bool IsDFInstalled = false;
         private GlobalSettings globalsettings;
+        private TacGameSettings gameSettings;
+        private float VesselSortCounter = 0f;
+        private bool VesselSortCountervslChgFlag = false;
+        public static LifeSupportController Instance;
+
         private TAC_SettingsParms settings_sec1;
+        internal List<KeyValuePair<Guid, VesselInfo>> knownVesselsList;
 
         void Awake()
         {
             this.Log("Awake");
+            Instance = this;
             globalsettings = TacStartOnce.globalSettings;
+            VesselSortCounter = Time.time;
             settings_sec1 = HighLogic.CurrentGame.Parameters.CustomParams<TAC_SettingsParms>();
             TACMenuAppLToolBar = new AppLauncherToolBar("TACLifeSupport", "TAC Life Support",
                 Textures.PathToolbarIconsPath + "/TACgreenIconTB",
@@ -76,10 +84,12 @@ namespace Tac
         void Start()
         {
             this.Log("Start");
+            gameSettings = TacLifeSupport.Instance.gameSettings;
+            knownVesselsList = new List<KeyValuePair<Guid, VesselInfo>>(gameSettings.knownVessels);
             if (rosterWindow == null)
-                rosterWindow = new RosterWindow(TACMenuAppLToolBar, globalsettings, TacLifeSupport.Instance.gameSettings);
+                rosterWindow = new RosterWindow(TACMenuAppLToolBar, globalsettings, gameSettings);
             if (monitoringWindow == null)
-                monitoringWindow = new LifeSupportMonitoringWindow(TACMenuAppLToolBar, TacLifeSupport.Instance.gameSettings, rosterWindow);
+                monitoringWindow = new LifeSupportMonitoringWindow(TACMenuAppLToolBar, rosterWindow);
 
             if (settings_sec1.enabled)
             {
@@ -93,7 +103,7 @@ namespace Tac
                 RSTUtils.Utilities.setScaledScreen();
 
                 var crew = HighLogic.CurrentGame.CrewRoster.Crew;
-                var knownCrew = TacLifeSupport.Instance.gameSettings.knownCrew;
+                var knownCrew = gameSettings.knownCrew;
                 foreach (ProtoCrewMember crewMember in crew)
                 {
                     if (crewMember.rosterStatus != ProtoCrewMember.RosterStatus.Assigned && knownCrew.ContainsKey(crewMember.name))
@@ -106,6 +116,7 @@ namespace Tac
                 GameEvents.onCrewOnEva.Add(OnCrewOnEva);
                 GameEvents.onCrewBoardVessel.Add(OnCrewBoardVessel);
                 GameEvents.onGameSceneLoadRequested.Add(OnGameSceneLoadRequested);
+                GameEvents.onVesselSwitching.Add(onVesselSwitching);
 
                 // Double check that we have the right sea level pressure for Kerbin
                 seaLevelPressure = FlightGlobals.Bodies[1].GetPressure(0);
@@ -125,6 +136,7 @@ namespace Tac
             GameEvents.onCrewOnEva.Remove(OnCrewOnEva);
             GameEvents.onCrewBoardVessel.Remove(OnCrewBoardVessel);
             GameEvents.onGameSceneLoadRequested.Remove(OnGameSceneLoadRequested);
+            GameEvents.onVesselSwitching.Remove(onVesselSwitching);
         }
 
         void OnGUI()
@@ -147,7 +159,7 @@ namespace Tac
             {
                 return;
             }
-
+            
             // If DeepFreeze is installed do DeepFreeze processing to remove frozen kerbals from our list.
             if (IsDFInstalled)
             {
@@ -170,7 +182,7 @@ namespace Tac
             double currentTime = Planetarium.GetUniversalTime();
             var allVessels = FlightGlobals.Vessels;
             var loadedVessels = FlightGlobals.VesselsLoaded;
-            var knownVessels = TacLifeSupport.Instance.gameSettings.knownVessels;
+            var knownVessels = gameSettings.knownVessels;
 
             var vesselsToDelete = new List<Guid>();
             foreach (var entry in knownVessels)
@@ -183,11 +195,11 @@ namespace Tac
                 {
                     this.Log("Deleting vessel " + vesselInfo.vesselName + " - vessel does not exist anymore");
                     vesselsToDelete.Add(vesselId);
-                    var crewToDelete = TacLifeSupport.Instance.gameSettings.knownCrew.Where(e => e.Value.vesselId == vesselId).Select(e => e.Key).ToList();
+                    var crewToDelete = gameSettings.knownCrew.Where(e => e.Value.vesselId == vesselId).Select(e => e.Key).ToList();
                     foreach (String name in crewToDelete)
                     {
                         this.Log("Deleting crew member: " + name);
-                        TacLifeSupport.Instance.gameSettings.knownCrew.Remove(name);
+                        gameSettings.knownCrew.Remove(name);
                     }
                     continue;
                 }
@@ -240,7 +252,7 @@ namespace Tac
                 if (!knownVessels.ContainsKey(vessel.id) && vessel.GetVesselCrew().Count > 0 && IsLaunched(vessel))
                 {
                     this.Log("New vessel: " + vessel.vesselName + " (" + vessel.id + ")");
-                    var knownCrew = TacLifeSupport.Instance.gameSettings.knownCrew;
+                    var knownCrew = gameSettings.knownCrew;
 
                     if (vessel.isEVA)
                     {
@@ -254,6 +266,7 @@ namespace Tac
                     VesselInfo vesselInfo = new VesselInfo(vessel.vesselName, currentTime);
                     knownVessels[vessel.id] = vesselInfo;
                     UpdateVesselInfo(vesselInfo, vessel);
+                    VesselSortCountervslChgFlag = true;
 
                     foreach (ProtoCrewMember crewMember in vessel.GetVesselCrew())
                     {
@@ -270,6 +283,15 @@ namespace Tac
                         }
                     }
                 }
+            }
+
+            if (Time.time - VesselSortCounter > settings_sec1.vesselUpdateList || VesselSortCountervslChgFlag)
+            {
+                knownVesselsList.Clear();
+                knownVesselsList = gameSettings.knownVessels.ToList();
+                knownVesselsList.Sort(new VesselSorter(FlightGlobals.ActiveVessel));
+                VesselSortCounter = Time.time;
+                VesselSortCountervslChgFlag = false;
             }
         }
 
@@ -800,7 +822,7 @@ namespace Tac
             if (rosterWindow == null)
                 rosterWindow = new RosterWindow(TACMenuAppLToolBar, globalsettings, TacLifeSupport.Instance.gameSettings);
             if (monitoringWindow == null)
-                monitoringWindow = new LifeSupportMonitoringWindow(TACMenuAppLToolBar, TacLifeSupport.Instance.gameSettings, rosterWindow);
+                monitoringWindow = new LifeSupportMonitoringWindow(TACMenuAppLToolBar, rosterWindow);
 
             monitoringWindow.Load(globalNode);
             rosterWindow.Load(globalNode);
@@ -831,6 +853,12 @@ namespace Tac
 
             // Disable this instance because a new instance will be created after the new scene is loaded
             loadingNewScene = true;
+        }
+
+        private void onVesselSwitching(Vessel from, Vessel to)
+        {
+            this.Log("TAC LS Vessel Change Flagged to: " + to.vesselName);
+            VesselSortCountervslChgFlag = true;
         }
 
         private bool IsLaunched(Vessel vessel)
@@ -886,6 +914,46 @@ namespace Tac
             }
 
             return true;
+        }
+
+        private class VesselSorter : IComparer<KeyValuePair<Guid, VesselInfo>>
+        {
+            private Vessel activeVessel;
+
+            public VesselSorter(Vessel activeVessel)
+            {
+                this.activeVessel = activeVessel;
+            }
+
+            public int Compare(KeyValuePair<Guid, VesselInfo> left, KeyValuePair<Guid, VesselInfo> right)
+            {
+                // Put the active vessel at the top of the list
+                if (activeVessel != null)
+                {
+                    if (left.Key.Equals(activeVessel.id))
+                    {
+                        if (right.Key.Equals(activeVessel.id))
+                        {
+                            // Both sides are the active vessel (i.e. the same vessel)
+                            return 0;
+                        }
+                        else
+                        {
+                            return -1;
+                        }
+                    }
+                    else if (right.Key.Equals(activeVessel.id))
+                    {
+                        return 1;
+                    }
+                }
+
+                // then sort by the shortest time until a resource is depleted
+                double leftShortestTime = Math.Min(left.Value.estimatedTimeFoodDepleted, Math.Min(left.Value.estimatedTimeWaterDepleted, left.Value.estimatedTimeOxygenDepleted));
+                double rightShortestTime = Math.Min(right.Value.estimatedTimeFoodDepleted, Math.Min(right.Value.estimatedTimeWaterDepleted, right.Value.estimatedTimeOxygenDepleted));
+
+                return leftShortestTime.CompareTo(rightShortestTime);
+            }
         }
     }
 }

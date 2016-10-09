@@ -54,7 +54,10 @@ namespace Tac
 
         [GameParameters.CustomIntParameterUI("Respawn delay (seconds)", minValue = 300, maxValue = 100000, stepSize = 300, autoPersistance = true, toolTip = "The time in seconds a kerbal is comatose\n if fatal EC / Heat option is off")]
         public int respawnDelay = 300;
-        
+
+        [GameParameters.CustomIntParameterUI("Vessel List Update delay (Minutes)", minValue = 1, maxValue = 30, stepSize = 1, autoPersistance = true, toolTip = "The Minutes between List Sorting for the Vessel List.\nThe list is sorted from least resources to most and this is costly performance-wise.")]
+        public int vesselUpdateList = 5;
+
         public override IList ValidValues(MemberInfo member)
         {
             if (member.Name == "hibernate")
