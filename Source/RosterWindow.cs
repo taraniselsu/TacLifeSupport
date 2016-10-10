@@ -26,10 +26,6 @@
  * is purely coincidental.
  */
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using RSTUtils;
 using UnityEngine;
 
@@ -88,7 +84,7 @@ namespace Tac
             GUILayout.Space(4);
 
             double currentTime = Planetarium.GetUniversalTime();
-
+            
             foreach (CrewMemberInfo crewInfo in gameSettings.knownCrew.Values)
             {
                 GUILayout.Label(crewInfo.name + " (" + crewInfo.vesselName + ")", headerStyle);

@@ -26,10 +26,6 @@
  * is purely coincidental.
  */
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using RSTUtils;
 using UnityEngine;
 
@@ -107,8 +103,6 @@ namespace Tac
             GUILayout.Space(4);
 
             double currentTime = Planetarium.GetUniversalTime();
-            //var vesselsCopy = new List<KeyValuePair<Guid, VesselInfo>>(gameSettings.knownVessels);
-            //vesselsCopy.Sort(new VesselSorter(FlightGlobals.ActiveVessel));
 
             if (FlightGlobals.ready)
             {
@@ -141,18 +135,17 @@ namespace Tac
                     }
                     GUILayout.Space(10);
                 }
-
-                foreach (var vessel in LifeSupportController.Instance.knownVesselsList.Skip(skipCount))
-                {
-                    DrawVesselInfo(vessel.Value, currentTime);
+                for (int i = skipCount; i < LifeSupportController.Instance.knownVesselsList.Count; i ++)
+                { 
+                    DrawVesselInfo(LifeSupportController.Instance.knownVesselsList[i].Value, currentTime);
                     GUILayout.Space(10);
                 }
             }
             else
             {
-                foreach (var vessel in LifeSupportController.Instance.knownVesselsList)
-                {
-                    DrawVesselInfo(vessel.Value, currentTime);
+                for (int i = 0; i < LifeSupportController.Instance.knownVesselsList.Count; i++)
+                { 
+                    DrawVesselInfo(LifeSupportController.Instance.knownVesselsList[i].Value, currentTime);
                     GUILayout.Space(10);
                 }
             }
@@ -211,46 +204,6 @@ namespace Tac
             else
             {
                 return labelStyle;
-            }
-        }
-
-        private class VesselSorter : IComparer<KeyValuePair<Guid, VesselInfo>>
-        {
-            private Vessel activeVessel;
-
-            public VesselSorter(Vessel activeVessel)
-            {
-                this.activeVessel = activeVessel;
-            }
-
-            public int Compare(KeyValuePair<Guid, VesselInfo> left, KeyValuePair<Guid, VesselInfo> right)
-            {
-                // Put the active vessel at the top of the list
-                if (activeVessel != null)
-                {
-                    if (left.Key.Equals(activeVessel.id))
-                    {
-                        if (right.Key.Equals(activeVessel.id))
-                        {
-                            // Both sides are the active vessel (i.e. the same vessel)
-                            return 0;
-                        }
-                        else
-                        {
-                            return -1;
-                        }
-                    }
-                    else if (right.Key.Equals(activeVessel.id))
-                    {
-                        return 1;
-                    }
-                }
-
-                // then sort by the shortest time until a resource is depleted
-                double leftShortestTime = Math.Min(left.Value.estimatedTimeFoodDepleted, Math.Min(left.Value.estimatedTimeWaterDepleted, left.Value.estimatedTimeOxygenDepleted));
-                double rightShortestTime = Math.Min(right.Value.estimatedTimeFoodDepleted, Math.Min(right.Value.estimatedTimeWaterDepleted, right.Value.estimatedTimeOxygenDepleted));
-
-                return leftShortestTime.CompareTo(rightShortestTime);
             }
         }
     }

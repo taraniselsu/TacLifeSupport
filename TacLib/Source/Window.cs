@@ -65,9 +65,8 @@ namespace Tac
             windowPos = new Rect((Screen.width - defaultWidth) / 2, (Screen.height - defaultHeight) / 2, defaultWidth, defaultHeight);
             mouseDown = false;
             visible = false;
-
-            var texture = Utilities.LoadImage<T>(IOUtils.GetFilePathFor(typeof(T), "resize.png"));
-            resizeContent = (texture != null) ? new GUIContent(texture, "Drag to resize the window.") : new GUIContent("R", "Drag to resize the window.");
+            
+            resizeContent = (Textures.BtnResize != null) ? new GUIContent(Textures.BtnResize, "Drag to resize the window.") : new GUIContent("R", "Drag to resize the window.");
 
             Resizable = true;
             HideCloseButton = false;

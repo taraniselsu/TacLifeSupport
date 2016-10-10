@@ -27,10 +27,6 @@ namespace Tac
         internal string category = "Filter by Function";
         internal string subCategoryTitle = "TAC LS Items";
         internal string defaultTitle = "Tac";
-
-        //internal string iconName = "R&D_node_icon_evatech";
-        //create and the icons
-        
         internal bool filter = true;
         
         public void Awake()
@@ -46,29 +42,13 @@ namespace Tac
         public void Setup()
         {
             this.Log("TACLS EditorFilter Setup");
-            GameEvents.onGUIEditorToolbarReady.Remove(SubCategories);
+            RemoveSubFilter();
 
             TacMMCallBack();
 
             if (!HighLogic.CurrentGame.Parameters.CustomParams<TAC_SettingsParms>().EditorFilter)
             {
                 this.Log("EditorFilter Option is Off");
-                PartCategorizer.Category Filter =
-                    PartCategorizer.Instance.filters.Find(f => f.button.categoryName == category);
-                if (Filter != null)
-                {
-                    PartCategorizer.Category subFilter =
-                        Filter.subcategories.Find(f => f.button.categoryName == subCategoryTitle);
-                    if (subFilter != null)
-                    {
-                        MethodInfo subFilterDeleteMethod =
-                            typeof(PartCategorizer.Category).GetMethod("DeleteSubcategory",
-                                BindingFlags.Instance | BindingFlags.NonPublic);
-                        subFilterDeleteMethod.Invoke(subFilter, null);
-                    }
-                }
-                GameEvents.onGUIEditorToolbarReady.Remove(SubCategories);
-                AddPartUtilitiesCat();
                 return;
             }
             
@@ -114,11 +94,28 @@ namespace Tac
             return true;
         }
 
+        private void RemoveSubFilter()
+        {
+            if (PartCategorizer.Instance != null)
+            {
+                PartCategorizer.Category Filter = PartCategorizer.Instance.filters.Find(f => f.button.categoryName == category);
+                if (Filter != null)
+                {
+                    PartCategorizer.Category subFilter = Filter.subcategories.Find(f => f.button.categoryName == subCategoryTitle);
+                    if (subFilter != null)
+                    {
+                        subFilter.DeleteSubcategory();
+                    }
+                }
+                GameEvents.onGUIEditorToolbarReady.Remove(SubCategories);
+                AddPartUtilitiesCat();
+            }
+        }
+
         private void RemovePartUtilitiesCat()
         {
             foreach (AvailablePart avPart in TacavPartItems)
             {
-                //PartCategorizer.Instance.subcategoryFunctionUtility.RemovePart(avPart);
                 avPart.category = PartCategories.none;
             }
         }
@@ -127,7 +124,6 @@ namespace Tac
         {
             foreach (AvailablePart avPart in TacavPartItems)
             {
-                //PartCategorizer.Instance.subcategoryFunctionUtility.AddPart(avPart);
                 avPart.category = PartCategories.Utility;
             }
         }
@@ -146,10 +142,7 @@ namespace Tac
             Icon filterTacLS = new Icon("TACLSEditor", Textures.EditorCatIcon, Textures.EditorCatIcon, true);
             PartCategorizer.Category Filter = PartCategorizer.Instance.filters.Find(f => f.button.categoryName == category);
             PartCategorizer.AddCustomSubcategoryFilter(Filter, subCategoryTitle, filterTacLS, p => EditorItemsFilter(p));
-            //RemovePartUtilitiesCat();
-            //RUIToggleButtonTyped button = Filter.button.activeButton;
-            //button.SetFalse(button, RUIToggleButtonTyped.ClickType.FORCED);
-            //button.SetTrue(button, RUIToggleButtonTyped.ClickType.FORCED);
+            GameEvents.onGUIEditorToolbarReady.Remove(SubCategories);
         }
     }
 }

@@ -100,7 +100,6 @@
     <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <!-- <Import Project="..\TacLib\Source\CommonProperties.proj" /> -->
   <PropertyGroup>
     <BaseDir>$(ProjectDir)..</BaseDir>
   </PropertyGroup>
@@ -175,8 +174,8 @@
     <!--<Message Text="Built version = $(MaxAssemblyFileVersion)" Importance="high" /> -->
     <Message Text="Built version = $(VersionNum)" Importance="high" />
     <!-- Copy the dll to the GameData directory -->
-    <MakeDir Directories="$(BaseDir)\GameData\ThunderAerospace\$(ProjectName)\" />
-    <Copy SourceFiles="$(TargetPath)" DestinationFolder="$(BaseDir)\GameData\ThunderAerospace\$(ProjectName)\" />
+    <MakeDir Directories="$(BaseDir)\GameData\ThunderAerospace\$(ProjectName)\Plugins\" />
+    <Copy SourceFiles="$(TargetPath)" DestinationFolder="$(BaseDir)\GameData\ThunderAerospace\$(ProjectName)\Plugins\" />
     <CallTarget Targets="WriteVersionFile" />
     <CallTarget Targets="WriteAvcVersion" Condition="$(ModUrl) != ''" />
     <CallTarget Targets="CopyToTest" />
@@ -205,8 +204,8 @@
     <Warning Condition="'$(KSP_TEST)' == ''" Text="The environment variable KSP_TEST is not set!" />
     <Message Text="Execute Test Debug mode commands" Importance="high" />
     <Exec Command="$(ProjectDir)packages\Mono.Unofficial.pdb2mdb.4.2.3.4\tools\pdb2mdb.exe $(TargetFileName)" WorkingDirectory="$(TargetDir)" IgnoreExitCode="true" Condition="'$(KSP_TEST)' != ''" />
-    <Copy SourceFiles="$(TargetDir)$(TargetName).pdb" DestinationFolder="$(KSP_TEST)\GameData\ThunderAerospace\TacLifeSupport\" Condition="'$(KSP_TEST)' != ''" />
-    <Copy SourceFiles="$(TargetDir)$(TargetName).dll.mdb" DestinationFolder="$(KSP_TEST)\GameData\ThunderAerospace\TacLifeSupport\" Condition="'$(KSP_TEST)' != ''" />
+    <Copy SourceFiles="$(TargetDir)$(TargetName).pdb" DestinationFolder="$(KSP_TEST)\GameData\ThunderAerospace\TacLifeSupport\Plugins\" Condition="'$(KSP_TEST)' != ''" />
+    <Copy SourceFiles="$(TargetDir)$(TargetName).dll.mdb" DestinationFolder="$(KSP_TEST)\GameData\ThunderAerospace\TacLifeSupport\Plugins\" Condition="'$(KSP_TEST)' != ''" />
     <Exec Command="test.bat" WorkingDirectory="$(BaseDir)\" IgnoreExitCode="true" Condition="'$(KSP_TEST)' != ''" />
     <Message Text="Execute Test Debug mode commands complete." Importance="high" />
   </Target>

@@ -44,6 +44,7 @@ namespace Tac
         private bool loadingNewScene = false;
         private double seaLevelPressure = 101.325;
         private bool IsDFInstalled = false;
+        private static bool resetDFonSceneChange = false;
         private GlobalSettings globalsettings;
         private TacGameSettings gameSettings;
         private float VesselSortCounter = 0f;
@@ -74,6 +75,7 @@ namespace Tac
             if (DeepFreezeassembly != null)
             {
                 IsDFInstalled = true;
+                resetDFonSceneChange = true;
             }
             else
             {
@@ -86,6 +88,7 @@ namespace Tac
             this.Log("Start");
             gameSettings = TacLifeSupport.Instance.gameSettings;
             knownVesselsList = new List<KeyValuePair<Guid, VesselInfo>>(gameSettings.knownVessels);
+            resetVesselList();
             if (rosterWindow == null)
                 rosterWindow = new RosterWindow(TACMenuAppLToolBar, globalsettings, gameSettings);
             if (monitoringWindow == null)
@@ -101,7 +104,7 @@ namespace Tac
                 TACMenuAppLToolBar.Start(settings_sec1.UseAppLToolbar);
 
                 RSTUtils.Utilities.setScaledScreen();
-
+                
                 var crew = HighLogic.CurrentGame.CrewRoster.Crew;
                 var knownCrew = gameSettings.knownCrew;
                 foreach (ProtoCrewMember crewMember in crew)
@@ -117,6 +120,8 @@ namespace Tac
                 GameEvents.onCrewBoardVessel.Add(OnCrewBoardVessel);
                 GameEvents.onGameSceneLoadRequested.Add(OnGameSceneLoadRequested);
                 GameEvents.onVesselSwitching.Add(onVesselSwitching);
+                GameEvents.onVesselSwitchingToUnloaded.Add(onVesselSwitching);
+                GameEvents.onVesselCrewWasModified.Add(changeVesselCrew);
 
                 // Double check that we have the right sea level pressure for Kerbin
                 seaLevelPressure = FlightGlobals.Bodies[1].GetPressure(0);
@@ -137,6 +142,8 @@ namespace Tac
             GameEvents.onCrewBoardVessel.Remove(OnCrewBoardVessel);
             GameEvents.onGameSceneLoadRequested.Remove(OnGameSceneLoadRequested);
             GameEvents.onVesselSwitching.Remove(onVesselSwitching);
+            GameEvents.onVesselSwitchingToUnloaded.Remove(onVesselSwitching);
+            GameEvents.onVesselCrewWasModified.Remove(changeVesselCrew);
         }
 
         void OnGUI()
@@ -163,29 +170,35 @@ namespace Tac
             // If DeepFreeze is installed do DeepFreeze processing to remove frozen kerbals from our list.
             if (IsDFInstalled)
             {
-                if (!DFWrapper.InstanceExists)  // Check if DFWrapper has been initialized or not. If not try to initialize.
+                if (Time.timeSinceLevelLoad > 3.0f)
                 {
-                    DFWrapper.InitDFWrapper();
-                }
-                if (DFWrapper.APIReady)
-                {
-                    //Check if the DeepFreeze Dictionary contains any Frozen Kerbals in the current Game.
-                    //If it does process them.
-                    if (DFWrapper.DeepFreezeAPI.FrozenKerbals.Count > 0)
+                    if (!DFWrapper.InstanceExists || resetDFonSceneChange)
+                        // Check if DFWrapper has been initialized or not. If not try to initialize.
                     {
-                        //Remove any Frozen Kerbals from TAC LS tracking.
-                        RemoveFrozenKerbals();
+                        DFWrapper.InitDFWrapper();
+                        resetDFonSceneChange = false;
+                    }
+                    if (DFWrapper.APIReady)
+                    {
+                        //Check if the DeepFreeze Dictionary contains any Frozen Kerbals in the current Game.
+                        //If it does process them.
+                        var Frozenkerbals = DFWrapper.DeepFreezeAPI.FrozenKerbals;
+                        if (Frozenkerbals.Count > 0)
+                        {
+                            //Remove any Frozen Kerbals from TAC LS tracking.
+                            RemoveFrozenKerbals(Frozenkerbals);
+                        }
                     }
                 }
             }
 
+            //todo A lot of this should be event driven.
+            
             double currentTime = Planetarium.GetUniversalTime();
             var allVessels = FlightGlobals.Vessels;
             var loadedVessels = FlightGlobals.VesselsLoaded;
-            var knownVessels = gameSettings.knownVessels;
-
             var vesselsToDelete = new List<Guid>();
-            foreach (var entry in knownVessels)
+            foreach (var entry in gameSettings.knownVessels)
             {
                 Guid vesselId = entry.Key;
                 VesselInfo vesselInfo = entry.Value;
@@ -201,6 +214,7 @@ namespace Tac
                         this.Log("Deleting crew member: " + name);
                         gameSettings.knownCrew.Remove(name);
                     }
+                    VesselSortCountervslChgFlag = true;
                     continue;
                 }
 
@@ -212,6 +226,7 @@ namespace Tac
                     {
                         this.Log("Deleting vessel " + vesselInfo.vesselName + " - no crew parts anymore");
                         vesselsToDelete.Add(vesselId);
+                        VesselSortCountervslChgFlag = true;
                         continue;
                     }
 
@@ -244,63 +259,83 @@ namespace Tac
                 }
 
             }
-
-            vesselsToDelete.ForEach(id => knownVessels.Remove(id));
-
-            foreach (Vessel vessel in loadedVessels)
+            for (int i = 0; i < vesselsToDelete.Count; i++)
             {
-                if (!knownVessels.ContainsKey(vessel.id) && vessel.GetVesselCrew().Count > 0 && IsLaunched(vessel))
+                gameSettings.knownVessels.Remove(vesselsToDelete[i]);
+            }
+            
+            for (int i = 0; i < loadedVessels.Count; i++)
+            { 
+                if (!gameSettings.knownVessels.ContainsKey(loadedVessels[i].id) && loadedVessels[i].GetVesselCrew().Count > 0 && IsLaunched(loadedVessels[i]))
                 {
-                    this.Log("New vessel: " + vessel.vesselName + " (" + vessel.id + ")");
+                    this.Log("New vessel: " + loadedVessels[i].vesselName + " (" + loadedVessels[i].id + ")");
                     var knownCrew = gameSettings.knownCrew;
 
-                    if (vessel.isEVA)
+                    if (loadedVessels[i].isEVA)
                     {
-                        ProtoCrewMember crewMember = vessel.GetVesselCrew().FirstOrDefault();
+                        ProtoCrewMember crewMember = loadedVessels[i].GetVesselCrew().FirstOrDefault();
                         if (crewMember != null && !knownCrew.ContainsKey(crewMember.name))
                         {
-                            FillRescueEvaSuit(vessel);
+                            FillRescueEvaSuit(loadedVessels[i]);
                         }
                     }
 
-                    VesselInfo vesselInfo = new VesselInfo(vessel.vesselName, currentTime);
-                    knownVessels[vessel.id] = vesselInfo;
-                    UpdateVesselInfo(vesselInfo, vessel);
+                    VesselInfo vesselInfo = new VesselInfo(loadedVessels[i].vesselName, currentTime);
+                    gameSettings.knownVessels[loadedVessels[i].id] = vesselInfo;
+                    UpdateVesselInfo(vesselInfo, loadedVessels[i]);
                     VesselSortCountervslChgFlag = true;
 
-                    foreach (ProtoCrewMember crewMember in vessel.GetVesselCrew())
-                    {
-                        if (knownCrew.ContainsKey(crewMember.name))
-                        {
-                            CrewMemberInfo crewMemberInfo = knownCrew[crewMember.name];
-                            crewMemberInfo.vesselId = vessel.id;
-                            crewMemberInfo.vesselName = vessel.vesselName;
-                        }
-                        else
-                        {
-                            this.Log("New crew member: " + crewMember.name);
-                            knownCrew[crewMember.name] = new CrewMemberInfo(crewMember.name, vessel.vesselName, vessel.id, currentTime);
-                        }
-                    }
+                    changeVesselCrew(loadedVessels[i]);
                 }
             }
 
-            if (Time.time - VesselSortCounter > settings_sec1.vesselUpdateList || VesselSortCountervslChgFlag)
+            //Will re-create and sort the knownVesselsList that is used by the GUI.
+            //It does this when a Dictionary event occurs or every settings_sec1.vesselUpdateList minutes.
+            //The second part is because the sort order is ActiveVessel followed by all other vessels based on remaining resources.
+            //It WAS doing this on every onGUI loop.
+            //todo once the event driven changes are made look at this again and if it can be event driven as well
+            if (Time.time - VesselSortCounter > settings_sec1.vesselUpdateList * 60 || VesselSortCountervslChgFlag)
             {
-                knownVesselsList.Clear();
-                knownVesselsList = gameSettings.knownVessels.ToList();
-                knownVesselsList.Sort(new VesselSorter(FlightGlobals.ActiveVessel));
-                VesselSortCounter = Time.time;
-                VesselSortCountervslChgFlag = false;
+                resetVesselList();
             }
         }
 
-        private void RemoveFrozenKerbals()
+        private void resetVesselList()
+        {
+            knownVesselsList.Clear();
+            knownVesselsList = gameSettings.knownVessels.ToList();
+            knownVesselsList.Sort(new VesselSorter(FlightGlobals.ActiveVessel));
+            VesselSortCounter = Time.time;
+            VesselSortCountervslChgFlag = false;
+        }
+
+        private void changeVesselCrew(Vessel vessel)
+        {
+            double currentTime = Planetarium.GetUniversalTime();
+            var vslCrew = vessel.GetVesselCrew();
+            for (int i = 0; i < vslCrew.Count; i++)
+            { 
+                if (gameSettings.knownCrew.ContainsKey(vslCrew[i].name))
+                {
+                    CrewMemberInfo crewMemberInfo = gameSettings.knownCrew[vslCrew[i].name];
+                    crewMemberInfo.vesselId = vessel.id;
+                    crewMemberInfo.vesselName = vessel.vesselName;
+                }
+                else
+                {
+                    this.Log("New crew member: " + vslCrew[i].name);
+                    gameSettings.knownCrew[vslCrew[i].name] = new CrewMemberInfo(vslCrew[i].name, vessel.vesselName, vessel.id, currentTime);
+                    resetVesselList();
+                }
+            }
+        }
+
+        private void RemoveFrozenKerbals(Dictionary<string, DFWrapper.KerbalInfo> FrozenKerbals)
         {
             try
             {
-                foreach (KeyValuePair<string, DFWrapper.KerbalInfo> frznCrew in DFWrapper.DeepFreezeAPI.FrozenKerbals)
-                {
+                foreach (var frznCrew in FrozenKerbals)
+                { 
                     if (TacLifeSupport.Instance.gameSettings.knownCrew.ContainsKey(frznCrew.Key))
                     {
                         this.Log("Deleting Frozen crew member: " + frznCrew.Key);
@@ -319,7 +354,8 @@ namespace Tac
         {
             try
             {
-                if (DFWrapper.DeepFreezeAPI.FrozenKerbals.ContainsKey(kerbalName))
+                var tmpFrznKerbals = DFWrapper.DeepFreezeAPI.FrozenKerbals;
+                if (tmpFrznKerbals.ContainsKey(kerbalName))
                     return true;
                 else
                     return false;
@@ -853,12 +889,14 @@ namespace Tac
 
             // Disable this instance because a new instance will be created after the new scene is loaded
             loadingNewScene = true;
+            // Reset DeepFreeze Reflection wrapper on scene change
+            resetDFonSceneChange = true;
         }
 
         private void onVesselSwitching(Vessel from, Vessel to)
         {
             this.Log("TAC LS Vessel Change Flagged to: " + to.vesselName);
-            VesselSortCountervslChgFlag = true;
+            resetVesselList();
         }
 
         private bool IsLaunched(Vessel vessel)
