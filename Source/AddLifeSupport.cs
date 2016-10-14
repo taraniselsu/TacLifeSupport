@@ -39,7 +39,7 @@ namespace Tac
         public AddLifeSupport()
         {
             this.Log("AddLifeSupport Constructor");
-            this.globalSettings = TacStartOnce.globalSettings;
+            this.globalSettings = TacStartOnce.Instance.globalSettings;
         }
 
         public void run()
@@ -113,7 +113,7 @@ namespace Tac
         {
             try
             {
-                double max = rate * TacStartOnce.globalSettings.EvaDefaultResourceAmount;
+                double max = rate * TacStartOnce.Instance.globalSettings.EvaDefaultResourceAmount;
                 ConfigNode resourceNode = new ConfigNode("RESOURCE");
                 resourceNode.AddValue("name", name);
                 resourceNode.AddValue("maxAmount", max);

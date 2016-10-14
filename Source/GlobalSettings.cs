@@ -26,11 +26,6 @@
  * is purely coincidental.
  */
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-
 namespace Tac
 {
     public class GlobalSettings
@@ -123,8 +118,9 @@ namespace Tac
         {
             //if (node.HasNode(configNodeName))
             //{
-                //ConfigNode settingsNode = node.GetNode(configNodeName);
-
+            //ConfigNode settingsNode = node.GetNode(configNodeName);
+            //ConfigNode TACLSsettingsNode = new ConfigNode();
+            //if (!node.TryGetNode(configNodeName, ref TACLSsettingsNode)) return;
             node.TryGetValue("MaxDeltaTime", ref MaxDeltaTime);
             node.TryGetValue("ElectricityMaxDeltaTime", ref ElectricityMaxDeltaTime);
             node.TryGetValue("FoodResource", ref Food);

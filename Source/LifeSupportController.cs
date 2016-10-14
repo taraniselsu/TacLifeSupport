@@ -58,7 +58,7 @@ namespace Tac
         {
             this.Log("Awake");
             Instance = this;
-            globalsettings = TacStartOnce.globalSettings;
+            globalsettings = TacStartOnce.Instance.globalSettings;
             VesselSortCounter = Time.time;
             settings_sec1 = HighLogic.CurrentGame.Parameters.CustomParams<TAC_SettingsParms>();
             TACMenuAppLToolBar = new AppLauncherToolBar("TACLifeSupport", "TAC Life Support",
@@ -734,7 +734,7 @@ namespace Tac
 
         private void FillEvaSuit(Part oldPart, Part newPart)
         {
-            if (!newPart.Resources.Contains(TacStartOnce.globalSettings.FoodId))
+            if (!newPart.Resources.Contains(TacStartOnce.Instance.globalSettings.FoodId))
             {
                 this.LogError("FillEvaSuit: new part does not have room for a Food resource.");
             }

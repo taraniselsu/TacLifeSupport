@@ -20,6 +20,9 @@ v0.12.5
 	Clicking the "R" button to open roster window now acts as a toggle so pressing again will close the roster window.
 	Fixed the Editor Category Icon to be more in line with the other icons.	
 	Moved icons into the Textures folder. Moved the Plugin DLL to the Plugins folder.
+	Converted all resource converters from custom build resource converter module to use the stock ModuleResourceConverter module, they also now all support
+	Engineer specialist boosts.
+	Updated Community Resource Pack to the latest version (v0.6.0).
 v0.12.4
 	Fixed Settings file not being read correctly and using default values. (Typo - fat fingers)
 	VAB/SPH Editor Category for TAC LS parts can be toggled on or off via the Settings menu (Hit the TAC LS icon in the Space Center).

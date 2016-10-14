@@ -26,11 +26,7 @@
  * is purely coincidental.
  */
 
-using System;
 using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Text;
 using UnityEngine;
 
 namespace Tac
@@ -38,7 +34,7 @@ namespace Tac
     [KSPAddon(KSPAddon.Startup.MainMenu, true)]
     public class TacStartOnce : MonoBehaviour
     {
-        public static GlobalSettings globalSettings { get; set; }
+        public GlobalSettings globalSettings { get; set; }
         public static TacStartOnce Instance;
         
         public void Awake()
@@ -47,6 +43,16 @@ namespace Tac
             DontDestroyOnLoad(this);
 
             globalSettings = new GlobalSettings();
+            LoadGlobalSettings();
+        }
+
+        public void Start()
+        {
+            Textures.LoadIconAssets();
+        }
+
+        public void LoadGlobalSettings()
+        {
             ConfigNode[] globalNodes;
             globalNodes = GameDatabase.Instance.GetConfigNodes("TACLSGlobalSettings");
             if (globalNodes != null)
@@ -61,17 +67,12 @@ namespace Tac
                 this.LogError("Could not find TACLSGlobalSettings node!");
             }
         }
-
-        public void Start()
-        {
-            Textures.LoadIconAssets();
-        }
     }
 
     [KSPScenario(ScenarioCreationOptions.AddToAllGames, GameScenes.SPACECENTER, GameScenes.EDITOR, GameScenes.FLIGHT, GameScenes.TRACKSTATION)]
     public class TacLifeSupport : ScenarioModule
     {
-        public static TacLifeSupport Instance { get; private set; }
+        public static TacLifeSupport Instance;
 
         public TacGameSettings gameSettings { get; set; }
         
@@ -80,7 +81,26 @@ namespace Tac
 
         private readonly List<Component> children = new List<Component>();
 
-        
+        public bool Enabled
+        {
+            get
+            {
+                if (HighLogic.CurrentGame != null)
+                return HighLogic.CurrentGame.Parameters.CustomParams<TAC_SettingsParms>().enabled;
+                return true;
+            }
+        }
+
+        public double BaseElectricityConsumptionRate
+        {
+            get { return TacStartOnce.Instance.globalSettings.BaseElectricityConsumptionRate; }
+        }
+
+        public double ElectricityConsumptionRate
+        {
+            get { return TacStartOnce.Instance.globalSettings.ElectricityConsumptionRate; }
+        }
+
         public TacLifeSupport()
         {
             //this.Log("Constructor");
@@ -132,11 +152,14 @@ namespace Tac
             {
                 TACEditorFilter.Instance.Setup();
             }
-            foreach (Savable s in children.Where(c => c is Savable))
+            for (int i = 0; i < children.Count; ++i)
             {
-                s.Load(gameNode);
+                if (children[i] is Savable)
+                {
+                    var child = children[i] as Savable;
+                    child.Load(gameNode);
+                }
             }
-
             //this.Log("OnLoad: " + gameNode);
         }
 
@@ -144,11 +167,14 @@ namespace Tac
         {
             base.OnSave(gameNode);
             gameSettings.Save(gameNode);
-            foreach (Savable s in children.Where(c => c is Savable))
+            for (int i = 0; i < children.Count; ++i)
             {
-                s.Save(gameNode);
+                if (children[i] is Savable)
+                {
+                    var child = children[i] as Savable;
+                    child.Save(gameNode);
+                }
             }
-            
             //this.Log("OnSave: " + gameNode);
         }
 

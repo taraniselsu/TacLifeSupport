@@ -27,7 +27,6 @@
  */
 
 using System.Collections.Generic;
-using System.Linq;
 using KSP.UI;
 using RSTUtils;
 using UnityEngine;
@@ -244,8 +243,14 @@ namespace Tac
                     {
                         List<PartCrewManifest> manifests = manifest.GetCrewableParts();
                         for (int i = 0; i < manifests.Count; i++)
-                        { 
-                            int partCrewCount = manifests[i].GetPartCrew().Count(c => c != null);
+                        {
+                            var partCrew = manifests[i].GetPartCrew();
+                            int partCrewCount = 0;
+                            for (int j = 0; j < partCrew.Length; ++j)
+                            {
+                                if (partCrew[j] != null)
+                                    ++partCrewCount;
+                            }
                             if (partCrewCount > 0)
                             {
                                 ++numOccupiedParts;

@@ -48,7 +48,7 @@ namespace Tac
                 ApplicationLauncher.AppScenes.SPH | ApplicationLauncher.AppScenes.VAB,
                 (Texture)Textures.GrnApplauncherIcon, (Texture)Textures.GrnApplauncherIcon,
                 GameScenes.EDITOR);
-            window = new BuildAidWindow(TACMenuAppLToolBar, TacStartOnce.globalSettings);
+            window = new BuildAidWindow(TACMenuAppLToolBar, TacStartOnce.Instance.globalSettings);
         }
 
         void Start()

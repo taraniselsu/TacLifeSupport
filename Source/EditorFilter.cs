@@ -14,7 +14,6 @@ using System.Collections.Generic;
 using KSP.UI.Screens;
 using RUI.Icons.Selectable;
 using UnityEngine;
-using System.Reflection;
 
 namespace Tac
 {
@@ -43,9 +42,9 @@ namespace Tac
         {
             this.Log("TACLS EditorFilter Setup");
             RemoveSubFilter();
-
-            TacMMCallBack();
-
+            AddPartUtilitiesCat();
+            GameEvents.onGUIEditorToolbarReady.Remove(SubCategories);
+            
             if (!HighLogic.CurrentGame.Parameters.CustomParams<TAC_SettingsParms>().EditorFilter)
             {
                 this.Log("EditorFilter Option is Off");
@@ -53,6 +52,8 @@ namespace Tac
             }
             
             this.Log("EditorFilter Option is On");
+            TacMMCallBack();
+            RemovePartUtilitiesCat();
             GameEvents.onGUIEditorToolbarReady.Add(SubCategories);
             /*
             //Attempt to add Module Manager callback  - find the base type
@@ -74,7 +75,6 @@ namespace Tac
                 
             }*/
             //TacMMCallBack();
-            RemovePartUtilitiesCat();
             this.Log("DFEditorFilter Awake Complete");
         }
 
@@ -107,8 +107,6 @@ namespace Tac
                         subFilter.DeleteSubcategory();
                     }
                 }
-                GameEvents.onGUIEditorToolbarReady.Remove(SubCategories);
-                AddPartUtilitiesCat();
             }
         }
 
@@ -139,10 +137,11 @@ namespace Tac
 
         private void SubCategories()
         {
+            RemoveSubFilter();
             Icon filterTacLS = new Icon("TACLSEditor", Textures.EditorCatIcon, Textures.EditorCatIcon, true);
             PartCategorizer.Category Filter = PartCategorizer.Instance.filters.Find(f => f.button.categoryName == category);
             PartCategorizer.AddCustomSubcategoryFilter(Filter, subCategoryTitle, filterTacLS, p => EditorItemsFilter(p));
-            GameEvents.onGUIEditorToolbarReady.Remove(SubCategories);
+            //GameEvents.onGUIEditorToolbarReady.Remove(SubCategories);
         }
     }
 }
