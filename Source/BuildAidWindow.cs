@@ -1,8 +1,10 @@
 ﻿/**
  * Thunder Aerospace Corporation's Life Support for Kerbal Space Program.
- * Written by Taranis Elsu.
+ * Originally Written by Taranis Elsu.
+ * This version written and maintained by JPLRepo (Jamie Leighton)
  * 
  * (C) Copyright 2013, Taranis Elsu
+ * (C) Copyright 2016, Jamie Leighton
  * 
  * Kerbal Space Program is Copyright (C) 2013 Squad. See http://kerbalspaceprogram.com/. This
  * project is in no way associated with nor endorsed by Squad.
@@ -24,7 +26,7 @@
  * is purely coincidental.
  */
 
-using System.Linq;
+using System.Collections.Generic;
 using KSP.UI;
 using RSTUtils;
 using UnityEngine;
@@ -190,43 +192,45 @@ namespace Tac
                 double wasteWaterValue = 0;
                 double carbonDioxideValue = 0;
 
-                foreach (Part part in EditorLogic.fetch.ship.parts)
-                {
-                    if (part.CrewCapacity > 0)
+                for (int i = 0; i < EditorLogic.fetch.ship.parts.Count; i++)
+                { 
+                //foreach (Part part in EditorLogic.fetch.ship.parts)
+                //{
+                    if (EditorLogic.fetch.ship.parts[i].CrewCapacity > 0)
                     {
                         ++numOccupiableParts;
-                        maxCrew += part.CrewCapacity;
+                        maxCrew += EditorLogic.fetch.ship.parts[i].CrewCapacity;
                     }
 
-                    foreach (PartResource partResource in part.Resources)
-                    {
-                        if (partResource.info.id == globalSettings.FoodId)
+                    for (int j = 0; j < EditorLogic.fetch.ship.parts[i].Resources.Count; j++)
+                    { 
+                        if (EditorLogic.fetch.ship.parts[i].Resources[j].info.id == globalSettings.FoodId)
                         {
-                            foodValue += partResource.amount;
+                            foodValue += EditorLogic.fetch.ship.parts[i].Resources[j].amount;
                         }
-                        else if (partResource.info.id == globalSettings.WaterId)
+                        else if (EditorLogic.fetch.ship.parts[i].Resources[j].info.id == globalSettings.WaterId)
                         {
-                            waterValue += partResource.amount;
+                            waterValue += EditorLogic.fetch.ship.parts[i].Resources[j].amount;
                         }
-                        else if (partResource.info.id == globalSettings.OxygenId)
+                        else if (EditorLogic.fetch.ship.parts[i].Resources[j].info.id == globalSettings.OxygenId)
                         {
-                            oxygenValue += partResource.amount;
+                            oxygenValue += EditorLogic.fetch.ship.parts[i].Resources[j].amount;
                         }
-                        else if (partResource.info.id == globalSettings.ElectricityId)
+                        else if (EditorLogic.fetch.ship.parts[i].Resources[j].info.id == globalSettings.ElectricityId)
                         {
-                            electricityValue += partResource.amount;
+                            electricityValue += EditorLogic.fetch.ship.parts[i].Resources[j].amount;
                         }
-                        else if (partResource.info.id == globalSettings.WasteId)
+                        else if (EditorLogic.fetch.ship.parts[i].Resources[j].info.id == globalSettings.WasteId)
                         {
-                            wasteValue += partResource.maxAmount;
+                            wasteValue += EditorLogic.fetch.ship.parts[i].Resources[j].maxAmount;
                         }
-                        else if (partResource.info.id == globalSettings.WasteWaterId)
+                        else if (EditorLogic.fetch.ship.parts[i].Resources[j].info.id == globalSettings.WasteWaterId)
                         {
-                            wasteWaterValue += partResource.maxAmount;
+                            wasteWaterValue += EditorLogic.fetch.ship.parts[i].Resources[j].maxAmount;
                         }
-                        else if (partResource.info.id == globalSettings.CO2Id)
+                        else if (EditorLogic.fetch.ship.parts[i].Resources[j].info.id == globalSettings.CO2Id)
                         {
-                            carbonDioxideValue += partResource.maxAmount;
+                            carbonDioxideValue += EditorLogic.fetch.ship.parts[i].Resources[j].maxAmount;
                         }
                     }
                 }
@@ -237,9 +241,16 @@ namespace Tac
                     VesselCrewManifest manifest = dialog.GetManifest();
                     if (manifest != null)
                     {
-                        foreach (PartCrewManifest pcm in manifest)
+                        List<PartCrewManifest> manifests = manifest.GetCrewableParts();
+                        for (int i = 0; i < manifests.Count; i++)
                         {
-                            int partCrewCount = pcm.GetPartCrew().Count(c => c != null);
+                            var partCrew = manifests[i].GetPartCrew();
+                            int partCrewCount = 0;
+                            for (int j = 0; j < partCrew.Length; ++j)
+                            {
+                                if (partCrew[j] != null)
+                                    ++partCrewCount;
+                            }
                             if (partCrewCount > 0)
                             {
                                 ++numOccupiedParts;
@@ -303,7 +314,8 @@ namespace Tac
 
         private double CalculateElectricityConsumptionRate(int numCrew, int numParts)
         {
-            return (globalSettings.ElectricityConsumptionRate * numCrew) + (globalSettings.BaseElectricityConsumptionRate * numParts);
+            return (globalSettings.ElectricityConsumptionRate * numCrew) + 
+                (globalSettings.BaseElectricityConsumptionRate * numParts);
         }
     }
 }

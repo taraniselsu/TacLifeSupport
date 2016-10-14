@@ -20,7 +20,7 @@ namespace Tac
     internal class InstallChecker : MonoBehaviour
     {
         private const string modName = "TAC Life Support";
-        private const string expectedPath = "ThunderAerospace/TacLifeSupport";
+        private const string expectedPath = "ThunderAerospace/TacLifeSupport/Plugins";
 
         protected void Start()
         {
@@ -49,7 +49,7 @@ namespace Tac
                 {
                     this.Log(modName + " - Missing or incorrectly installed ModuleManager.");
                     PopupDialog.SpawnPopupDialog(new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), "Missing Module Manager",
-                        modName + " requires the Module Manager mod in order to function properly.\n\nPlease download from http://forum.kerbalspaceprogram.com/threads/55219 and copy to the KSP/GameData/ directory.",
+                        modName + " requires the Module Manager mod in order to function properly.\n\nPlease download from http://forum.kerbalspaceprogram.com/index.php?/topic/50533-12 and copy to the KSP/GameData/ directory.",
                         "OK", false, HighLogic.UISkin);
                 }
 
@@ -74,7 +74,7 @@ namespace Tac
                     "A very serious error has occurred while checking the installation of " + modName + ".\n\n" +
                     "You need to\n" +
                     "  (1) shut down KSP,\n" +
-                    "  (2) send a complete copy of the entire log file to the mod developer (see https://github.com/taraniselsu/TacLifeSupport/wiki/Help)\n" +
+                    "  (2) send a complete copy of the entire log file to the mod developer (see https://github.com/KSP-RO/TacLifeSupport/wiki/Help\n" +
                     "  (3) completely delete and re-install " + modName,
                     "OK", false, HighLogic.UISkin);
             }
@@ -115,6 +115,14 @@ namespace Tac
                 this.Log(modName + " - deleting the old SmallWaste.cfg.");
                 File.Delete(KSPUtil.ApplicationRootPath + "GameData/ThunderAerospace/TacLifeSupportHexCans/HexCanLifeSupport/SmallWaste.cfg");
                 requireRestart = true;
+            }
+
+            // Upgrading 0.12.2 -> 0.12.3
+            // LifeSupport.cfg moved from PluginData to TacLifeSupport folder.
+            if (File.Exists(KSPUtil.ApplicationRootPath + "GameData/ThunderAerospace/TacLifeSupport/PluginData/LifeSupport.cfg"))
+            {
+                this.Log(modName + " - deleting the old LifeSupport.cfg.");
+                File.Delete(KSPUtil.ApplicationRootPath + "GameData/ThunderAerospace/TacLifeSupport/PluginData/LifeSupport.cfg");
             }
 
             if (requireRestart)

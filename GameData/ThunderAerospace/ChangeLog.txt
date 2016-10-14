@@ -1,3 +1,28 @@
+v0.12.5
+	Re-compiled for KSP 1.2 with necessary changes (will not work on earlier versions of KSP).
+	Some performance and garbage clean-up in the codebase (a further cleanup performance improvement code review is still required).	
+	Support for different life support settings per save game, and also support MM override by Realism Overhaul for start of new games.
+	Settings are now integrated into stock Difficulty Settings. For new games you can set the various TAC LS settings via the Difficulty
+	settings window when you are starting a new game.
+	Settings can also be changed in-game via the Stock Paule Menu - Settings - Difficulty Settings button.
+	Depending on where in the game you are different settings can be changed (EG: resource consumption values can only be changed in the Space Center screen.)
+	There is no TAC LS Icon now in the Space Center screen as it's only purpose before was for settings (which you now access via the game pause menu).
+	The LifeSupport.Cfg file is now base settings for start of a NEW save only.
+	Once a save is started copies of these fields are persisted into the sfs save file.
+	Changes to existing saves must then only be made in-game and these changes are persisted into the sfs save file.
+	Added Setting for how often the Vessel Lists will be re-sorted in the TAC LS UI window. Removed old sort that occurred every onGUI (bad performance).
+	Hibernation mechanic changes:
+		Hibernation vs Death is now toggled via the TAC LS Difficulty settings menu.
+		Crew in hibernation are changed to Tourists so they cannot perform normal crew functions.
+		When food/water is restored to vessel crew become normal crew again.
+	Added 3.75M parts.
+	Fixed text alignment in TAC LS monitoring screens.
+	Clicking the "R" button to open roster window now acts as a toggle so pressing again will close the roster window.
+	Fixed the Editor Category Icon to be more in line with the other icons.	
+	Moved icons into the Textures folder. Moved the Plugin DLL to the Plugins folder.
+	Converted all resource converters from custom build resource converter module to use the stock ModuleResourceConverter module, they also now all support
+	Engineer specialist boosts.
+	Updated Community Resource Pack to the latest version (v0.6.0).
 v0.12.4
 	Fixed Settings file not being read correctly and using default values. (Typo - fat fingers)
 	VAB/SPH Editor Category for TAC LS parts can be toggled on or off via the Settings menu (Hit the TAC LS icon in the Space Center).

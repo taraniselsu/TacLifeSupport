@@ -25,9 +25,7 @@
  */
 
 using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 
 namespace Tac
 {
@@ -42,6 +40,7 @@ namespace Tac
         public string vesselName;
         public Guid vesselId;
         public bool hibernating;
+        public ProtoCrewMember.KerbalType crewType;
         public readonly double respite = UnityEngine.Random.Range(60, 600);
 
         public CrewMemberInfo(string crewMemberName, string vesselName, Guid vesselId, double currentTime)
@@ -53,6 +52,14 @@ namespace Tac
             this.vesselName = vesselName;
             this.vesselId = vesselId;
             hibernating = false;
+
+            if (HighLogic.CurrentGame != null)
+            {
+                ProtoCrewMember kerbal = HighLogic.CurrentGame.CrewRoster.Crew.FirstOrDefault(a => a.name == name);
+                crewType = kerbal.type;
+            }
+            else
+                crewType = ProtoCrewMember.KerbalType.Crew;
         }
 
         public static CrewMemberInfo Load(ConfigNode node)
@@ -74,7 +81,7 @@ namespace Tac
             info.lastFood = Utilities.GetValue(node, "lastFood", lastUpdate);
             info.lastWater = Utilities.GetValue(node, "lastWater", lastUpdate);
             info.hibernating = Utilities.GetValue(node, "hibernating", false);
-
+            info.crewType = Utilities.GetValue(node, "crewType", info.crewType);
             return info;
         }
 
@@ -88,6 +95,7 @@ namespace Tac
             node.AddValue("vesselName", vesselName);
             node.AddValue("vesselId", vesselId);
             node.AddValue("hibernating", hibernating);
+            node.AddValue("crewType", crewType);
             return node;
         }
     }

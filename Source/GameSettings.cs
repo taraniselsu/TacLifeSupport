@@ -1,8 +1,10 @@
 ﻿/**
  * Thunder Aerospace Corporation's Life Support for Kerbal Space Program.
- * Written by Taranis Elsu.
+ * Originally Written by Taranis Elsu.
+ * This version written and maintained by JPLRepo (Jamie Leighton)
  * 
  * (C) Copyright 2013, Taranis Elsu
+ * (C) Copyright 2016, Jamie Leighton
  * 
  * Kerbal Space Program is Copyright (C) 2013 Squad. See http://kerbalspaceprogram.com/. This
  * project is in no way associated with nor endorsed by Squad.
@@ -35,24 +37,15 @@ namespace Tac
     {
         private const string configNodeName = "SavedGameSettings";
 
-        public bool IsNewSave { get; set; }
-        public bool Enabled { get; set; }
-        public bool UseAppLauncher { get; set; }
-        public bool UseEditorFilter { get; set; }
-        public bool HibernateInsteadOfKill { get; set; }
-        public double RespawnDelay { get; set; }
+        public bool IsNewSave;
+        
         public Dictionary<string, CrewMemberInfo> knownCrew { get; private set; }
         public Dictionary<Guid, VesselInfo> knownVessels { get; private set; }
 
         public TacGameSettings()
         {
             IsNewSave = true;
-            Enabled = true;
-            UseAppLauncher = true;
-            UseEditorFilter = true;
-            HibernateInsteadOfKill = false;
-            RespawnDelay = 9203545.0; // 1 Kerbin year (the game's default is too short at only 36 minutes)
-
+            
             knownCrew = new Dictionary<string, CrewMemberInfo>();
             knownVessels = new Dictionary<Guid, VesselInfo>();
         }
@@ -63,12 +56,7 @@ namespace Tac
             {
                 ConfigNode settingsNode = node.GetNode(configNodeName);
 
-                IsNewSave = Utilities.GetValue(settingsNode, "IsNewSave", IsNewSave);
-                Enabled = Utilities.GetValue(settingsNode, "Enabled", Enabled);
-                UseAppLauncher = Utilities.GetValue(settingsNode, "UseAppLauncher", UseAppLauncher);
-                UseEditorFilter = Utilities.GetValue(settingsNode, "UseEditorFilter", UseEditorFilter);
-                HibernateInsteadOfKill = Utilities.GetValue(settingsNode, "HibernateInsteadOfKill", HibernateInsteadOfKill);
-                RespawnDelay = Utilities.GetValue(settingsNode, "RespawnDelay", RespawnDelay);
+                settingsNode.TryGetValue("IsNewSave", ref IsNewSave);
 
                 knownCrew.Clear();
                 var crewNodes = settingsNode.GetNodes(CrewMemberInfo.ConfigNodeName);
@@ -105,12 +93,7 @@ namespace Tac
             }
 
             settingsNode.AddValue("IsNewSave", IsNewSave);
-            settingsNode.AddValue("Enabled", Enabled);
-            settingsNode.AddValue("UseAppLauncher", UseAppLauncher);
-            settingsNode.AddValue("UseEditorFilter", UseEditorFilter);
-            settingsNode.AddValue("HibernateInsteadOfKill", HibernateInsteadOfKill);
-            settingsNode.AddValue("RespawnDelay", RespawnDelay);
-
+            
             foreach (CrewMemberInfo crewMemberInfo in knownCrew.Values)
             {
                 crewMemberInfo.Save(settingsNode);

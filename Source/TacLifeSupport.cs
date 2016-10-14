@@ -1,8 +1,10 @@
 ﻿/**
  * Thunder Aerospace Corporation's Life Support for Kerbal Space Program.
- * Written by Taranis Elsu.
+ * Originally Written by Taranis Elsu.
+ * This version written and maintained by JPLRepo (Jamie Leighton)
  * 
  * (C) Copyright 2013, Taranis Elsu
+ * (C) Copyright 2016, Jamie Leighton
  * 
  * Kerbal Space Program is Copyright (C) 2013 Squad. See http://kerbalspaceprogram.com/. This
  * project is in no way associated with nor endorsed by Squad.
@@ -24,11 +26,7 @@
  * is purely coincidental.
  */
 
-using System;
 using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Text;
 using UnityEngine;
 
 namespace Tac
@@ -36,35 +34,77 @@ namespace Tac
     [KSPAddon(KSPAddon.Startup.MainMenu, true)]
     public class TacStartOnce : MonoBehaviour
     {
+        public GlobalSettings globalSettings { get; set; }
+        public static TacStartOnce Instance;
+        
+        public void Awake()
+        {
+            Instance = this;
+            DontDestroyOnLoad(this);
+
+            globalSettings = new GlobalSettings();
+            LoadGlobalSettings();
+        }
+
         public void Start()
         {
             Textures.LoadIconAssets();
+        }
+
+        public void LoadGlobalSettings()
+        {
+            ConfigNode[] globalNodes;
+            globalNodes = GameDatabase.Instance.GetConfigNodes("TACLSGlobalSettings");
+            if (globalNodes != null)
+            {
+                foreach (ConfigNode node in globalNodes)
+                {
+                    globalSettings.Load(node);
+                }
+            }
+            else
+            {
+                this.LogError("Could not find TACLSGlobalSettings node!");
+            }
         }
     }
 
     [KSPScenario(ScenarioCreationOptions.AddToAllGames, GameScenes.SPACECENTER, GameScenes.EDITOR, GameScenes.FLIGHT, GameScenes.TRACKSTATION)]
     public class TacLifeSupport : ScenarioModule
     {
-        public static TacLifeSupport Instance { get; private set; }
+        public static TacLifeSupport Instance;
 
-        public TacGameSettings gameSettings { get; private set; }
-        public GlobalSettings globalSettings { get; private set; }
-
-        private readonly string globalConfigFilename;
-        private ConfigNode globalNode = new ConfigNode();
+        public TacGameSettings gameSettings { get; set; }
+        
+        private ConfigNode[] globalNodes;
         internal bool globalConfigChanged = false;
 
         private readonly List<Component> children = new List<Component>();
 
+        public bool Enabled
+        {
+            get
+            {
+                if (HighLogic.CurrentGame != null)
+                return HighLogic.CurrentGame.Parameters.CustomParams<TAC_SettingsParms>().enabled;
+                return true;
+            }
+        }
+
+        public double BaseElectricityConsumptionRate
+        {
+            get { return TacStartOnce.Instance.globalSettings.BaseElectricityConsumptionRate; }
+        }
+
+        public double ElectricityConsumptionRate
+        {
+            get { return TacStartOnce.Instance.globalSettings.ElectricityConsumptionRate; }
+        }
+
         public TacLifeSupport()
         {
-            this.Log("Constructor");
+            //this.Log("Constructor");
             Instance = this;
-            gameSettings = new TacGameSettings();
-            globalSettings = new GlobalSettings();
-
-            //globalConfigFilename = IOUtils.GetFilePathFor(this.GetType(), "LifeSupport.cfg");
-            globalConfigFilename = Path.Combine(Textures.AssemblyFolder, "LifeSupport.cfg").Replace("\\", "/");
         }
 
         public override void OnAwake()
@@ -79,6 +119,8 @@ namespace Tac
                 this.Log("Adding SpaceCenterManager");
                 var c = gameObject.AddComponent<SpaceCenterManager>();
                 children.Add(c);
+                var d = gameObject.AddComponent<LifeSupportController>();
+                children.Add(d);
             }
             else if (HighLogic.LoadedScene == GameScenes.TRACKSTATION)
             {
@@ -103,51 +145,37 @@ namespace Tac
         public override void OnLoad(ConfigNode gameNode)
         {
             base.OnLoad(gameNode);
+            
+            gameSettings = new TacGameSettings();
             gameSettings.Load(gameNode);
             if (HighLogic.LoadedScene == GameScenes.SPACECENTER)
             {
                 TACEditorFilter.Instance.Setup();
             }
-            foreach (Savable s in children.Where(c => c is Savable))
+            for (int i = 0; i < children.Count; ++i)
             {
-                s.Load(gameNode);
+                if (children[i] is Savable)
+                {
+                    var child = children[i] as Savable;
+                    child.Load(gameNode);
+                }
             }
-
-            // Load the global settings
-            if (File.Exists(globalConfigFilename))
-            {
-                globalNode = ConfigNode.Load(globalConfigFilename);
-                globalSettings.Load(globalNode);
-                //foreach (Savable s in children.Where(c => c is Savable))
-                //{
-                //    s.Load(globalNode);
-                //}
-            }
-
-            this.Log("OnLoad: " + gameNode + "\n" + globalNode);
+            //this.Log("OnLoad: " + gameNode);
         }
 
         public override void OnSave(ConfigNode gameNode)
         {
             base.OnSave(gameNode);
             gameSettings.Save(gameNode);
-            foreach (Savable s in children.Where(c => c is Savable))
+            for (int i = 0; i < children.Count; ++i)
             {
-                s.Save(gameNode);
+                if (children[i] is Savable)
+                {
+                    var child = children[i] as Savable;
+                    child.Save(gameNode);
+                }
             }
-
-            // Save the global settings
-            if (globalConfigChanged)
-            {
-                globalSettings.Save(globalNode);
-                //foreach (Savable s in children.Where(c => c is Savable))
-                //{
-                //    s.Save(globalNode);
-                //}
-                globalNode.Save(globalConfigFilename);
-                globalConfigChanged = false;
-            }
-            this.Log("OnSave: " + gameNode + "\n" + globalNode);
+            //this.Log("OnSave: " + gameNode);
         }
 
         private void OnGameSceneLoadRequested(GameScenes gameScene)

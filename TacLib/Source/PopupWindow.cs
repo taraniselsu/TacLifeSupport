@@ -97,7 +97,7 @@ namespace Tac
 
         public static void Draw(string buttonText, Rect windowPos, Func<int, object, bool> popupDrawCallback, GUIStyle buttonStyle, object parameter, params GUILayoutOption[] options)
         {
-            PopupWindow pw = PopupWindow.GetInstance();
+            PopupWindow pw = GetInstance();
 
             var content = new GUIContent(buttonText);
             var rect = GUILayoutUtility.GetRect(content, buttonStyle, options);

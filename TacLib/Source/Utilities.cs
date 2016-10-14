@@ -27,9 +27,6 @@
 
 using KSP.IO;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using UnityEngine;
 
 namespace Tac
@@ -281,23 +278,23 @@ namespace Tac
             if (years > 0)
             {
                 return sign + years.ToString("#0") + "y "
-                    + days.ToString("##0") + "d "
-                    + hours.ToString("00") + ":"
-                    + minutes.ToString("00") + ":"
-                    + Math.Floor(seconds).ToString("00");
+                       + days.ToString("##0") + "d "
+                       + hours.ToString("00") + ":"
+                       + minutes.ToString("00");// + ":"
+                    //+ Math.Floor(seconds).ToString("00");
             }
             if (days > 0)
             {
                 return sign + days.ToString("#0") + "d "
-                    + hours.ToString("00") + ":"
-                    + minutes.ToString("00") + ":"
-                    + Math.Floor(seconds).ToString("00");
+                       + hours.ToString("00") + ":"
+                       + minutes.ToString("00");// + ":"
+                    //+ Math.Floor(seconds).ToString("00");
             }
             else if (hours > 0)
             {
                 return sign + hours.ToString("#0") + ":"
-                    + minutes.ToString("00") + ":"
-                    + Math.Floor(seconds).ToString("00");
+                       + minutes.ToString("00");// + ":"
+                    //+ Math.Floor(seconds).ToString("00");
             }
             else
             {

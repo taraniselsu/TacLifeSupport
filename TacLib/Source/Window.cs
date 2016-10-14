@@ -2,8 +2,11 @@
  * Window.cs
  * 
  * Thunder Aerospace Corporation's library for the Kerbal Space Program, by Taranis Elsu
+ * Originally Written by Taranis Elsu.
+ * This version written and maintained by JPLRepo (Jamie Leighton)
  * 
  * (C) Copyright 2013, Taranis Elsu
+ * (C) Copyright 2016, Jamie Leighton
  * 
  * Kerbal Space Program is Copyright (C) 2013 Squad. See http://kerbalspaceprogram.com/. This
  * project is in no way associated with nor endorsed by Squad.
@@ -55,16 +58,15 @@ namespace Tac
         {
             this.windowTitle = windowTitle;
             this.windowId = windowTitle.GetHashCode() + new System.Random().Next(65536);
-            this.TACMenuAppLToolBar = tacMenuAppLToolBar;
+            TACMenuAppLToolBar = tacMenuAppLToolBar;
 
             configNodeName = windowTitle.Replace(" ", "");
 
             windowPos = new Rect((Screen.width - defaultWidth) / 2, (Screen.height - defaultHeight) / 2, defaultWidth, defaultHeight);
             mouseDown = false;
             visible = false;
-
-            var texture = Utilities.LoadImage<T>(IOUtils.GetFilePathFor(typeof(T), "resize.png"));
-            resizeContent = (texture != null) ? new GUIContent(texture, "Drag to resize the window.") : new GUIContent("R", "Drag to resize the window.");
+            
+            resizeContent = (Textures.BtnResize != null) ? new GUIContent(Textures.BtnResize, "Drag to resize the window.") : new GUIContent("R", "Drag to resize the window.");
 
             Resizable = true;
             HideCloseButton = false;
@@ -78,7 +80,7 @@ namespace Tac
 
         public virtual void SetVisible(bool newValue)
         {
-            this.visible = newValue;
+            visible = newValue;
         }
 
         public void OnGUI()
@@ -218,9 +220,9 @@ namespace Tac
                     //if (GUI.Button(new Rect(windowPos.width - 24, 4, 20, 20), "X", closeButtonStyle))
                     //{
                     //SetVisible(false);
-                    if (this.GetType() == typeof(RosterWindow))
+                    if (GetType() == typeof(RosterWindow))
                     {
-                        this.SetVisible(false);
+                        SetVisible(false);
                     }
                     else
                     {

@@ -1,8 +1,10 @@
 ﻿/**
  * Thunder Aerospace Corporation's Life Support for Kerbal Space Program.
- * Written by Taranis Elsu.
+ * Originally Written by Taranis Elsu.
+ * This version written and maintained by JPLRepo (Jamie Leighton)
  * 
  * (C) Copyright 2013, Taranis Elsu
+ * (C) Copyright 2016, Jamie Leighton
  * 
  * Kerbal Space Program is Copyright (C) 2013 Squad. See http://kerbalspaceprogram.com/. This
  * project is in no way associated with nor endorsed by Squad.
@@ -24,10 +26,6 @@
  * is purely coincidental.
  */
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using RSTUtils;
 using UnityEngine;
 
@@ -35,10 +33,10 @@ namespace Tac
 {
     class LifeSupportMonitoringWindow : Window<LifeSupportMonitoringWindow>
     {
-        private readonly TacGameSettings gameSettings;
+        //private readonly TacGameSettings gameSettings;
         private readonly RosterWindow rosterWindow;
         private readonly string version;
-
+        
         private GUIStyle labelStyle;
         private GUIStyle warningStyle;
         private GUIStyle criticalStyle;
@@ -47,10 +45,10 @@ namespace Tac
         private GUIStyle versionStyle;
         private Vector2 scrollPosition = Vector2.zero;
 
-        public LifeSupportMonitoringWindow(AppLauncherToolBar TACMenuAppLToolBar, LifeSupportController controller, GlobalSettings globalSettings, TacGameSettings gameSettings, RosterWindow rosterWindow)
+        public LifeSupportMonitoringWindow(AppLauncherToolBar TACMenuAppLToolBar,  RosterWindow rosterWindow)
             : base(TACMenuAppLToolBar, "Life Support Monitoring", 300, 300)
         {
-            this.gameSettings = gameSettings;
+            //this.gameSettings = gameSettings;
             this.rosterWindow = rosterWindow;
             version = Utilities.GetDllVersion(this);
 
@@ -105,17 +103,15 @@ namespace Tac
             GUILayout.Space(4);
 
             double currentTime = Planetarium.GetUniversalTime();
-            var vesselsCopy = new List<KeyValuePair<Guid, VesselInfo>>(gameSettings.knownVessels);
-            vesselsCopy.Sort(new VesselSorter(FlightGlobals.ActiveVessel));
 
             if (FlightGlobals.ready)
             {
                 // Draw the active vessel first, if any
                 Vessel activeVessel = FlightGlobals.ActiveVessel;
                 int skipCount = 0;
-                if (activeVessel != null && vesselsCopy.Count > 0)
+                if (activeVessel != null && LifeSupportController.Instance.knownVesselsList.Count > 0)
                 {
-                    var vessel = vesselsCopy[0];
+                    var vessel = LifeSupportController.Instance.knownVesselsList[0];
                     if (FlightGlobals.ActiveVessel.id == vessel.Key)
                     {
                         DrawVesselInfo(vessel.Value, currentTime);
@@ -139,18 +135,17 @@ namespace Tac
                     }
                     GUILayout.Space(10);
                 }
-
-                foreach (var vessel in vesselsCopy.Skip(skipCount))
-                {
-                    DrawVesselInfo(vessel.Value, currentTime);
+                for (int i = skipCount; i < LifeSupportController.Instance.knownVesselsList.Count; i ++)
+                { 
+                    DrawVesselInfo(LifeSupportController.Instance.knownVesselsList[i].Value, currentTime);
                     GUILayout.Space(10);
                 }
             }
             else
             {
-                foreach (var vessel in vesselsCopy)
-                {
-                    DrawVesselInfo(vessel.Value, currentTime);
+                for (int i = 0; i < LifeSupportController.Instance.knownVesselsList.Count; i++)
+                { 
+                    DrawVesselInfo(LifeSupportController.Instance.knownVesselsList[i].Value, currentTime);
                     GUILayout.Space(10);
                 }
             }
@@ -162,7 +157,7 @@ namespace Tac
 
             if (GUI.Button(new Rect(windowPos.width - 46, 4, 20, 20), "R", closeButtonStyle))
             {
-                rosterWindow.SetVisible(true);
+                rosterWindow.SetVisible(!rosterWindow.IsVisible());
             }
 
             GUI.Label(new Rect(4, windowPos.height - 13, windowPos.width - 20, 12), "TAC Life Support v" + version, versionStyle);
@@ -171,13 +166,28 @@ namespace Tac
         private void DrawVesselInfo(VesselInfo vesselInfo, double currentTime)
         {
             GUILayout.Label(vesselInfo.vesselName + " (" + vesselInfo.numCrew + " crew) [" + vesselInfo.vesselType + "]", headerStyle);
-            GUILayout.Label("  Last updated:          " + Utilities.FormatTime(currentTime - vesselInfo.lastUpdate), labelStyle);
+            GUILayout.BeginHorizontal();
+            GUILayout.Label("  Last updated:          ", getStyle(vesselInfo.foodStatus), GUILayout.Width(150));
+            GUILayout.Label(Utilities.FormatTime(currentTime - vesselInfo.lastUpdate), labelStyle);
+            GUILayout.EndHorizontal();
             if (vesselInfo.numCrew > 0)
             {
-                GUILayout.Label("  Food remaining:        " + Utilities.FormatTime(vesselInfo.estimatedTimeFoodDepleted - currentTime), getStyle(vesselInfo.foodStatus));
-                GUILayout.Label("  Water remaining:       " + Utilities.FormatTime(vesselInfo.estimatedTimeWaterDepleted - currentTime), getStyle(vesselInfo.waterStatus));
-                GUILayout.Label("  Oxygen remaining:      " + Utilities.FormatTime(vesselInfo.estimatedTimeOxygenDepleted - currentTime), getStyle(vesselInfo.oxygenStatus));
-                GUILayout.Label("  Electricity remaining: " + Utilities.FormatTime(vesselInfo.estimatedTimeElectricityDepleted - currentTime), getStyle(vesselInfo.electricityStatus));
+                GUILayout.BeginHorizontal();
+                GUILayout.Label("  Food remaining:        ", getStyle(vesselInfo.foodStatus), GUILayout.Width(150)); 
+                GUILayout.Label(Utilities.FormatTime(vesselInfo.estimatedTimeFoodDepleted - currentTime), getStyle(vesselInfo.foodStatus));
+                GUILayout.EndHorizontal();
+                GUILayout.BeginHorizontal();
+                GUILayout.Label("  Water remaining:       ", getStyle(vesselInfo.waterStatus), GUILayout.Width(150));
+                GUILayout.Label(Utilities.FormatTime(vesselInfo.estimatedTimeWaterDepleted - currentTime), getStyle(vesselInfo.waterStatus));
+                GUILayout.EndHorizontal();
+                GUILayout.BeginHorizontal();
+                GUILayout.Label("  Oxygen remaining:      ", getStyle(vesselInfo.oxygenStatus), GUILayout.Width(150));
+                GUILayout.Label(Utilities.FormatTime(vesselInfo.estimatedTimeOxygenDepleted - currentTime), getStyle(vesselInfo.oxygenStatus));
+                GUILayout.EndHorizontal();
+                GUILayout.BeginHorizontal();
+                GUILayout.Label("  Electricity remaining: ", getStyle(vesselInfo.electricityStatus), GUILayout.Width(150));
+                GUILayout.Label(Utilities.FormatTime(vesselInfo.estimatedTimeElectricityDepleted - currentTime), getStyle(vesselInfo.electricityStatus));
+                GUILayout.EndHorizontal();
             }
         }
 
@@ -194,46 +204,6 @@ namespace Tac
             else
             {
                 return labelStyle;
-            }
-        }
-
-        private class VesselSorter : IComparer<KeyValuePair<Guid, VesselInfo>>
-        {
-            private Vessel activeVessel;
-
-            public VesselSorter(Vessel activeVessel)
-            {
-                this.activeVessel = activeVessel;
-            }
-
-            public int Compare(KeyValuePair<Guid, VesselInfo> left, KeyValuePair<Guid, VesselInfo> right)
-            {
-                // Put the active vessel at the top of the list
-                if (activeVessel != null)
-                {
-                    if (left.Key.Equals(activeVessel.id))
-                    {
-                        if (right.Key.Equals(activeVessel.id))
-                        {
-                            // Both sides are the active vessel (i.e. the same vessel)
-                            return 0;
-                        }
-                        else
-                        {
-                            return -1;
-                        }
-                    }
-                    else if (right.Key.Equals(activeVessel.id))
-                    {
-                        return 1;
-                    }
-                }
-
-                // then sort by the shortest time until a resource is depleted
-                double leftShortestTime = Math.Min(left.Value.estimatedTimeFoodDepleted, Math.Min(left.Value.estimatedTimeWaterDepleted, left.Value.estimatedTimeOxygenDepleted));
-                double rightShortestTime = Math.Min(right.Value.estimatedTimeFoodDepleted, Math.Min(right.Value.estimatedTimeWaterDepleted, right.Value.estimatedTimeOxygenDepleted));
-
-                return leftShortestTime.CompareTo(rightShortestTime);
             }
         }
     }

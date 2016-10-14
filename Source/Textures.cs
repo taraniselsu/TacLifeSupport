@@ -34,10 +34,11 @@ namespace Tac
         internal static Texture2D TooltipBox = new Texture2D(10, 10, TextureFormat.ARGB32, false);
         internal static Texture2D BtnRedCross = new Texture2D(16, 16, TextureFormat.ARGB32, false);
         internal static Texture2D BtnResize = new Texture2D(16, 16, TextureFormat.ARGB32, false);
+        internal static Texture2D BtnResizeArrow = new Texture2D(16, 16, TextureFormat.ARGB32, false);
         internal static Texture2D BtnResizeHeight = new Texture2D(16, 16, TextureFormat.ARGB32, false);
         internal static Texture2D BtnResizeWidth = new Texture2D(16, 16, TextureFormat.ARGB32, false);
-
-        internal static String PathIconsPath = System.IO.Path.Combine(Textures.AssemblyFolder, "Textures").Replace("\\", "/");
+        
+        internal static String PathIconsPath = System.IO.Path.Combine(AssemblyFolder.Substring(0, AssemblyFolder.IndexOf("/TacLifeSupport/") + 16), "Icons").Replace("\\", "/");
         internal static String PathToolbarIconsPath = PathIconsPath.Substring(PathIconsPath.ToLower().IndexOf("/gamedata/") + 10);
 
 
@@ -54,7 +55,8 @@ namespace Tac
                 LoadImageFromFile(ref RedToolbarIcon, "TACredIconTB.png", PathIconsPath);
                 LoadImageFromFile(ref TooltipBox, "TACToolTipBox.png", PathIconsPath);
                 LoadImageFromFile(ref BtnRedCross, "TACbtnRedCross.png", PathIconsPath);
-                LoadImageFromFile(ref BtnResize, "TACbtnResize.png", PathIconsPath);
+                LoadImageFromFile(ref BtnResize, "resize.png", PathIconsPath);
+                LoadImageFromFile(ref BtnResizeArrow, "TACbtnResize.png", PathIconsPath);
                 LoadImageFromFile(ref BtnResizeHeight, "TACbtnResizeHeight.png", PathIconsPath);
                 LoadImageFromFile(ref BtnResizeWidth, "TACbtnResizeWidth.png", PathIconsPath);
                 LoadImageFromFile(ref EditorCatIcon, "TACEditorCatIcon.png", PathIconsPath);
