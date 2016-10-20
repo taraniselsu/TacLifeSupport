@@ -39,6 +39,7 @@ namespace Tac
         public double lastWater;
         public string vesselName;
         public Guid vesselId;
+        public bool vesselIsPreLaunch;
         public bool hibernating;
         public ProtoCrewMember.KerbalType crewType;
         public readonly double respite = UnityEngine.Random.Range(60, 600);
@@ -51,15 +52,17 @@ namespace Tac
             lastWater = currentTime;
             this.vesselName = vesselName;
             this.vesselId = vesselId;
+            this.vesselIsPreLaunch = true;
             hibernating = false;
-
+            crewType = ProtoCrewMember.KerbalType.Crew;
             if (HighLogic.CurrentGame != null)
             {
-                ProtoCrewMember kerbal = HighLogic.CurrentGame.CrewRoster.Crew.FirstOrDefault(a => a.name == name);
-                crewType = kerbal.type;
+                ProtoCrewMember kerbal = HighLogic.CurrentGame.CrewRoster[name];
+                if (kerbal != null)
+                {
+                    crewType = kerbal.type;
+                }
             }
-            else
-                crewType = ProtoCrewMember.KerbalType.Crew;
         }
 
         public static CrewMemberInfo Load(ConfigNode node)
@@ -78,6 +81,7 @@ namespace Tac
             }
 
             CrewMemberInfo info = new CrewMemberInfo(name, vesselName, vesselId, lastUpdate);
+            info.vesselIsPreLaunch = Utilities.GetValue(node, "vesselIsPreLaunch", true);
             info.lastFood = Utilities.GetValue(node, "lastFood", lastUpdate);
             info.lastWater = Utilities.GetValue(node, "lastWater", lastUpdate);
             info.hibernating = Utilities.GetValue(node, "hibernating", false);
@@ -94,6 +98,7 @@ namespace Tac
             node.AddValue("lastWater", lastWater);
             node.AddValue("vesselName", vesselName);
             node.AddValue("vesselId", vesselId);
+            node.AddValue("vesselIsPreLaunch", vesselIsPreLaunch);
             node.AddValue("hibernating", hibernating);
             node.AddValue("crewType", crewType);
             return node;

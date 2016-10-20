@@ -1,3 +1,12 @@
+v0.12.6
+	Fix PreLaunch Vessel handling. Any vessel that is PreLaunch will display as such and will not consume resources (with the exception of ElectricCharge),
+	however, TACLS will not track EC drain for a PreLaunch vessel so it is possible if you leave a vessel on the pad with no EC generation that immediately on launch
+	TACLS will see the vessel as having no EC available. https://github.com/KSP-RO/TacLifeSupport/issues/50
+	Fixed [UNKNOWN] vessel type showing for vessels in the UI.
+	Fixed Vessel list not showing the active vessel at the top of the list when switching between vessels. https://github.com/KSP-RO/TacLifeSupport/issues/51
+	Massive code clean-up for performance improvements begins. Internally TAC LS now uses KSP GameEvents for all vessel processing setting things up for future
+	version resource processing of ALL vessels including unloaded vessels.
+	Fix Tourist processing/monitoring. https://github.com/KSP-RO/TacLifeSupport/issues/52
 v0.12.5
 	Re-compiled for KSP 1.2 with necessary changes (will not work on earlier versions of KSP).
 	Some performance and garbage clean-up in the codebase (a further cleanup performance improvement code review is still required).	

@@ -37,6 +37,8 @@ namespace Tac
 
         public string vesselName;
         public VesselType vesselType = VesselType.Unknown;
+        public Vessel.Situations vesselSituation = Vessel.Situations.PRELAUNCH;
+        public bool vesselIsPreLaunch = true;
         public int numCrew;
         public int numOccupiedParts;
 
@@ -72,7 +74,7 @@ namespace Tac
         public double estimatedElectricityConsumptionRate;
         public bool hibernating;
 
-        public VesselInfo(string vesselName, double currentTime)
+        public VesselInfo(string vesselName, Vessel.Situations situation, VesselType vesseltype, double currentTime)
         {
             this.vesselName = vesselName;
             lastUpdate = currentTime;
@@ -81,15 +83,30 @@ namespace Tac
             lastOxygen = currentTime;
             lastElectricity = currentTime;
             hibernating = false;
+            vesselSituation = situation;
+            vesselIsPreLaunch = situation == Vessel.Situations.PRELAUNCH;
+            vesselType = vesseltype;
         }
 
         public static VesselInfo Load(ConfigNode node)
         {
             string vesselName = Utilities.GetValue(node, "vesselName", "Unknown");
             double lastUpdate = Utilities.GetValue(node, "lastUpdate", 0.0);
+            Vessel.Situations vesselSituation = Utilities.GetValue(node, "vesselSituation", Vessel.Situations.PRELAUNCH);
+            VesselType vesselType = Utilities.GetValue(node, "vesselType", VesselType.Unknown);
 
-            VesselInfo info = new VesselInfo(vesselName, lastUpdate);
-            info.vesselType = Utilities.GetValue(node, "vesselType", VesselType.Unknown);
+            VesselInfo info = new VesselInfo(vesselName, vesselSituation, vesselType, lastUpdate);
+
+            
+            info.vesselIsPreLaunch = Utilities.GetValue(node, "vesselIsPreLaunch", true);
+            if (info.vesselIsPreLaunch && !(vesselSituation == Vessel.Situations.PRELAUNCH))
+            {
+                Logging.LogError("VesselInfo.Load",
+                    "Mismatch between VesselSituation and vesselIsPreLaunch, setting to Prelaunch");
+                info.vesselIsPreLaunch = true;
+                info.vesselSituation = Vessel.Situations.PRELAUNCH;
+            }
+
             info.numCrew = Utilities.GetValue(node, "numCrew", 0);
             info.numOccupiedParts = Utilities.GetValue(node, "numOccupiedParts", 0);
 
@@ -123,6 +140,8 @@ namespace Tac
             ConfigNode node = config.AddNode(ConfigNodeName);
             node.AddValue("vesselName", vesselName);
             node.AddValue("vesselType", vesselType.ToString());
+            node.AddValue("vesselSituation", vesselSituation.ToString());
+            node.AddValue("vesselIsPreLaunch", vesselIsPreLaunch);
             node.AddValue("numCrew", numCrew);
             node.AddValue("numOccupiedParts", numOccupiedParts);
 

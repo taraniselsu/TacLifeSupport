@@ -88,26 +88,40 @@ namespace Tac
             foreach (CrewMemberInfo crewInfo in gameSettings.knownCrew.Values)
             {
                 GUILayout.Label(crewInfo.name + " (" + crewInfo.vesselName + ")", headerStyle);
-                GUILayout.BeginHorizontal();
-                GUILayout.Label("  Last updated: ", labelStyle, GUILayout.Width(100));
-                GUILayout.Label(Utilities.FormatTime(currentTime - crewInfo.lastUpdate), labelStyle);
-                GUILayout.EndHorizontal();
-                GUILayout.BeginHorizontal();
-                GUILayout.Label("  Last food: ", labelStyle, GUILayout.Width(100));
-                GUILayout.Label(Utilities.FormatTime(currentTime - crewInfo.lastFood), getStyle(crewInfo.lastUpdate, crewInfo.lastFood, globalSettings.MaxTimeWithoutFood));
-                GUILayout.EndHorizontal();
-                GUILayout.BeginHorizontal();
-                GUILayout.Label("  Last water: ", labelStyle, GUILayout.Width(100));
-                GUILayout.Label(Utilities.FormatTime(currentTime - crewInfo.lastWater), getStyle(crewInfo.lastUpdate, crewInfo.lastWater, globalSettings.MaxTimeWithoutWater));
-                GUILayout.EndHorizontal();
-                if (HighLogic.CurrentGame.Parameters.CustomParams<TAC_SettingsParms>().hibernate != "Die" || crewInfo.hibernating)
+                if (crewInfo.vesselIsPreLaunch)
+                {
+                    GUILayout.Label("  Prelaunch", labelStyle);
+                }
+                else
                 {
                     GUILayout.BeginHorizontal();
-                    GUILayout.Label("  Hibernating: ", labelStyle, GUILayout.Width(100));
-                    GUILayout.Label(crewInfo.hibernating.ToString(), labelStyle);
+                    GUILayout.Label("  Last updated: ", labelStyle, GUILayout.Width(100));
+                    GUILayout.Label(Utilities.FormatTime(currentTime - crewInfo.lastUpdate), labelStyle);
                     GUILayout.EndHorizontal();
+                    GUILayout.BeginHorizontal();
+                    GUILayout.Label("  Last food: ", labelStyle, GUILayout.Width(100));
+                    GUILayout.Label(Utilities.FormatTime(currentTime - crewInfo.lastFood),
+                        getStyle(crewInfo.lastUpdate, crewInfo.lastFood, globalSettings.MaxTimeWithoutFood));
+                    GUILayout.EndHorizontal();
+                    GUILayout.BeginHorizontal();
+                    GUILayout.Label("  Last water: ", labelStyle, GUILayout.Width(100));
+                    GUILayout.Label(Utilities.FormatTime(currentTime - crewInfo.lastWater),
+                        getStyle(crewInfo.lastUpdate, crewInfo.lastWater, globalSettings.MaxTimeWithoutWater));
+                    GUILayout.EndHorizontal();
+                    if (HighLogic.CurrentGame.Parameters.CustomParams<TAC_SettingsParms>().hibernate != "Die" ||
+                        crewInfo.hibernating)
+                    {
+                        GUILayout.BeginHorizontal();
+                        GUILayout.Label("  Hibernating: ", labelStyle, GUILayout.Width(100));
+                        GUILayout.Label(crewInfo.hibernating.ToString(), labelStyle);
+                        GUILayout.EndHorizontal();
+                    }
                 }
                 GUILayout.Space(10);
+            }
+            if (gameSettings.knownCrew.Count == 0)
+            {
+                GUILayout.Label("No Crew.", headerStyle);
             }
 
             GUILayout.EndVertical();
