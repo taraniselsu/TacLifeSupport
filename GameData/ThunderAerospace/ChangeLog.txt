@@ -7,6 +7,14 @@ v0.12.6
 	Massive code clean-up for performance improvements begins. Internally TAC LS now uses KSP GameEvents for all vessel processing setting things up for future
 	version resource processing of ALL vessels including unloaded vessels.
 	Fix Tourist processing/monitoring. https://github.com/KSP-RO/TacLifeSupport/issues/52
+	Fixed part search tags on all parts.
+	Fix Turning TAC LS on/off in a save file (was causing crash when turning on). TAC LS can only be enabled/disabled for a save when creating a new save or at the Space Center.
+	Added support for Community Category Kit (now included in TAC LS download). This is a KSP modding community kit for common part categories in the editor. TAC LS parts will
+	now appear in the "Life Support" category that this kit adds along with the built-in TAC Life Support category which you can still turn on or off. If you prefer
+	to not use the Community Category Kit  simply delete the <KSPinstall>\GameData\CommunityCategoryKit folder. You can then turn off the built-in TAC LS category in the difficulty settings and use the
+	community category if you so wish. Of course, you can use both if you also so desire and the parts will appear in both categories.
+	Rebalanced the smaller Recyclers so they support 3 kerbals and cost less.
+	Rebalanced weight of larger extractors/recyclers.
 v0.12.5
 	Re-compiled for KSP 1.2 with necessary changes (will not work on earlier versions of KSP).
 	Some performance and garbage clean-up in the codebase (a further cleanup performance improvement code review is still required).	

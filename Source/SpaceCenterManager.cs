@@ -26,19 +26,12 @@
  * is purely coincidental.
  */
 
-using KSP.UI.Screens;
-using RSTUtils;
 using UnityEngine;
 
 namespace Tac
 {
     class SpaceCenterManager : MonoBehaviour//, Savable
     {
-        public SpaceCenterManager()
-        {
-            //this.Log("Constructor");
-        }
-
         void Awake()
         {
             this.Log("Awake");

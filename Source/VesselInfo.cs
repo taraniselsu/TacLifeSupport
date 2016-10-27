@@ -73,6 +73,7 @@ namespace Tac
 
         public double estimatedElectricityConsumptionRate;
         public bool hibernating;
+        public bool recoveryvessel;
 
         public VesselInfo(string vesselName, Vessel.Situations situation, VesselType vesseltype, double currentTime)
         {
@@ -86,6 +87,7 @@ namespace Tac
             vesselSituation = situation;
             vesselIsPreLaunch = situation == Vessel.Situations.PRELAUNCH;
             vesselType = vesseltype;
+            recoveryvessel = false;
         }
 
         public static VesselInfo Load(ConfigNode node)
@@ -131,6 +133,7 @@ namespace Tac
             info.estimatedElectricityConsumptionRate = Utilities.GetValue(node, "estimatedElectricityConsumptionRate", 0.0);
 
             info.hibernating = Utilities.GetValue(node, "hibernating", false);
+            info.recoveryvessel = Utilities.GetValue(node, "recoveryvessel", false);
 
             return info;
         }
@@ -167,6 +170,7 @@ namespace Tac
             node.AddValue("estimatedElectricityConsumptionRate", estimatedElectricityConsumptionRate);
 
             node.AddValue("hibernating", hibernating);
+            node.AddValue("recoveryvessel", recoveryvessel);
 
             return node;
         }

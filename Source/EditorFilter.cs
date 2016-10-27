@@ -42,7 +42,10 @@ namespace Tac
         {
             this.Log("TACLS EditorFilter Setup");
             RemoveSubFilter();
-            AddPartUtilitiesCat();
+            if (!RSTUtils.Utilities.IsModInstalled("CCK"))
+            {
+                AddPartUtilitiesCat();
+            }
             GameEvents.onGUIEditorToolbarReady.Remove(SubCategories);
             
             if (!HighLogic.CurrentGame.Parameters.CustomParams<TAC_SettingsParms>().EditorFilter)
@@ -85,7 +88,7 @@ namespace Tac
             foreach (AvailablePart avPart in PartLoader.LoadedPartsList)
             {
                 if (!avPart.partPrefab) continue;
-                if (avPart.name.Contains("Tac") || avPart.name.Contains("HexCan"))
+                if (avPart.tags.Contains("tacls"))
                 {
                     TacavPartItems.Add(avPart);
                 }

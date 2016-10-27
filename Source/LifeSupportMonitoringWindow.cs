@@ -134,9 +134,12 @@ namespace Tac
             {
                 GUILayout.Label("  Prelaunch", labelStyle);
             }
+            else if (vesselInfo.recoveryvessel)
+            {
+                GUILayout.Label("  Recovery", labelStyle);
+            }
             else
             {
-
                 GUILayout.BeginHorizontal();
                 GUILayout.Label("  Last updated:          ", getStyle(vesselInfo.foodStatus), GUILayout.Width(150));
                 GUILayout.Label(Utilities.FormatTime(currentTime - vesselInfo.lastUpdate), labelStyle);

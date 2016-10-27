@@ -41,6 +41,7 @@ namespace Tac
         public Guid vesselId;
         public bool vesselIsPreLaunch;
         public bool hibernating;
+        public bool recoverykerbal;
         public ProtoCrewMember.KerbalType crewType;
         public readonly double respite = UnityEngine.Random.Range(60, 600);
 
@@ -54,13 +55,17 @@ namespace Tac
             this.vesselId = vesselId;
             this.vesselIsPreLaunch = true;
             hibernating = false;
+            recoverykerbal = false;
             crewType = ProtoCrewMember.KerbalType.Crew;
             if (HighLogic.CurrentGame != null)
             {
-                ProtoCrewMember kerbal = HighLogic.CurrentGame.CrewRoster[name];
-                if (kerbal != null)
+                if (HighLogic.CurrentGame.CrewRoster.Exists(name))
                 {
-                    crewType = kerbal.type;
+                    ProtoCrewMember kerbal = HighLogic.CurrentGame.CrewRoster[name];
+                    if (kerbal != null)
+                    {
+                        crewType = kerbal.type;
+                    }
                 }
             }
         }
@@ -85,6 +90,7 @@ namespace Tac
             info.lastFood = Utilities.GetValue(node, "lastFood", lastUpdate);
             info.lastWater = Utilities.GetValue(node, "lastWater", lastUpdate);
             info.hibernating = Utilities.GetValue(node, "hibernating", false);
+            info.recoverykerbal = Utilities.GetValue(node, "recoverykerbal", false);
             info.crewType = Utilities.GetValue(node, "crewType", info.crewType);
             return info;
         }
@@ -100,6 +106,7 @@ namespace Tac
             node.AddValue("vesselId", vesselId);
             node.AddValue("vesselIsPreLaunch", vesselIsPreLaunch);
             node.AddValue("hibernating", hibernating);
+            node.AddValue("recoverykerbal", recoverykerbal);
             node.AddValue("crewType", crewType);
             return node;
         }

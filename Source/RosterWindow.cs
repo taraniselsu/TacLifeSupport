@@ -92,6 +92,10 @@ namespace Tac
                 {
                     GUILayout.Label("  Prelaunch", labelStyle);
                 }
+                else if (crewInfo.recoverykerbal)
+                {
+                    GUILayout.Label("  Recovery", labelStyle);
+                }
                 else
                 {
                     GUILayout.BeginHorizontal();
