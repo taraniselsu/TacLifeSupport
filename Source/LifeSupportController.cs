@@ -196,20 +196,18 @@ namespace Tac
                     {
                         if (allvessels[i].id == entry.Key)
                         {
-                            if (!allvessels[i].isEVA)
+                            vsl = allvessels[i];
+                            if (allvessels[i].isEVA)
                             {
                                 isEVA = true;
-                                break;
                             }
+                            break;
                         }
                     }
                     //If it's not EVA we skip.
                     if (!isEVA)
                     {
-                        entry.Value.lastFood =
-                            entry.Value.lastOxygen =
-                                entry.Value.lastWater =
-                                    entry.Value.lastElectricity = entry.Value.lastUpdate = currentTime;
+                        updateVslCrewCurrentTime(vsl, entry, currentTime);
                         continue;
                     }
                 }
@@ -236,23 +234,7 @@ namespace Tac
                     //If vessel is PRELAUNCH
                     if (loadedvessel.situation == Vessel.Situations.PRELAUNCH)
                     {
-                        entry.Value.lastFood =
-                             entry.Value.lastOxygen =
-                                 entry.Value.lastWater =
-                                     entry.Value.lastElectricity = entry.Value.lastUpdate = currentTime;
-                        if (entry.Value.numCrew > 0)
-                        {
-                            foreach (var crew in TacLifeSupport.Instance.gameSettings.knownCrew)
-                            {
-                                if (crew.Value.vesselId == loadedvessel.id)
-                                {
-                                    crew.Value.lastFood = currentTime;
-                                    crew.Value.lastWater = currentTime;
-                                    crew.Value.lastUpdate = currentTime;
-                                    crew.Value.vesselIsPreLaunch = true;
-                                }
-                            }
-                        }
+                        updateVslCrewCurrentTime(loadedvessel, entry, currentTime, true);
                     }
                     //Vessel is NOT PRELAUNCH
                     else
@@ -282,6 +264,45 @@ namespace Tac
             if (Time.time - VesselSortCounter > settings_sec1.vesselUpdateList * 60 || VesselSortCountervslChgFlag)
             {
                 resetVesselList(FlightGlobals.fetch != null ? FlightGlobals.ActiveVessel : null);
+            }
+        }
+
+        /// <summary>
+        /// Updates the knownVessel and all it's knownCrew lastFood, Oxygen,Water,Electricy and lastUpdate fields to the current time.
+        /// Used for PreLaunch and Rescue Kerbal vessels.
+        /// </summary>
+        /// <param name="entry"></param>
+        /// <param name="currentTime"></param>
+        /// <param name="PreLaunch"></param>
+        private void updateVslCrewCurrentTime(Vessel vessel, KeyValuePair<Guid, VesselInfo> entry, double currentTime, bool PreLaunch = false)
+        {
+            entry.Value.lastFood = currentTime;
+            entry.Value.lastOxygen = currentTime;
+            entry.Value.lastWater = currentTime;
+            entry.Value.lastElectricity = currentTime;
+            entry.Value.lastUpdate = currentTime;
+            if (vessel != null)
+            {
+                entry.Value.numCrew = vessel.GetCrewCount();
+                entry.Value.numOccupiedParts = vessel.crewedParts;
+            }
+
+            if (entry.Value.numCrew > 0)
+            {
+                foreach (var crew in TacLifeSupport.Instance.gameSettings.knownCrew)
+                {
+                    if (crew.Value.vesselId == entry.Key)
+                    {
+                        crew.Value.lastFood = currentTime;
+                        crew.Value.lastWater = currentTime;
+                        crew.Value.lastUpdate = currentTime;
+                        crew.Value.vesselIsPreLaunch = PreLaunch;
+                    }
+                }
+            }
+            else
+            {
+                entry.Value.recoveryvessel = false;
             }
         }
 
@@ -347,8 +368,12 @@ namespace Tac
                     crewMemberInfo.vesselId = vessel.id;
                     crewMemberInfo.vesselName = vessel.vesselName;
                     crewMemberInfo.vesselIsPreLaunch = vessel.SituationString == "PRELAUNCH";
+                    //If rescue kerbal set their last use to current time and turn off their recoverkerbal flag.
+                    //IE: We now start consuming resources.
                     if (crewMemberInfo.recoverykerbal)
+                    {
                         crewMemberInfo.lastFood = crewMemberInfo.lastWater = crewMemberInfo.lastUpdate = currentTime;
+                    }
                 }
                 else
                 {
@@ -359,13 +384,20 @@ namespace Tac
                     {
                         rescuekerbal = checkContractsForRescue(vslCrew[i]);
                     }
+                    //Create new knownCrew Info.
                     var cmi = new CrewMemberInfo(vslCrew[i].name, vessel.vesselName, vessel.id, currentTime);
-                    if (rescuekerbal)
+                    if (rescuekerbal) //Set RescueKerbal fields.
                     {
                         cmi.recoverykerbal = true;
+                        cmi.vesselIsPreLaunch = false;
                         gameSettings.knownVessels[vessel.id].recoveryvessel = true;
                     }
+                    //save knownCrew record.
                     gameSettings.knownCrew[vslCrew[i].name] = cmi;
+                    //Increase number of crew on knownVessel record and if numOccupiedParts is 0 make it 1.
+                    gameSettings.knownVessels[vessel.id].numCrew++;
+                    if (gameSettings.knownVessels[vessel.id].numOccupiedParts == 0)
+                        gameSettings.knownVessels[vessel.id].numOccupiedParts++;
                     resetVesselList(vessel);
                 }
             }
@@ -1267,8 +1299,18 @@ namespace Tac
                             CrewMemberInfo value;
                             if (gameSettings.knownCrew.TryGetValue(crewMember.name, out value))
                             {
-                                if (value.recoverykerbal)
-                                    FillRescueEvaSuit(vessel);
+                                if (value == null)
+                                {
+                                    this.Log("Critical Error, failed to get EVA CrewMember Info");
+                                }
+                                else
+                                {
+                                    if (value.recoverykerbal)
+                                    {
+                                        FillRescueEvaSuit(vessel);
+                                        value.recoverykerbal = false;
+                                    }
+                                }
                             }
                         }
                     }
@@ -1289,7 +1331,7 @@ namespace Tac
             var contracts = Contracts.ContractSystem.Instance.Contracts;
             for (int i = 0; i < contracts.Count; ++i)
             {
-                if (contracts[i].Title.Contains("Recover " + crew.name))
+                if (contracts[i].Title.Contains(crew.name))
                 {
                     return true;
                 }

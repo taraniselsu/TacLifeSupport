@@ -94,7 +94,7 @@ namespace Tac
                 }
                 else if (crewInfo.recoverykerbal)
                 {
-                    GUILayout.Label("  Recovery", labelStyle);
+                    GUILayout.Label("  Rescue Me!", labelStyle);
                 }
                 else
                 {

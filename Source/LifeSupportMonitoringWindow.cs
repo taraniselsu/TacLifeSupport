@@ -132,11 +132,11 @@ namespace Tac
             GUILayout.Label(vesselInfo.vesselName + " (" + vesselInfo.numCrew + " crew) [" + vesselInfo.vesselType + "]", headerStyle);
             if (vesselInfo.vesselIsPreLaunch)
             {
-                GUILayout.Label("  Prelaunch", labelStyle);
+                GUILayout.Label("  Prelaunch Vessel", labelStyle);
             }
             else if (vesselInfo.recoveryvessel)
             {
-                GUILayout.Label("  Recovery", labelStyle);
+                GUILayout.Label("  Rescue Vessel", labelStyle);
             }
             else
             {

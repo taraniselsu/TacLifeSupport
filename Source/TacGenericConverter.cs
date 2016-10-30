@@ -45,12 +45,15 @@ namespace Tac
         
         protected override void PreProcessing()
         {
-            if (requiresOxygenAtmo && !vessel.mainBody.atmosphereContainsOxygen)
+            if (HighLogic.LoadedScene == GameScenes.FLIGHT)
             {
+                if (requiresOxygenAtmo && !vessel.mainBody.atmosphereContainsOxygen)
+                {
 
-                IsActivated = false;
-                converterEnabled = false;
-                status = "Atmo lacks oxygen.";
+                    IsActivated = false;
+                    converterEnabled = false;
+                    status = "Atmo lacks oxygen.";
+                }
             }
         }
 
