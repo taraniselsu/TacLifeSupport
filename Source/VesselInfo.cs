@@ -24,10 +24,6 @@
  * is purely coincidental.
  */
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
 namespace Tac
 {
@@ -41,6 +37,7 @@ namespace Tac
         public bool vesselIsPreLaunch = true;
         public int numCrew;
         public int numOccupiedParts;
+        public int numFrozenCrew;
 
         public double lastUpdate;
         public double lastFood;
@@ -84,6 +81,7 @@ namespace Tac
             lastOxygen = currentTime;
             lastElectricity = currentTime;
             hibernating = false;
+            numFrozenCrew = 0;
             vesselSituation = situation;
             vesselIsPreLaunch = situation == Vessel.Situations.PRELAUNCH;
             vesselType = vesseltype;
@@ -110,6 +108,7 @@ namespace Tac
             }
 
             info.numCrew = Utilities.GetValue(node, "numCrew", 0);
+            info.numFrozenCrew = Utilities.GetValue(node, "numFrozenCrew", 0);
             info.numOccupiedParts = Utilities.GetValue(node, "numOccupiedParts", 0);
 
             info.lastFood = Utilities.GetValue(node, "lastFood", lastUpdate);
@@ -146,6 +145,7 @@ namespace Tac
             node.AddValue("vesselSituation", vesselSituation.ToString());
             node.AddValue("vesselIsPreLaunch", vesselIsPreLaunch);
             node.AddValue("numCrew", numCrew);
+            node.AddValue("numFrozenCrew", numFrozenCrew);
             node.AddValue("numOccupiedParts", numOccupiedParts);
 
             node.AddValue("lastUpdate", lastUpdate);

@@ -19,6 +19,8 @@ v0.12.6
 	Rebalanced weight of larger extractors/recyclers.
 	Added bulkheadprofiles to part configs (for size sorting in editor).
 	Aligned part names to include size in their names.	
+	Added RSTKSPGameEvents dll and removed use of reflection for better integration with DeepFreeze mod. 
+	Added Frozen field to internal dictionaries and DeepFreeze frozen kerbals now don't disappear from monitoring windows (although they still don't consume resources when frozen).
 v0.12.5
 	Re-compiled for KSP 1.2 with necessary changes (will not work on earlier versions of KSP).
 	Some performance and garbage clean-up in the codebase (a further cleanup performance improvement code review is still required).	

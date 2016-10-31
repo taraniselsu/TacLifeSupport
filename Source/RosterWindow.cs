@@ -39,6 +39,7 @@ namespace Tac
         private GUIStyle labelStyle;
         private GUIStyle warningStyle;
         private GUIStyle criticalStyle;
+        private GUIStyle frozenStyle;
         private GUIStyle headerStyle;
         private Vector2 scrollPosition;
 
@@ -72,6 +73,9 @@ namespace Tac
                 criticalStyle = new GUIStyle(labelStyle);
                 criticalStyle.normal.textColor = Color.red;
 
+                frozenStyle = new GUIStyle(labelStyle);
+                frozenStyle.normal.textColor = Color.blue;
+
                 headerStyle = new GUIStyle(labelStyle);
                 headerStyle.fontStyle = FontStyle.Bold;
             }
@@ -88,7 +92,18 @@ namespace Tac
             foreach (CrewMemberInfo crewInfo in gameSettings.knownCrew.Values)
             {
                 GUILayout.Label(crewInfo.name + " (" + crewInfo.vesselName + ")", headerStyle);
-                if (crewInfo.vesselIsPreLaunch)
+                if (crewInfo.DFfrozen)
+                {
+                    if (crewInfo.vesselIsPreLaunch)
+                    {
+                        GUILayout.Label("  Prelaunch - Frozen", frozenStyle);
+                    }
+                    else
+                    {
+                        GUILayout.Label("  Frozen", frozenStyle);
+                    }
+                }
+                else if (crewInfo.vesselIsPreLaunch)
                 {
                     GUILayout.Label("  Prelaunch", labelStyle);
                 }

@@ -27,15 +27,12 @@
  */
 
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using Contracts;
-using Contracts.Parameters;
 using KSP.UI.Screens;
 using RSTUtils;
 using UnityEngine;
-using TacDFWrapper;
+using RSTKSPGameEvents;
 
 namespace Tac
 {
@@ -46,8 +43,6 @@ namespace Tac
         internal AppLauncherToolBar TACMenuAppLToolBar;
         private bool loadingNewScene = false;
         private double seaLevelPressure = 101.325;
-        private bool IsDFInstalled = false;
-        private static bool resetDFonSceneChange = false;
         private GlobalSettings globalsettings;
         private TacGameSettings gameSettings;
         private float VesselSortCounter = 0f;
@@ -75,21 +70,6 @@ namespace Tac
                 ApplicationLauncher.AppScenes.TRACKSTATION | ApplicationLauncher.AppScenes.FLIGHT | ApplicationLauncher.AppScenes.SPACECENTER,
                 (Texture)Textures.GrnApplauncherIcon, (Texture)Textures.GrnApplauncherIcon,
                 GameScenes.TRACKSTATION , GameScenes.FLIGHT, GameScenes.SPACECENTER);
-
-            
-            //Check if DeepFreeze is installed and set bool.
-            var DeepFreezeassembly = (from a in AppDomain.CurrentDomain.GetAssemblies()
-                    where a.FullName.StartsWith("DeepFreeze")
-                    select a).FirstOrDefault();
-            if (DeepFreezeassembly != null)
-            {
-                IsDFInstalled = true;
-                resetDFonSceneChange = true;
-            }
-            else
-            {
-                IsDFInstalled = false;
-            }
         }
 
         void Start()
@@ -125,8 +105,10 @@ namespace Tac
             GameEvents.onVesselWasModified.Add(onVesselWasModified);
             GameEvents.onVesselSituationChange.Add(onVesselSituationChange);
             GameEvents.onLevelWasLoaded.Add(onLevelWasLoaded);
-
-
+            RSTEvents.onKerbalFrozen.Add(onKerbalFrozen);
+            RSTEvents.onKerbalThaw.Add(onKerbalThaw);
+            RSTEvents.onFrozenKerbalDied.Add(onFrozenKerbalDie);
+            
             // Double check that we have the right sea level pressure for Kerbin
             seaLevelPressure = FlightGlobals.Bodies[1].GetPressure(0);
             
@@ -149,6 +131,9 @@ namespace Tac
             GameEvents.onVesselWasModified.Remove(onVesselWasModified);
             GameEvents.onVesselSituationChange.Remove(onVesselSituationChange);
             GameEvents.onLevelWasLoaded.Remove(onLevelWasLoaded);
+            RSTEvents.onKerbalFrozen.Remove(onKerbalFrozen);
+            RSTEvents.onKerbalThaw.Remove(onKerbalThaw);
+            RSTEvents.onFrozenKerbalDied.Remove(onFrozenKerbalDie);
         }
 
         void OnGUI()
@@ -172,14 +157,6 @@ namespace Tac
                 return;
             }
             
-            // If DeepFreeze is installed do DeepFreeze processing to remove frozen kerbals from our list.
-            if (IsDFInstalled)
-            {
-                if (Time.timeSinceLevelLoad > 3.0f) //Time delay to allow DeepFreeze to initialise correctly.
-                {
-                    CheckForFrozenKerbals();
-                }
-            }
             double currentTime = Planetarium.GetUniversalTime();
             var loadedVessels = FlightGlobals.VesselsLoaded;
             //Iterate the knownVessels dictionary
@@ -211,6 +188,7 @@ namespace Tac
                         continue;
                     }
                 }
+                Profiler.BeginSample("processVessel");
                 //Loaded vessels first. Process Loaded vessel.
                 Vessel loadedvessel = null;
                 for (int i = 0; i < loadedVessels.Count; ++i)
@@ -246,25 +224,31 @@ namespace Tac
                         }
                     }
                 }
+
                 //Unloaded vessels processing happens here. In a future release.
                 //todo unloaded vessels processing.
                 else
                 {
-
+                    
                 }
+                Profiler.EndSample();
                 //Do warning processing on all vessels.
+                Profiler.BeginSample("doWarningProcessing");
                 doWarningProcessing(entry.Value, currentTime);
+                Profiler.EndSample();
             }
-            
+
             //Will re-create and sort the knownVesselsList that is used by the GUI.
             //It does this when a Dictionary event occurs or every settings_sec1.vesselUpdateList minutes.
             //The second part is because the sort order is ActiveVessel followed by all other vessels based on remaining resources.
             //It WAS doing this on every onGUI loop.
             //todo once the event driven changes are made look at this again and if it can be event driven as well
+            Profiler.BeginSample("resetVesselList");
             if (Time.time - VesselSortCounter > settings_sec1.vesselUpdateList * 60 || VesselSortCountervslChgFlag)
             {
                 resetVesselList(FlightGlobals.fetch != null ? FlightGlobals.ActiveVessel : null);
             }
+            Profiler.EndSample();
         }
 
         /// <summary>
@@ -395,88 +379,77 @@ namespace Tac
                     //save knownCrew record.
                     gameSettings.knownCrew[vslCrew[i].name] = cmi;
                     //Increase number of crew on knownVessel record and if numOccupiedParts is 0 make it 1.
-                    gameSettings.knownVessels[vessel.id].numCrew++;
-                    if (gameSettings.knownVessels[vessel.id].numOccupiedParts == 0)
-                        gameSettings.knownVessels[vessel.id].numOccupiedParts++;
+                    if (gameSettings.knownVessels.ContainsKey(vessel.id))
+                    {
+                        gameSettings.knownVessels[vessel.id].numCrew++;
+                        if (gameSettings.knownVessels[vessel.id].numOccupiedParts == 0)
+                            gameSettings.knownVessels[vessel.id].numOccupiedParts++;
+                    }
                     resetVesselList(vessel);
                 }
             }
         }
 
         /// <summary>
-        /// If DeepFreze mod is installed will initialise Reflection wrapper if it is not.
-        /// Then will iterate and remove any frozen kerbals from TAC LS knownCrew dictionary.
+        /// Fires from RSTKSPGameEvents from DeepFreeze mod when a frozen kerbal dies.
+        /// Remove them from knownCrew tracking.
         /// </summary>
-        private void CheckForFrozenKerbals()
+        /// <param name="part"></param>
+        /// <param name="crew"></param>
+        private void onFrozenKerbalDie(ProtoCrewMember crew)
         {
-            if (!DFWrapper.InstanceExists || resetDFonSceneChange)
-            // Check if DFWrapper has been initialized or not. If not try to initialize.
+            this.Log("Frozen crew member Died, Removing: " + crew.name);
+            gameSettings.knownCrew.Remove(crew.name);
+        }
+
+        /// <summary>
+        /// Fires from RSTKSPGameEvents from DeepFreeze mod when a Kerbal is Frozen.
+        /// Changes knownCrew DFfrozen to true so TAC LS won't consume resources for frozen kerbal.
+        /// Increases the knownVessel numFrozenCrew count as well so we don't stop tracking the vessel and don't consume O2 and EC for the vessel.
+        /// </summary>
+        /// <param name="part"></param>
+        /// <param name="crew"></param>
+        private void onKerbalFrozen(Part part, ProtoCrewMember crew)
+        {
+            if (gameSettings.knownCrew.ContainsKey(crew.name))
             {
-                DFWrapper.InitDFWrapper();
-                resetDFonSceneChange = false;
-            }
-            if (DFWrapper.APIReady)
-            {
-                //Check if the DeepFreeze Dictionary contains any Frozen Kerbals in the current Game.
-                //If it does process them.
-                var Frozenkerbals = DFWrapper.DeepFreezeAPI.FrozenKerbals;
-                if (Frozenkerbals.Count > 0)
+                this.Log("Frozen crew member: " + crew.name);
+                var knowncrew = gameSettings.knownCrew[crew.name];
+                knowncrew.DFfrozen = true;
+                if (gameSettings.knownVessels.ContainsKey(knowncrew.vesselId))
                 {
-                    //Remove any Frozen Kerbals from TAC LS tracking.
-                    RemoveFrozenKerbals(Frozenkerbals);
+                    var knownvessel = gameSettings.knownVessels[knowncrew.vesselId];
+                    knownvessel.numFrozenCrew++;
                 }
             }
         }
 
         /// <summary>
-        /// Will be called if DeepFreeze is installed and a Frozen Kerbal is found.
-        /// Removes them from TAC LS tracking while they are frozen.
+        /// Fires from RSTKSPGameEvents from DeepFreeze mod when a Kerbal is Thawed.
+        /// Changes knownCrew DFfrozen to false and sets last consumed resources time to now so TAC LS will start consuming resources again from now.
+        /// Decreases the knownVessel numFrozenCrew count as well
         /// </summary>
-        /// <param name="FrozenKerbals">The FrozenKerbals dictionary obtained from DeepFreeze using reflection</param>
-        private void RemoveFrozenKerbals(Dictionary<string, DFWrapper.KerbalInfo> FrozenKerbals)
+        /// <param name="part"></param>
+        /// <param name="crew"></param>
+        private void onKerbalThaw(Part part, ProtoCrewMember crew)
         {
-            try
+            if (gameSettings.knownCrew.ContainsKey(crew.name))
             {
-                foreach (var frznCrew in FrozenKerbals)
-                { 
-                    if (TacLifeSupport.Instance.gameSettings.knownCrew.ContainsKey(frznCrew.Key))
-                    {
-                        this.Log("Deleting Frozen crew member: " + frznCrew.Key);
-                        TacLifeSupport.Instance.gameSettings.knownCrew.Remove(frznCrew.Key);
-                    }
+                this.Log("Thawed crew member: " + crew.name);
+                double currentTime = Planetarium.GetUniversalTime();
+                var knowncrew = gameSettings.knownCrew[crew.name];
+                knowncrew.DFfrozen = false;
+                knowncrew.lastFood = currentTime;
+                knowncrew.lastWater = currentTime;
+                knowncrew.lastUpdate = currentTime;
+                if (gameSettings.knownVessels.ContainsKey(knowncrew.vesselId))
+                {
+                    var knownvessel = gameSettings.knownVessels[knowncrew.vesselId];
+                    knownvessel.numFrozenCrew--;
                 }
             }
-            catch (Exception ex)
-            {
-                this.Log("Error attempting to check DeepFreeze for FrozenKerbals");
-                this.Log(ex.Message);
-            }
         }
-
-        /// <summary>
-        /// Called for Hibernating/Unknown Kerbals status to check if they are frozen or not.
-        /// Will search the DeepFreeze FrozenKerbals dictionary and return true if they are frozen, otherwise will return false.
-        /// </summary>
-        /// <param name="kerbalName"></param>
-        /// <returns></returns>
-        private bool CheckFrozenKerbals(string kerbalName)
-        {
-            try
-            {
-                var tmpFrznKerbals = DFWrapper.DeepFreezeAPI.FrozenKerbals;
-                if (tmpFrznKerbals.ContainsKey(kerbalName))
-                    return true;
-                else
-                    return false;
-            }
-            catch (Exception ex)
-            {
-                this.Log("Error attempting to check for FrozenKerbal: " + kerbalName + " in DeepFreeze");
-                this.Log(ex.Message);
-                return false;
-            }
-        }
-
+        
         /// <summary>
         /// Consume Life Support resources for a vessel. Called from FixedUpdate.
         /// </summary>
@@ -567,15 +540,7 @@ namespace Tac
                     ProtoCrewMember kerbal = HighLogic.CurrentGame.CrewRoster[crewMemberInfo.name]; 
                     if (kerbal != null && kerbal.type != crewMemberInfo.crewType)
                     {
-                        if (IsDFInstalled && DFWrapper.APIReady)
-                        {
-                            if (!CheckFrozenKerbals(kerbal.name))
-                            {
-                                kerbal.type = crewMemberInfo.crewType;
-                                kerbal.RegisterExperienceTraits(part);
-                            }
-                        }
-                        else
+                        if (!crewMemberInfo.DFfrozen)
                         {
                             kerbal.type = crewMemberInfo.crewType;
                             kerbal.RegisterExperienceTraits(part);
@@ -641,15 +606,7 @@ namespace Tac
                     ProtoCrewMember kerbal = HighLogic.CurrentGame.CrewRoster[crewMemberInfo.name];
                     if (kerbal != null && kerbal.type != crewMemberInfo.crewType)
                     {
-                        if (IsDFInstalled && DFWrapper.APIReady)
-                        {
-                            if (!CheckFrozenKerbals(kerbal.name))
-                            {
-                                kerbal.type = crewMemberInfo.crewType;
-                                kerbal.RegisterExperienceTraits(part);
-                            }
-                        }
-                        else
+                        if (!crewMemberInfo.DFfrozen)
                         {
                             kerbal.type = crewMemberInfo.crewType;
                             kerbal.RegisterExperienceTraits(part);
@@ -787,6 +744,7 @@ namespace Tac
             int crewCapacity = 0;
             vesselInfo.ClearAmounts();
             crewCapacity = vessel.GetCrewCapacity();
+            crewCapacity += vesselInfo.numFrozenCrew;
             vesselInfo.numCrew = vessel.GetCrewCount();
             vesselInfo.numOccupiedParts = vessel.crewedParts;
             vesselInfo.vesselSituation = vessel.situation;
@@ -1092,7 +1050,7 @@ namespace Tac
                 }
                 else
                 {
-                    if (gamevessel.crewedParts == 0)
+                    if (gamevessel.crewedParts == 0 && vessel.Value.numFrozenCrew == 0)
                     {
                         this.Log("Deleting vessel [" + vessel.Key + "] " + vessel.Value.vesselName + " - no crewed parts anymore");
                         vesselsToDelete.Add(vessel.Key);
@@ -1103,14 +1061,21 @@ namespace Tac
             //Delete any vessels (and their crew) that are no longer in the game but in our knownVessels list.
             for (int i = 0; i < vesselsToDelete.Count; i++)
             {
-                var crewToDelete = gameSettings.knownCrew.Where(e => e.Value.vesselId == vesselsToDelete[i]).Select(e => e.Key).ToList();
-                foreach (String name in crewToDelete)
+                //Check vessel does not contain frozen crew.
+                if (gameSettings.knownVessels[vesselsToDelete[i]].numFrozenCrew == 0)
                 {
-                    this.Log("Deleting crew member: " + name);
-                    gameSettings.knownCrew.Remove(name);
+                    var crewToDelete =
+                        gameSettings.knownCrew.Where(e => e.Value.vesselId == vesselsToDelete[i])
+                            .Select(e => e.Key)
+                            .ToList();
+                    foreach (String name in crewToDelete)
+                    {
+                        this.Log("Deleting crew member: " + name);
+                        gameSettings.knownCrew.Remove(name);
+                    }
+                    gameSettings.knownVessels.Remove(vesselsToDelete[i]);
+                    VesselSortCountervslChgFlag = true;
                 }
-                gameSettings.knownVessels.Remove(vesselsToDelete[i]);
-                VesselSortCountervslChgFlag = true;
             }
 
             //Now check the knownCrew dictionary. any entries where that crewmember is not RosterStatus of Assigned is removed.
@@ -1149,17 +1114,17 @@ namespace Tac
                 }
             }
             //Check All Vessels
-            //if (FlightGlobals.fetch)
-            //{
-            //    var allVessels = FlightGlobals.Vessels;
-            //    for (int i = 0; i < allVessels.Count; ++i)
-            //    {
-            //        if (!gameSettings.knownVessels.ContainsKey(allVessels[i].id) && allVessels[i].GetVesselCrew().Count > 0)
-            //        {
-            //            CreateVesselEntry(allVessels[i]);
-            //        }
-            //    }
-            //}
+            if (FlightGlobals.fetch)
+            {
+                var allVessels = FlightGlobals.Vessels;
+                for (int i = 0; i < allVessels.Count; ++i)
+                {
+                    if (!gameSettings.knownVessels.ContainsKey(allVessels[i].id) && allVessels[i].GetVesselCrew().Count > 0)
+                    {
+                        CreateVesselEntry(allVessels[i]);
+                    }
+                }
+            }
         }
 
         /// <summary>
@@ -1194,7 +1159,7 @@ namespace Tac
             // Disable this instance because a new instance will be created after the new scene is loaded
             loadingNewScene = true;
             // Reset DeepFreeze Reflection wrapper on scene change
-            resetDFonSceneChange = true;
+            //resetDFonSceneChange = true;
         }
 
         /// <summary>
@@ -1284,6 +1249,11 @@ namespace Tac
             }
         }
 
+        //todo May need to check DeepFreeze Freezer Module on-board and if frozen kerbals on-board.
+        /// <summary>
+        /// Will check if there is a knownVessels entry or not. If not, it will create one only if the vessel has crew on-board. 
+        /// </summary>
+        /// <param name="vessel"></param>
         private void CreateVesselEntry(Vessel vessel)
         {
             if (gameSettings != null)
@@ -1309,6 +1279,7 @@ namespace Tac
                                     {
                                         FillRescueEvaSuit(vessel);
                                         value.recoverykerbal = false;
+                                        //todo find old rescue vessel and remove it from knownVessels.
                                     }
                                 }
                             }
@@ -1364,12 +1335,13 @@ namespace Tac
                     onVesselCreate(vessel);
                 }
             }
-            //If there is no crew, check we don't have an entry, if we do, we want to stop tracking it.
+            //If there is no crew (including check for frozen), check we don't have an entry, if we do, we want to stop tracking it.
             else
             {
                 if (gameSettings.knownVessels.ContainsKey(vessel.id))
                 {
-                    RemoveVesselTracking(vessel.id);
+                    if (gameSettings.knownVessels[vessel.id].numFrozenCrew == 0)
+                        RemoveVesselTracking(vessel.id);
                 }
             }
         }
