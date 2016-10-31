@@ -41,6 +41,7 @@ namespace RSTUtils
 		OTHER = 4
 	}
 
+	
 	internal static class Utilities
 	{
 		public static int randomSeed = new Random().Next();
@@ -599,28 +600,46 @@ namespace RSTUtils
 		{
 			try
 			{
-				foreach (Animator anim in kerbal.gameObject.GetComponentsInChildren<Animator>())
+				foreach (Animator anim in kerbal.Animators)
 				{
 					if (anim.name == kerbal.name)
 					{
 						kerbalIVAController = anim.runtimeAnimatorController;
 						myController = anim.runtimeAnimatorController;
-						myOverrideController = new AnimatorOverrideController();
-						myOverrideController.runtimeAnimatorController = myController;
-						myOverrideController["idle_animA_upWord"] = myOverrideController["idle_animH_notDoingAnything"];
-						myOverrideController["idle_animB"] = myOverrideController["idle_animH_notDoingAnything"];
-						myOverrideController["idle_animC"] = myOverrideController["idle_animH_notDoingAnything"];
-						myOverrideController["idle_animD_dance"] = myOverrideController["idle_animH_notDoingAnything"];
-						myOverrideController["idle_animE_drummingHelmet"] = myOverrideController["idle_animH_notDoingAnything"];
-						myOverrideController["idle_animI_drummingControls"] = myOverrideController["idle_animH_notDoingAnything"];
-						myOverrideController["idle_animJ_yo"] = myOverrideController["idle_animH_notDoingAnything"];
-						myOverrideController["idle_animJ_IdleLoopShort"] = myOverrideController["idle_animH_notDoingAnything"];
-						myOverrideController["idle_animK_footStretch"] = myOverrideController["idle_animH_notDoingAnything"];
-						myOverrideController["head_rotation_staringUp"] = myOverrideController["idle_animH_notDoingAnything"];
-						myOverrideController["head_rotation_longLookUp"] = myOverrideController["idle_animH_notDoingAnything"];
-						myOverrideController["head_faceExp_fun_ohAh"] = myOverrideController["idle_animH_notDoingAnything"];
-						// Put this line at the end because when you assign a controller on an Animator, unity rebinds all the animated properties
-						anim.runtimeAnimatorController = myOverrideController;
+						if (myController.GetType() != typeof(AnimatorOverrideController))
+						{
+							anim.logWarnings = false;
+							myOverrideController = new AnimatorOverrideController();
+							AnimatorStateInfo[] layerInfo = new AnimatorStateInfo[anim.layerCount];
+							for (int i = 0; i < anim.layerCount; i++)
+							{
+								layerInfo[i] = anim.GetCurrentAnimatorStateInfo(i);
+							}
+							myOverrideController.runtimeAnimatorController = myController;
+							myOverrideController["idle_animA_upWord"] = myOverrideController["idle_animH_notDoingAnything"];
+							myOverrideController["idle_animB"] = myOverrideController["idle_animH_notDoingAnything"];
+							myOverrideController["idle_animC"] = myOverrideController["idle_animH_notDoingAnything"];
+							myOverrideController["idle_animD_dance"] = myOverrideController["idle_animH_notDoingAnything"];
+							myOverrideController["idle_animE_drummingHelmet"] = myOverrideController["idle_animH_notDoingAnything"];
+							myOverrideController["idle_animI_drummingControls"] = myOverrideController["idle_animH_notDoingAnything"];
+							myOverrideController["idle_animJ_yo"] = myOverrideController["idle_animH_notDoingAnything"];
+							myOverrideController["idle_animJ_IdleLoopShort"] = myOverrideController["idle_animH_notDoingAnything"];
+							myOverrideController["idle_animK_footStretch"] = myOverrideController["idle_animH_notDoingAnything"];
+							myOverrideController["head_rotation_staringUp"] = myOverrideController["idle_animH_notDoingAnything"];
+							myOverrideController["head_rotation_longLookUp"] = myOverrideController["idle_animH_notDoingAnything"];
+							myOverrideController["head_faceExp_fun_ohAh"] = myOverrideController["idle_animH_notDoingAnything"];
+							// Put this line at the end because when you assign a controller on an Animator, unity rebinds all the animated properties
+							anim.runtimeAnimatorController = myOverrideController;
+							// Force an update
+							anim.Update(0.0f);
+
+							// Push back state
+							for (int i = 0; i < anim.layerCount; i++)
+							{
+								anim.Play(layerInfo[i].fullPathHash, i, layerInfo[i].normalizedTime);
+							}
+							anim.logWarnings = true;
+						}
 						Log_Debug("Animator " + anim.name + " for " + kerbal.name + " subdued");
 					}
 				}
@@ -634,7 +653,7 @@ namespace RSTUtils
 
 		internal static void reinvigerateIVAKerbalAnimations(Kerbal kerbal)
 		{
-			foreach (Animator anim in kerbal.gameObject.GetComponentsInChildren<Animator>())
+			foreach (Animator anim in kerbal.Animators)
 			{
 				if (anim.name == kerbal.name)
 				{
@@ -753,6 +772,8 @@ namespace RSTUtils
 				case VesselType.Rover:
 				case VesselType.Ship:
 				case VesselType.Station:
+				case VesselType.Plane:
+				case VesselType.Relay:
 					return true;
 
 				default:
@@ -840,25 +861,26 @@ namespace RSTUtils
 			return celsius + 273.15f;
 		}
 
-        #endregion Temperature
+		#endregion Temperature
 
-        #region Resources
+		#region Resources
 
-        /// <summary>
-        /// Can be used to get amount of a resource there is, amount of space for a resource there is, or push/pull resource.
-        /// </summary>
-        /// <param name="craft">this is the vessel</param>
-        /// <param name="res">this is the string resource name</param>
-        /// <param name="resAmount">amount of the resource</param>
-        /// <param name="ConsumeResource">true to push/pull</param>
-        /// <param name="pulling">true if pulling false if pushing</param>
-        /// <param name="resavail">amount of the resource available or push/pulled</param>
-        /// <param name="maxavail">max amount of resource vessel can store</param>
-        /// <returns>bool if successful or not</returns>
-        internal static bool requireResource(Vessel craft, string res, double resAmount, bool ConsumeResource, bool pulling, out double resavail, out double maxavail)
+		/// <summary>
+		/// Can be used to get amount of a resource there is, amount of space for a resource there is, or push/pull resource.
+		/// </summary>
+		/// <param name="craft">this is the vessel</param>
+		/// <param name="res">this is the string resource name</param>
+		/// <param name="resAmount">amount of the resource</param>
+		/// <param name="ConsumeResource">true to push/pull</param>
+		/// <param name="pulling">true if pulling false if pushing</param>
+		/// <param name="usePri">true if use flow priority false if not</param>
+		/// <param name="resavail">amount of the resource available or push/pulled</param>
+		/// <param name="maxavail">max amount of resource vessel can store</param>
+		/// <returns>bool if successful or not</returns>
+		internal static bool requireResource(Vessel craft, string res, double resAmount, bool ConsumeResource, bool pulling, bool usePri, out double resavail, out double maxavail)
 		{
 			int resID = PartResourceLibrary.Instance.GetDefinition(res).id;
-			bool result = requireResourceID(craft, resID, resAmount, ConsumeResource, pulling, out resavail, out maxavail);
+			bool result = requireResourceID(craft, resID, resAmount, ConsumeResource, pulling, usePri, out resavail, out maxavail);
 			return result;
 		}
 
@@ -873,7 +895,7 @@ namespace RSTUtils
 		/// <param name="resavail">amount of the resource available or push/pulled</param>
 		/// <param name="maxavail">max amount of resource vessel can store</param>
 		/// <returns>bool if successful or not</returns>
-		internal static bool requireResourceID(Vessel craft, int res, double resAmount, bool ConsumeResource, bool pulling, out double resavail, out double maxavail)
+		internal static bool requireResourceID(Vessel craft, int res, double resAmount, bool ConsumeResource, bool pulling, bool usePri, out double resavail, out double maxavail)
 		{
 			if (!craft.loaded)
 			{
@@ -889,13 +911,14 @@ namespace RSTUtils
 			//So in both cases amount must be >= the anout we want.
 			resavail = amount;
 			maxavail = maxamount;
-			if (amount < resAmount)
-			{
-				return false;
-			}
-			//If we are not consuming the resource (or storing) just return how much there is.
+			//If we are not consuming the resource (or storing) just return how much there is. We return false if there is less than the amount
+			//passed in. Otherwise we return true.
 			if (!ConsumeResource)
 			{
+				if (amount < resAmount)
+				{
+					return false;
+				}
 				return true;
 			}
 			//Now we push or pull
