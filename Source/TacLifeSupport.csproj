@@ -29,7 +29,7 @@
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
     <OutputPath>bin\Release\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
+    <DefineConstants>TRACE;ENABLE_PROFILER</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
@@ -37,6 +37,9 @@
     <Reference Include="Assembly-CSharp, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\KSPDLLs - 1.2\Assembly-CSharp.dll</HintPath>
+    </Reference>
+    <Reference Include="RSTKSPGameEvents">
+      <HintPath>..\..\REPOSoftTechKSPUtils\RSTKSPGameEvents\bin\Debug\RSTKSPGameEvents.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -75,7 +78,6 @@
     <Compile Include="AddLifeSupport.cs" />
     <Compile Include="AppLauncherToolBarExtension.cs" />
     <Compile Include="BuildAidWindow.cs" />
-    <Compile Include="DFWrapper.cs" />
     <Compile Include="EditorFilter.cs" />
     <Compile Include="EngineersReportLifeSupportTests.cs" />
     <Compile Include="GameSettings.cs" />
@@ -108,7 +110,7 @@
   <PropertyGroup>
     <AssemblyMajorVersion>0</AssemblyMajorVersion>
     <AssemblyMinorVersion>12</AssemblyMinorVersion>
-    <AssemblyBuildNumber>5</AssemblyBuildNumber>
+    <AssemblyBuildNumber>6</AssemblyBuildNumber>
     <AssemblyFileMajorVersion>$(AssemblyMajorVersion)</AssemblyFileMajorVersion>
     <AssemblyFileMinorVersion>$(AssemblyMinorVersion)</AssemblyFileMinorVersion>
     <AssemblyFileBuildNumber>$(AssemblyBuildNumber)</AssemblyFileBuildNumber>
@@ -127,13 +129,13 @@
     <ChangelogUrl>https://github.com/KSP-RO/TacLifeSupport/wiki/Changes</ChangelogUrl>
     <KspVersionMajor>1</KspVersionMajor>
     <KspVersionMinor>2</KspVersionMinor>
-    <KspVersionPatch>0</KspVersionPatch>
+    <KspVersionPatch>1</KspVersionPatch>
     <KspMinVersionMajor>1</KspMinVersionMajor>
     <KspMinVersionMinor>2</KspMinVersionMinor>
     <KspMinVersionPatch>0</KspMinVersionPatch>
     <KspMaxVersionMajor>1</KspMaxVersionMajor>
     <KspMaxVersionMinor>2</KspMaxVersionMinor>
-    <KspMaxVersionPatch>0</KspMaxVersionPatch>
+    <KspMaxVersionPatch>1</KspMaxVersionPatch>
   </PropertyGroup>
   <Target Name="GitInfo">
     <!-- Get the current git SHA1 -->

@@ -48,6 +48,7 @@ namespace Tac
 
         public void Start()
         {
+            GameEvents.OnGameSettingsApplied.Add(ApplySettings);
             Textures.LoadIconAssets();
         }
 
@@ -65,6 +66,35 @@ namespace Tac
             else
             {
                 this.LogError("Could not find TACLSGlobalSettings node!");
+            }
+        }
+
+        public void OnDestroy()
+        {
+            GameEvents.OnGameSettingsApplied.Remove(ApplySettings);
+        }
+
+        public void ApplySettings()
+        {
+            // If TAC LS is enabled re-apply TACLS custom Part filter and if it is not, turn off the TACLS custom Part filter.
+            if (HighLogic.CurrentGame.Parameters.CustomParams<TAC_SettingsParms>().enabled)
+            {
+                if (TacLifeSupport.Instance != null)
+                {
+                    if (TacLifeSupport.Instance.gameSettings == null)
+                    {
+                        TacLifeSupport.Instance.gameSettings = new TacGameSettings();
+                    }
+                }
+                if (HighLogic.LoadedScene == GameScenes.SPACECENTER)
+                {
+                    TACEditorFilter.Instance.Setup();
+                }
+            }
+            else
+            {
+                HighLogic.CurrentGame.Parameters.CustomParams<TAC_SettingsParms>().EditorFilter = false;
+                TACEditorFilter.Instance.Setup();
             }
         }
     }
@@ -111,71 +141,79 @@ namespace Tac
         {
             this.Log("OnAwake in " + HighLogic.LoadedScene);
             base.OnAwake();
+            if (Enabled)
+            {
+                GameEvents.onGameSceneLoadRequested.Add(OnGameSceneLoadRequested);
 
-            GameEvents.onGameSceneLoadRequested.Add(OnGameSceneLoadRequested);
-
-            if (HighLogic.LoadedScene == GameScenes.SPACECENTER)
-            {
-                this.Log("Adding SpaceCenterManager");
-                var c = gameObject.AddComponent<SpaceCenterManager>();
-                children.Add(c);
-                var d = gameObject.AddComponent<LifeSupportController>();
-                children.Add(d);
-            }
-            else if (HighLogic.LoadedScene == GameScenes.TRACKSTATION)
-            {
-                this.Log("Adding LifeSupportController");
-                var c = gameObject.AddComponent<LifeSupportController>();
-                children.Add(c);
-            }
-            else if (HighLogic.LoadedScene == GameScenes.FLIGHT)
-            {
-                this.Log("Adding LifeSupportController");
-                var c = gameObject.AddComponent<LifeSupportController>();
-                children.Add(c);
-            }
-            else if (HighLogic.LoadedScene == GameScenes.EDITOR)
-            {
-                this.Log("Adding EditorController");
-                var c = gameObject.AddComponent<EditorController>();
-                children.Add(c);
+                if (HighLogic.LoadedScene == GameScenes.SPACECENTER)
+                {
+                    this.Log("Adding SpaceCenterManager");
+                    var c = gameObject.AddComponent<SpaceCenterManager>();
+                    children.Add(c);
+                    this.Log("Adding LifeSupportController");
+                    var d = gameObject.AddComponent<LifeSupportController>();
+                    children.Add(d);
+                }
+                else if (HighLogic.LoadedScene == GameScenes.TRACKSTATION)
+                {
+                    this.Log("Adding LifeSupportController");
+                    var c = gameObject.AddComponent<LifeSupportController>();
+                    children.Add(c);
+                }
+                else if (HighLogic.LoadedScene == GameScenes.FLIGHT)
+                {
+                    this.Log("Adding LifeSupportController");
+                    var c = gameObject.AddComponent<LifeSupportController>();
+                    children.Add(c);
+                }
+                else if (HighLogic.LoadedScene == GameScenes.EDITOR)
+                {
+                    this.Log("Adding EditorController");
+                    var c = gameObject.AddComponent<EditorController>();
+                    children.Add(c);
+                }
             }
         }
 
         public override void OnLoad(ConfigNode gameNode)
         {
             base.OnLoad(gameNode);
-            
-            gameSettings = new TacGameSettings();
-            gameSettings.Load(gameNode);
-            if (HighLogic.LoadedScene == GameScenes.SPACECENTER)
+            if (Enabled)
             {
-                TACEditorFilter.Instance.Setup();
-            }
-            for (int i = 0; i < children.Count; ++i)
-            {
-                if (children[i] is Savable)
+                gameSettings = new TacGameSettings();
+                gameSettings.Load(gameNode);
+                if (HighLogic.LoadedScene == GameScenes.SPACECENTER)
                 {
-                    var child = children[i] as Savable;
-                    child.Load(gameNode);
+                    TACEditorFilter.Instance.Setup();
                 }
+                for (int i = 0; i < children.Count; ++i)
+                {
+                    if (children[i] is Savable)
+                    {
+                        var child = children[i] as Savable;
+                        child.Load(gameNode);
+                    }
+                }
+                //this.Log("OnLoad: " + gameNode);
             }
-            //this.Log("OnLoad: " + gameNode);
         }
 
         public override void OnSave(ConfigNode gameNode)
         {
             base.OnSave(gameNode);
-            gameSettings.Save(gameNode);
-            for (int i = 0; i < children.Count; ++i)
+            if (Enabled)
             {
-                if (children[i] is Savable)
+                gameSettings.Save(gameNode);
+                for (int i = 0; i < children.Count; ++i)
                 {
-                    var child = children[i] as Savable;
-                    child.Save(gameNode);
+                    if (children[i] is Savable)
+                    {
+                        var child = children[i] as Savable;
+                        child.Save(gameNode);
+                    }
                 }
+                //this.Log("OnSave: " + gameNode);
             }
-            //this.Log("OnSave: " + gameNode);
         }
 
         private void OnGameSceneLoadRequested(GameScenes gameScene)

@@ -39,6 +39,7 @@ namespace Tac
         private GUIStyle labelStyle;
         private GUIStyle warningStyle;
         private GUIStyle criticalStyle;
+        private GUIStyle frozenStyle;
         private GUIStyle headerStyle;
         private Vector2 scrollPosition;
 
@@ -72,6 +73,9 @@ namespace Tac
                 criticalStyle = new GUIStyle(labelStyle);
                 criticalStyle.normal.textColor = Color.red;
 
+                frozenStyle = new GUIStyle(labelStyle);
+                frozenStyle.normal.textColor = Color.cyan;
+
                 headerStyle = new GUIStyle(labelStyle);
                 headerStyle.fontStyle = FontStyle.Bold;
             }
@@ -88,26 +92,55 @@ namespace Tac
             foreach (CrewMemberInfo crewInfo in gameSettings.knownCrew.Values)
             {
                 GUILayout.Label(crewInfo.name + " (" + crewInfo.vesselName + ")", headerStyle);
-                GUILayout.BeginHorizontal();
-                GUILayout.Label("  Last updated: ", labelStyle, GUILayout.Width(100));
-                GUILayout.Label(Utilities.FormatTime(currentTime - crewInfo.lastUpdate), labelStyle);
-                GUILayout.EndHorizontal();
-                GUILayout.BeginHorizontal();
-                GUILayout.Label("  Last food: ", labelStyle, GUILayout.Width(100));
-                GUILayout.Label(Utilities.FormatTime(currentTime - crewInfo.lastFood), getStyle(crewInfo.lastUpdate, crewInfo.lastFood, globalSettings.MaxTimeWithoutFood));
-                GUILayout.EndHorizontal();
-                GUILayout.BeginHorizontal();
-                GUILayout.Label("  Last water: ", labelStyle, GUILayout.Width(100));
-                GUILayout.Label(Utilities.FormatTime(currentTime - crewInfo.lastWater), getStyle(crewInfo.lastUpdate, crewInfo.lastWater, globalSettings.MaxTimeWithoutWater));
-                GUILayout.EndHorizontal();
-                if (HighLogic.CurrentGame.Parameters.CustomParams<TAC_SettingsParms>().hibernate != "Die" || crewInfo.hibernating)
+                if (crewInfo.DFfrozen)
+                {
+                    if (crewInfo.vesselIsPreLaunch)
+                    {
+                        GUILayout.Label("  Prelaunch - Frozen", frozenStyle);
+                    }
+                    else
+                    {
+                        GUILayout.Label("  Frozen", frozenStyle);
+                    }
+                }
+                else if (crewInfo.vesselIsPreLaunch)
+                {
+                    GUILayout.Label("  Prelaunch", labelStyle);
+                }
+                else if (crewInfo.recoverykerbal)
+                {
+                    GUILayout.Label("  Rescue Me!", labelStyle);
+                }
+                else
                 {
                     GUILayout.BeginHorizontal();
-                    GUILayout.Label("  Hibernating: ", labelStyle, GUILayout.Width(100));
-                    GUILayout.Label(crewInfo.hibernating.ToString(), labelStyle);
+                    GUILayout.Label("  Last updated: ", labelStyle, GUILayout.Width(100));
+                    GUILayout.Label(Utilities.FormatTime(currentTime - crewInfo.lastUpdate), labelStyle);
                     GUILayout.EndHorizontal();
+                    GUILayout.BeginHorizontal();
+                    GUILayout.Label("  Last food: ", labelStyle, GUILayout.Width(100));
+                    GUILayout.Label(Utilities.FormatTime(currentTime - crewInfo.lastFood),
+                        getStyle(crewInfo.lastUpdate, crewInfo.lastFood, globalSettings.MaxTimeWithoutFood));
+                    GUILayout.EndHorizontal();
+                    GUILayout.BeginHorizontal();
+                    GUILayout.Label("  Last water: ", labelStyle, GUILayout.Width(100));
+                    GUILayout.Label(Utilities.FormatTime(currentTime - crewInfo.lastWater),
+                        getStyle(crewInfo.lastUpdate, crewInfo.lastWater, globalSettings.MaxTimeWithoutWater));
+                    GUILayout.EndHorizontal();
+                    if (HighLogic.CurrentGame.Parameters.CustomParams<TAC_SettingsParms>().hibernate != "Die" ||
+                        crewInfo.hibernating)
+                    {
+                        GUILayout.BeginHorizontal();
+                        GUILayout.Label("  Hibernating: ", labelStyle, GUILayout.Width(100));
+                        GUILayout.Label(crewInfo.hibernating.ToString(), labelStyle);
+                        GUILayout.EndHorizontal();
+                    }
                 }
                 GUILayout.Space(10);
+            }
+            if (gameSettings.knownCrew.Count == 0)
+            {
+                GUILayout.Label("No Crew.", headerStyle);
             }
 
             GUILayout.EndVertical();

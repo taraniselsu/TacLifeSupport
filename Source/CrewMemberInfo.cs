@@ -39,7 +39,10 @@ namespace Tac
         public double lastWater;
         public string vesselName;
         public Guid vesselId;
+        public bool vesselIsPreLaunch;
         public bool hibernating;
+        public bool DFfrozen;
+        public bool recoverykerbal;
         public ProtoCrewMember.KerbalType crewType;
         public readonly double respite = UnityEngine.Random.Range(60, 600);
 
@@ -51,15 +54,22 @@ namespace Tac
             lastWater = currentTime;
             this.vesselName = vesselName;
             this.vesselId = vesselId;
+            this.vesselIsPreLaunch = true;
             hibernating = false;
-
+            DFfrozen = false;
+            recoverykerbal = false;
+            crewType = ProtoCrewMember.KerbalType.Crew;
             if (HighLogic.CurrentGame != null)
             {
-                ProtoCrewMember kerbal = HighLogic.CurrentGame.CrewRoster.Crew.FirstOrDefault(a => a.name == name);
-                crewType = kerbal.type;
+                if (HighLogic.CurrentGame.CrewRoster.Exists(name))
+                {
+                    ProtoCrewMember kerbal = HighLogic.CurrentGame.CrewRoster[name];
+                    if (kerbal != null)
+                    {
+                        crewType = kerbal.type;
+                    }
+                }
             }
-            else
-                crewType = ProtoCrewMember.KerbalType.Crew;
         }
 
         public static CrewMemberInfo Load(ConfigNode node)
@@ -78,9 +88,12 @@ namespace Tac
             }
 
             CrewMemberInfo info = new CrewMemberInfo(name, vesselName, vesselId, lastUpdate);
+            info.vesselIsPreLaunch = Utilities.GetValue(node, "vesselIsPreLaunch", true);
             info.lastFood = Utilities.GetValue(node, "lastFood", lastUpdate);
             info.lastWater = Utilities.GetValue(node, "lastWater", lastUpdate);
             info.hibernating = Utilities.GetValue(node, "hibernating", false);
+            info.DFfrozen = Utilities.GetValue(node, "DFFrozen", false);
+            info.recoverykerbal = Utilities.GetValue(node, "recoverykerbal", false);
             info.crewType = Utilities.GetValue(node, "crewType", info.crewType);
             return info;
         }
@@ -94,7 +107,10 @@ namespace Tac
             node.AddValue("lastWater", lastWater);
             node.AddValue("vesselName", vesselName);
             node.AddValue("vesselId", vesselId);
+            node.AddValue("vesselIsPreLaunch", vesselIsPreLaunch);
             node.AddValue("hibernating", hibernating);
+            node.AddValue("DFFrozen", DFfrozen);
+            node.AddValue("recoverykerbal", recoverykerbal);
             node.AddValue("crewType", crewType);
             return node;
         }

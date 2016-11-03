@@ -32,7 +32,7 @@ using System.Linq;
 using KSP.UI.Screens;
 using RSTUtils;
 using UnityEngine;
-using TacDFWrapper;
+using RSTKSPGameEvents;
 
 namespace Tac
 {
@@ -43,13 +43,12 @@ namespace Tac
         internal AppLauncherToolBar TACMenuAppLToolBar;
         private bool loadingNewScene = false;
         private double seaLevelPressure = 101.325;
-        private bool IsDFInstalled = false;
-        private static bool resetDFonSceneChange = false;
         private GlobalSettings globalsettings;
         private TacGameSettings gameSettings;
         private float VesselSortCounter = 0f;
         private bool VesselSortCountervslChgFlag = false;
         public static LifeSupportController Instance;
+        private bool checkedDictionaries = false;
 
         private TAC_SettingsParms settings_sec1;
         internal List<KeyValuePair<Guid, VesselInfo>> knownVesselsList;
@@ -61,26 +60,16 @@ namespace Tac
             globalsettings = TacStartOnce.Instance.globalSettings;
             VesselSortCounter = Time.time;
             settings_sec1 = HighLogic.CurrentGame.Parameters.CustomParams<TAC_SettingsParms>();
+            if (!settings_sec1.enabled)
+            {
+                Destroy(this);
+            }
+
             TACMenuAppLToolBar = new AppLauncherToolBar("TACLifeSupport", "TAC Life Support",
                 Textures.PathToolbarIconsPath + "/TACgreenIconTB",
                 ApplicationLauncher.AppScenes.TRACKSTATION | ApplicationLauncher.AppScenes.FLIGHT | ApplicationLauncher.AppScenes.SPACECENTER,
                 (Texture)Textures.GrnApplauncherIcon, (Texture)Textures.GrnApplauncherIcon,
                 GameScenes.TRACKSTATION , GameScenes.FLIGHT, GameScenes.SPACECENTER);
-
-            
-            //Check if DeepFreeze is installed and set bool.
-            var DeepFreezeassembly = (from a in AppDomain.CurrentDomain.GetAssemblies()
-                    where a.FullName.StartsWith("DeepFreeze")
-                    select a).FirstOrDefault();
-            if (DeepFreezeassembly != null)
-            {
-                IsDFInstalled = true;
-                resetDFonSceneChange = true;
-            }
-            else
-            {
-                IsDFInstalled = false;
-            }
         }
 
         void Start()
@@ -88,50 +77,41 @@ namespace Tac
             this.Log("Start");
             gameSettings = TacLifeSupport.Instance.gameSettings;
             knownVesselsList = new List<KeyValuePair<Guid, VesselInfo>>(gameSettings.knownVessels);
-            resetVesselList();
+            resetVesselList(FlightGlobals.fetch != null ? FlightGlobals.ActiveVessel : null);
             if (rosterWindow == null)
                 rosterWindow = new RosterWindow(TACMenuAppLToolBar, globalsettings, gameSettings);
             if (monitoringWindow == null)
                 monitoringWindow = new LifeSupportMonitoringWindow(TACMenuAppLToolBar, rosterWindow);
 
-            if (settings_sec1.enabled)
+            if (!ToolbarManager.ToolbarAvailable && !settings_sec1.UseAppLToolbar)
             {
-                if (!ToolbarManager.ToolbarAvailable && !settings_sec1.UseAppLToolbar)
-                {
-                    settings_sec1.UseAppLToolbar = true;
-                }
-
-                TACMenuAppLToolBar.Start(settings_sec1.UseAppLToolbar);
-
-                RSTUtils.Utilities.setScaledScreen();
-                
-                var crew = HighLogic.CurrentGame.CrewRoster.Crew;
-                var knownCrew = gameSettings.knownCrew;
-                foreach (ProtoCrewMember crewMember in crew)
-                {
-                    if (crewMember.rosterStatus != ProtoCrewMember.RosterStatus.Assigned && knownCrew.ContainsKey(crewMember.name))
-                    {
-                        this.Log("Deleting crew member: " + crewMember.name);
-                        knownCrew.Remove(crewMember.name);
-                    }
-                }
-
-                GameEvents.onCrewOnEva.Add(OnCrewOnEva);
-                GameEvents.onCrewBoardVessel.Add(OnCrewBoardVessel);
-                GameEvents.onGameSceneLoadRequested.Add(OnGameSceneLoadRequested);
-                GameEvents.onVesselSwitching.Add(onVesselSwitching);
-                GameEvents.onVesselSwitchingToUnloaded.Add(onVesselSwitching);
-                GameEvents.onVesselCrewWasModified.Add(changeVesselCrew);
-
-                // Double check that we have the right sea level pressure for Kerbin
-                seaLevelPressure = FlightGlobals.Bodies[1].GetPressure(0);
+                settings_sec1.UseAppLToolbar = true;
             }
-            else
-            {
-                TACMenuAppLToolBar.Destroy();
-                monitoringWindow.SetVisible(false);
-                Destroy(this);
-            }
+            
+            TACMenuAppLToolBar.Start(settings_sec1.UseAppLToolbar);
+
+            RSTUtils.Utilities.setScaledScreen();
+
+            GameEvents.onCrewOnEva.Add(OnCrewOnEva);
+            GameEvents.onCrewBoardVessel.Add(OnCrewBoardVessel);
+            GameEvents.onGameSceneLoadRequested.Add(OnGameSceneLoadRequested);
+            GameEvents.onVesselSwitching.Add(onVesselSwitching);
+            GameEvents.onVesselSwitchingToUnloaded.Add(onVesselSwitching);
+            GameEvents.onVesselCrewWasModified.Add(changeVesselCrew);
+            GameEvents.onVesselWillDestroy.Add(onVesselWillDestroy);
+            GameEvents.onVesselRecovered.Add(onVesselrecovered);
+            GameEvents.onVesselTerminated.Add(onVesselTerminated);
+            GameEvents.onVesselCreate.Add(onVesselCreate);
+            GameEvents.onVesselWasModified.Add(onVesselWasModified);
+            GameEvents.onVesselSituationChange.Add(onVesselSituationChange);
+            GameEvents.onLevelWasLoaded.Add(onLevelWasLoaded);
+            RSTEvents.onKerbalFrozen.Add(onKerbalFrozen);
+            RSTEvents.onKerbalThaw.Add(onKerbalThaw);
+            RSTEvents.onFrozenKerbalDied.Add(onFrozenKerbalDie);
+            
+            // Double check that we have the right sea level pressure for Kerbin
+            seaLevelPressure = FlightGlobals.Bodies[1].GetPressure(0);
+            
         }
 
         void OnDestroy()
@@ -144,6 +124,16 @@ namespace Tac
             GameEvents.onVesselSwitching.Remove(onVesselSwitching);
             GameEvents.onVesselSwitchingToUnloaded.Remove(onVesselSwitching);
             GameEvents.onVesselCrewWasModified.Remove(changeVesselCrew);
+            GameEvents.onVesselWillDestroy.Remove(onVesselWillDestroy);
+            GameEvents.onVesselRecovered.Remove(onVesselrecovered);
+            GameEvents.onVesselTerminated.Remove(onVesselTerminated);
+            GameEvents.onVesselCreate.Remove(onVesselCreate);
+            GameEvents.onVesselWasModified.Remove(onVesselWasModified);
+            GameEvents.onVesselSituationChange.Remove(onVesselSituationChange);
+            GameEvents.onLevelWasLoaded.Remove(onLevelWasLoaded);
+            RSTEvents.onKerbalFrozen.Remove(onKerbalFrozen);
+            RSTEvents.onKerbalThaw.Remove(onKerbalThaw);
+            RSTEvents.onFrozenKerbalDied.Remove(onFrozenKerbalDie);
         }
 
         void OnGUI()
@@ -167,126 +157,85 @@ namespace Tac
                 return;
             }
             
-            // If DeepFreeze is installed do DeepFreeze processing to remove frozen kerbals from our list.
-            if (IsDFInstalled)
-            {
-                if (Time.timeSinceLevelLoad > 3.0f)
-                {
-                    if (!DFWrapper.InstanceExists || resetDFonSceneChange)
-                        // Check if DFWrapper has been initialized or not. If not try to initialize.
-                    {
-                        DFWrapper.InitDFWrapper();
-                        resetDFonSceneChange = false;
-                    }
-                    if (DFWrapper.APIReady)
-                    {
-                        //Check if the DeepFreeze Dictionary contains any Frozen Kerbals in the current Game.
-                        //If it does process them.
-                        var Frozenkerbals = DFWrapper.DeepFreezeAPI.FrozenKerbals;
-                        if (Frozenkerbals.Count > 0)
-                        {
-                            //Remove any Frozen Kerbals from TAC LS tracking.
-                            RemoveFrozenKerbals(Frozenkerbals);
-                        }
-                    }
-                }
-            }
-
-            //todo A lot of this should be event driven.
-            
             double currentTime = Planetarium.GetUniversalTime();
-            var allVessels = FlightGlobals.Vessels;
             var loadedVessels = FlightGlobals.VesselsLoaded;
-            var vesselsToDelete = new List<Guid>();
+            //Iterate the knownVessels dictionary
             foreach (var entry in gameSettings.knownVessels)
             {
-                Guid vesselId = entry.Key;
-                VesselInfo vesselInfo = entry.Value;
-                Vessel vessel = allVessels.Find(v => v.id == vesselId);
-
-                if (vessel == null)
+                //If vessel is a recovery vessel check if it's EVA (Kerbal) or not. If it isn't we skip it completely.
+                //If it is EVA (rescue kerbal) we continue processing.
+                if (entry.Value.recoveryvessel)
                 {
-                    this.Log("Deleting vessel " + vesselInfo.vesselName + " - vessel does not exist anymore");
-                    vesselsToDelete.Add(vesselId);
-                    var crewToDelete = gameSettings.knownCrew.Where(e => e.Value.vesselId == vesselId).Select(e => e.Key).ToList();
-                    foreach (String name in crewToDelete)
+                    Vessel vsl = null;
+                    var allvessels = FlightGlobals.Vessels;
+                    bool isEVA = false;
+                    for (int i = 0; i < allvessels.Count; ++i)
                     {
-                        this.Log("Deleting crew member: " + name);
-                        gameSettings.knownCrew.Remove(name);
-                    }
-                    VesselSortCountervslChgFlag = true;
-                    continue;
-                }
-
-                if (vessel.loaded)
-                {
-                    int crewCapacity = UpdateVesselInfo(vesselInfo, vessel);
-
-                    if (crewCapacity == 0)
-                    {
-                        this.Log("Deleting vessel " + vesselInfo.vesselName + " - no crew parts anymore");
-                        vesselsToDelete.Add(vesselId);
-                        VesselSortCountervslChgFlag = true;
-                        continue;
-                    }
-
-                    ConsumeResources(currentTime, vessel, vesselInfo);
-
-                    if (vesselInfo.numCrew > 0)
-                    {
-                        ShowWarnings(vessel.vesselName, vesselInfo.remainingElectricity, vesselInfo.maxElectricity, vesselInfo.estimatedElectricityConsumptionRate, globalsettings.Electricity, ref vesselInfo.electricityStatus);
-                    }
-                }
-
-                if (vesselInfo.numCrew > 0)
-                {
-                    double foodRate = globalsettings.FoodConsumptionRate * vesselInfo.numCrew;
-                    vesselInfo.estimatedTimeFoodDepleted = vesselInfo.lastFood + (vesselInfo.remainingFood / foodRate);
-                    double estimatedFood = vesselInfo.remainingFood - ((currentTime - vesselInfo.lastFood) * foodRate);
-                    ShowWarnings(vesselInfo.vesselName, estimatedFood, vesselInfo.maxFood, foodRate, globalsettings.Food, ref vesselInfo.foodStatus);
-
-                    double waterRate = globalsettings.WaterConsumptionRate * vesselInfo.numCrew;
-                    vesselInfo.estimatedTimeWaterDepleted = vesselInfo.lastWater + (vesselInfo.remainingWater / waterRate);
-                    double estimatedWater = vesselInfo.remainingWater - ((currentTime - vesselInfo.lastWater) * waterRate);
-                    ShowWarnings(vesselInfo.vesselName, estimatedWater, vesselInfo.maxWater, waterRate, globalsettings.Water, ref vesselInfo.waterStatus);
-
-                    double oxygenRate = globalsettings.OxygenConsumptionRate * vesselInfo.numCrew;
-                    vesselInfo.estimatedTimeOxygenDepleted = vesselInfo.lastOxygen + (vesselInfo.remainingOxygen / oxygenRate);
-                    double estimatedOxygen = vesselInfo.remainingOxygen - ((currentTime - vesselInfo.lastOxygen) * oxygenRate);
-                    ShowWarnings(vesselInfo.vesselName, estimatedOxygen, vesselInfo.maxOxygen, oxygenRate, globalsettings.Oxygen, ref vesselInfo.oxygenStatus);
-
-                    vesselInfo.estimatedTimeElectricityDepleted = vesselInfo.lastElectricity + (vesselInfo.remainingElectricity / vesselInfo.estimatedElectricityConsumptionRate);
-                }
-
-            }
-            for (int i = 0; i < vesselsToDelete.Count; i++)
-            {
-                gameSettings.knownVessels.Remove(vesselsToDelete[i]);
-            }
-            
-            for (int i = 0; i < loadedVessels.Count; i++)
-            { 
-                if (!gameSettings.knownVessels.ContainsKey(loadedVessels[i].id) && loadedVessels[i].GetVesselCrew().Count > 0 && IsLaunched(loadedVessels[i]))
-                {
-                    this.Log("New vessel: " + loadedVessels[i].vesselName + " (" + loadedVessels[i].id + ")");
-                    var knownCrew = gameSettings.knownCrew;
-
-                    if (loadedVessels[i].isEVA)
-                    {
-                        ProtoCrewMember crewMember = loadedVessels[i].GetVesselCrew().FirstOrDefault();
-                        if (crewMember != null && !knownCrew.ContainsKey(crewMember.name))
+                        if (allvessels[i].id == entry.Key)
                         {
-                            FillRescueEvaSuit(loadedVessels[i]);
+                            vsl = allvessels[i];
+                            if (allvessels[i].isEVA)
+                            {
+                                isEVA = true;
+                            }
+                            break;
                         }
                     }
-
-                    VesselInfo vesselInfo = new VesselInfo(loadedVessels[i].vesselName, currentTime);
-                    gameSettings.knownVessels[loadedVessels[i].id] = vesselInfo;
-                    UpdateVesselInfo(vesselInfo, loadedVessels[i]);
-                    VesselSortCountervslChgFlag = true;
-
-                    changeVesselCrew(loadedVessels[i]);
+                    //If it's not EVA we skip.
+                    if (!isEVA)
+                    {
+                        updateVslCrewCurrentTime(vsl, entry, currentTime);
+                        continue;
+                    }
                 }
+                Profiler.BeginSample("processVessel");
+                //Loaded vessels first. Process Loaded vessel.
+                Vessel loadedvessel = null;
+                for (int i = 0; i < loadedVessels.Count; ++i)
+                {
+                    if (loadedVessels[i].id == entry.Key)
+                    {
+                        loadedvessel = loadedVessels[i];
+                        break;
+                    }
+                }
+                if (loadedvessel != null)
+                {
+
+                    //If vessel is loaded we update crewCapacity and if the vessel is NOT PRELAUNCH we consume resources and show warnings.
+                    int crewCapacity = UpdateVesselInfo(entry.Value, loadedvessel);
+                    if (crewCapacity == 0)
+                    {
+                        checkDictionaries();
+                        continue;
+                    }
+                    //If vessel is PRELAUNCH
+                    if (loadedvessel.situation == Vessel.Situations.PRELAUNCH)
+                    {
+                        updateVslCrewCurrentTime(loadedvessel, entry, currentTime, true);
+                    }
+                    //Vessel is NOT PRELAUNCH
+                    else
+                    {
+                        ConsumeResources(currentTime, loadedvessel, entry.Value);
+                        if (entry.Value.numCrew > 0)
+                        {
+                            ShowWarnings(loadedvessel.vesselName, entry.Value.remainingElectricity, entry.Value.maxElectricity, entry.Value.estimatedElectricityConsumptionRate, globalsettings.Electricity, ref entry.Value.electricityStatus);
+                        }
+                    }
+                }
+
+                //Unloaded vessels processing happens here. In a future release.
+                //todo unloaded vessels processing.
+                else
+                {
+                    
+                }
+                Profiler.EndSample();
+                //Do warning processing on all vessels.
+                Profiler.BeginSample("doWarningProcessing");
+                doWarningProcessing(entry.Value, currentTime);
+                Profiler.EndSample();
             }
 
             //Will re-create and sort the knownVesselsList that is used by the GUI.
@@ -294,21 +243,103 @@ namespace Tac
             //The second part is because the sort order is ActiveVessel followed by all other vessels based on remaining resources.
             //It WAS doing this on every onGUI loop.
             //todo once the event driven changes are made look at this again and if it can be event driven as well
+            Profiler.BeginSample("resetVesselList");
             if (Time.time - VesselSortCounter > settings_sec1.vesselUpdateList * 60 || VesselSortCountervslChgFlag)
             {
-                resetVesselList();
+                resetVesselList(FlightGlobals.fetch != null ? FlightGlobals.ActiveVessel : null);
+            }
+            Profiler.EndSample();
+        }
+
+        /// <summary>
+        /// Updates the knownVessel and all it's knownCrew lastFood, Oxygen,Water,Electricy and lastUpdate fields to the current time.
+        /// Used for PreLaunch and Rescue Kerbal vessels.
+        /// </summary>
+        /// <param name="entry"></param>
+        /// <param name="currentTime"></param>
+        /// <param name="PreLaunch"></param>
+        private void updateVslCrewCurrentTime(Vessel vessel, KeyValuePair<Guid, VesselInfo> entry, double currentTime, bool PreLaunch = false)
+        {
+            entry.Value.lastFood = currentTime;
+            entry.Value.lastOxygen = currentTime;
+            entry.Value.lastWater = currentTime;
+            entry.Value.lastElectricity = currentTime;
+            entry.Value.lastUpdate = currentTime;
+            if (vessel != null)
+            {
+                entry.Value.numCrew = vessel.GetCrewCount();
+                entry.Value.numOccupiedParts = vessel.crewedParts;
+            }
+
+            if (entry.Value.numCrew > 0)
+            {
+                foreach (var crew in TacLifeSupport.Instance.gameSettings.knownCrew)
+                {
+                    if (crew.Value.vesselId == entry.Key)
+                    {
+                        crew.Value.lastFood = currentTime;
+                        crew.Value.lastWater = currentTime;
+                        crew.Value.lastUpdate = currentTime;
+                        crew.Value.vesselIsPreLaunch = PreLaunch;
+                    }
+                }
+            }
+            else
+            {
+                entry.Value.recoveryvessel = false;
             }
         }
 
-        private void resetVesselList()
+        /// <summary>
+        /// Calculates remaining time for resources on vessel and displays warnings as appropriate.
+        /// </summary>
+        /// <param name="vesselInfo"></param>
+        /// <param name="currentTime"></param>
+        private void doWarningProcessing(VesselInfo vesselInfo, double currentTime)
         {
-            knownVesselsList.Clear();
-            knownVesselsList = gameSettings.knownVessels.ToList();
-            knownVesselsList.Sort(new VesselSorter(FlightGlobals.ActiveVessel));
-            VesselSortCounter = Time.time;
-            VesselSortCountervslChgFlag = false;
+            double foodRate = globalsettings.FoodConsumptionRate * vesselInfo.numCrew;
+            vesselInfo.estimatedTimeFoodDepleted = vesselInfo.lastFood + (vesselInfo.remainingFood / foodRate);
+            double estimatedFood = vesselInfo.remainingFood - ((currentTime - vesselInfo.lastFood) * foodRate);
+            ShowWarnings(vesselInfo.vesselName, estimatedFood, vesselInfo.maxFood, foodRate, globalsettings.Food, ref vesselInfo.foodStatus);
+
+            double waterRate = globalsettings.WaterConsumptionRate * vesselInfo.numCrew;
+            vesselInfo.estimatedTimeWaterDepleted = (vesselInfo.lastWater + vesselInfo.remainingWater / waterRate);
+            double estimatedWater = vesselInfo.remainingWater - ((currentTime - vesselInfo.lastWater) * waterRate);
+            ShowWarnings(vesselInfo.vesselName, estimatedWater, vesselInfo.maxWater, waterRate, globalsettings.Water, ref vesselInfo.waterStatus);
+
+            double oxygenRate = globalsettings.OxygenConsumptionRate * vesselInfo.numCrew;
+            vesselInfo.estimatedTimeOxygenDepleted = vesselInfo.lastOxygen + (vesselInfo.remainingOxygen / oxygenRate);
+            double estimatedOxygen = vesselInfo.remainingOxygen - ((currentTime - vesselInfo.lastOxygen) * oxygenRate);
+            ShowWarnings(vesselInfo.vesselName, estimatedOxygen, vesselInfo.maxOxygen, oxygenRate, globalsettings.Oxygen, ref vesselInfo.oxygenStatus);
+
+            vesselInfo.estimatedTimeElectricityDepleted = vesselInfo.lastElectricity + (vesselInfo.remainingElectricity / vesselInfo.estimatedElectricityConsumptionRate);
+
+        }
+        /// <summary>
+        /// Recreate the knownVesselsList which is used in the GUI display.
+        /// A sort is done as well if the passed in vessel is not null.
+        /// </summary>
+        /// <param name="vessel">vessel to sort to top of list or null</param>
+        private void resetVesselList(Vessel vessel)
+        {
+            if (gameSettings != null && knownVesselsList != null)
+            {
+                knownVesselsList.Clear();
+                knownVesselsList = gameSettings.knownVessels.ToList();
+                if (vessel != null)
+                    knownVesselsList.Sort(new VesselSorter(vessel));
+                VesselSortCounter = Time.time;
+                VesselSortCountervslChgFlag = false;
+            }
         }
 
+        /// <summary>
+        /// Fires on Vessel crew was modified or new vessel found.
+        /// Updates the knownCrew dictionary.
+        /// Special handling is done if contracts system is active to check if there is a rescue contract for each kerbal.
+        /// If there is the kerbal and their vessel is marked as a recoveryvessel/kerbal.
+        /// </summary>
+        /// <param name="vessel">vessel crew we need to update</param>
         private void changeVesselCrew(Vessel vessel)
         {
             double currentTime = Planetarium.GetUniversalTime();
@@ -320,54 +351,111 @@ namespace Tac
                     CrewMemberInfo crewMemberInfo = gameSettings.knownCrew[vslCrew[i].name];
                     crewMemberInfo.vesselId = vessel.id;
                     crewMemberInfo.vesselName = vessel.vesselName;
+                    crewMemberInfo.vesselIsPreLaunch = vessel.SituationString == "PRELAUNCH";
+                    //If rescue kerbal set their last use to current time and turn off their recoverkerbal flag.
+                    //IE: We now start consuming resources.
+                    if (crewMemberInfo.recoverykerbal)
+                    {
+                        crewMemberInfo.lastFood = crewMemberInfo.lastWater = crewMemberInfo.lastUpdate = currentTime;
+                    }
                 }
                 else
                 {
                     this.Log("New crew member: " + vslCrew[i].name);
-                    gameSettings.knownCrew[vslCrew[i].name] = new CrewMemberInfo(vslCrew[i].name, vessel.vesselName, vessel.id, currentTime);
-                    resetVesselList();
-                }
-            }
-        }
-
-        private void RemoveFrozenKerbals(Dictionary<string, DFWrapper.KerbalInfo> FrozenKerbals)
-        {
-            try
-            {
-                foreach (var frznCrew in FrozenKerbals)
-                { 
-                    if (TacLifeSupport.Instance.gameSettings.knownCrew.ContainsKey(frznCrew.Key))
+                    //Check Contracts for Rescue Vessel/Kerbal
+                    bool rescuekerbal = false;
+                    if (HighLogic.CurrentGame.Mode == Game.Modes.CAREER)
                     {
-                        this.Log("Deleting Frozen crew member: " + frznCrew.Key);
-                        TacLifeSupport.Instance.gameSettings.knownCrew.Remove(frznCrew.Key);
+                        rescuekerbal = checkContractsForRescue(vslCrew[i]);
                     }
+                    //Create new knownCrew Info.
+                    var cmi = new CrewMemberInfo(vslCrew[i].name, vessel.vesselName, vessel.id, currentTime);
+                    if (rescuekerbal) //Set RescueKerbal fields.
+                    {
+                        cmi.recoverykerbal = true;
+                        cmi.vesselIsPreLaunch = false;
+                        gameSettings.knownVessels[vessel.id].recoveryvessel = true;
+                    }
+                    //save knownCrew record.
+                    gameSettings.knownCrew[vslCrew[i].name] = cmi;
+                    //Increase number of crew on knownVessel record and if numOccupiedParts is 0 make it 1.
+                    if (gameSettings.knownVessels.ContainsKey(vessel.id))
+                    {
+                        gameSettings.knownVessels[vessel.id].numCrew++;
+                        if (gameSettings.knownVessels[vessel.id].numOccupiedParts == 0)
+                            gameSettings.knownVessels[vessel.id].numOccupiedParts++;
+                    }
+                    resetVesselList(vessel);
                 }
             }
-            catch (Exception ex)
-            {
-                this.Log("Error attempting to check DeepFreeze for FrozenKerbals");
-                this.Log(ex.Message);
-            }
         }
 
-        private bool CheckFrozenKerbals(string kerbalName)
+        /// <summary>
+        /// Fires from RSTKSPGameEvents from DeepFreeze mod when a frozen kerbal dies.
+        /// Remove them from knownCrew tracking.
+        /// </summary>
+        /// <param name="part"></param>
+        /// <param name="crew"></param>
+        private void onFrozenKerbalDie(ProtoCrewMember crew)
         {
-            try
+            this.Log("Frozen crew member Died, Removing: " + crew.name);
+            gameSettings.knownCrew.Remove(crew.name);
+        }
+
+        /// <summary>
+        /// Fires from RSTKSPGameEvents from DeepFreeze mod when a Kerbal is Frozen.
+        /// Changes knownCrew DFfrozen to true so TAC LS won't consume resources for frozen kerbal.
+        /// Increases the knownVessel numFrozenCrew count as well so we don't stop tracking the vessel and don't consume O2 and EC for the vessel.
+        /// </summary>
+        /// <param name="part"></param>
+        /// <param name="crew"></param>
+        private void onKerbalFrozen(Part part, ProtoCrewMember crew)
+        {
+            if (gameSettings.knownCrew.ContainsKey(crew.name))
             {
-                var tmpFrznKerbals = DFWrapper.DeepFreezeAPI.FrozenKerbals;
-                if (tmpFrznKerbals.ContainsKey(kerbalName))
-                    return true;
-                else
-                    return false;
-            }
-            catch (Exception ex)
-            {
-                this.Log("Error attempting to check for FrozenKerbal: " + kerbalName + " in DeepFreeze");
-                this.Log(ex.Message);
-                return false;
+                this.Log("Frozen crew member: " + crew.name);
+                var knowncrew = gameSettings.knownCrew[crew.name];
+                knowncrew.DFfrozen = true;
+                if (gameSettings.knownVessels.ContainsKey(knowncrew.vesselId))
+                {
+                    var knownvessel = gameSettings.knownVessels[knowncrew.vesselId];
+                    knownvessel.numFrozenCrew++;
+                }
             }
         }
 
+        /// <summary>
+        /// Fires from RSTKSPGameEvents from DeepFreeze mod when a Kerbal is Thawed.
+        /// Changes knownCrew DFfrozen to false and sets last consumed resources time to now so TAC LS will start consuming resources again from now.
+        /// Decreases the knownVessel numFrozenCrew count as well
+        /// </summary>
+        /// <param name="part"></param>
+        /// <param name="crew"></param>
+        private void onKerbalThaw(Part part, ProtoCrewMember crew)
+        {
+            if (gameSettings.knownCrew.ContainsKey(crew.name))
+            {
+                this.Log("Thawed crew member: " + crew.name);
+                double currentTime = Planetarium.GetUniversalTime();
+                var knowncrew = gameSettings.knownCrew[crew.name];
+                knowncrew.DFfrozen = false;
+                knowncrew.lastFood = currentTime;
+                knowncrew.lastWater = currentTime;
+                knowncrew.lastUpdate = currentTime;
+                if (gameSettings.knownVessels.ContainsKey(knowncrew.vesselId))
+                {
+                    var knownvessel = gameSettings.knownVessels[knowncrew.vesselId];
+                    knownvessel.numFrozenCrew--;
+                }
+            }
+        }
+        
+        /// <summary>
+        /// Consume Life Support resources for a vessel. Called from FixedUpdate.
+        /// </summary>
+        /// <param name="currentTime"></param>
+        /// <param name="vessel"></param>
+        /// <param name="vesselInfo"></param>
         private void ConsumeResources(double currentTime, Vessel vessel, VesselInfo vesselInfo)
         {
             ConsumeElectricity(currentTime, vessel, vesselInfo);
@@ -392,6 +480,7 @@ namespace Tac
                     crewMemberInfo.lastUpdate = currentTime;
                     crewMemberInfo.vesselId = vessel.id;
                     crewMemberInfo.vesselName = (!vessel.isEVA) ? vessel.vesselName : "EVA";
+                    crewMemberInfo.vesselIsPreLaunch = false;
 
                     if (vesselInfo.lastFood > crewMemberInfo.lastFood)
                     {
@@ -418,6 +507,16 @@ namespace Tac
             vesselInfo.vesselType = vessel.vesselType;
         }
 
+        /// <summary>
+        /// Consumes Food for a Kerbal. If food runs out, checks if they have exceeded the no food limit.
+        /// If they have they will enter hibernation or Die.
+        /// </summary>
+        /// <param name="currentTime"></param>
+        /// <param name="vessel"></param>
+        /// <param name="vesselInfo"></param>
+        /// <param name="crewMember"></param>
+        /// <param name="crewMemberInfo"></param>
+        /// <param name="part"></param>
         private void ConsumeFood(double currentTime, Vessel vessel, VesselInfo vesselInfo, ProtoCrewMember crewMember, CrewMemberInfo crewMemberInfo, Part part)
         {
             if (vesselInfo.remainingFood >= globalsettings.FoodConsumptionRate)
@@ -441,15 +540,7 @@ namespace Tac
                     ProtoCrewMember kerbal = HighLogic.CurrentGame.CrewRoster[crewMemberInfo.name]; 
                     if (kerbal != null && kerbal.type != crewMemberInfo.crewType)
                     {
-                        if (IsDFInstalled && DFWrapper.APIReady)
-                        {
-                            if (!CheckFrozenKerbals(kerbal.name))
-                            {
-                                kerbal.type = crewMemberInfo.crewType;
-                                kerbal.RegisterExperienceTraits(part);
-                            }
-                        }
-                        else
+                        if (!crewMemberInfo.DFfrozen)
                         {
                             kerbal.type = crewMemberInfo.crewType;
                             kerbal.RegisterExperienceTraits(part);
@@ -483,6 +574,16 @@ namespace Tac
             }
         }
 
+        /// <summary>
+        /// Consumes Water for a Kerbal. If water runs out, checks if they have exceeded the no water limit.
+        /// If they have they will enter hibernation or Die.
+        /// </summary>
+        /// <param name="currentTime"></param>
+        /// <param name="vessel"></param>
+        /// <param name="vesselInfo"></param>
+        /// <param name="crewMember"></param>
+        /// <param name="crewMemberInfo"></param>
+        /// <param name="part"></param>
         private void ConsumeWater(double currentTime, Vessel vessel, VesselInfo vesselInfo, ProtoCrewMember crewMember, CrewMemberInfo crewMemberInfo, Part part)
         {
             if (vesselInfo.remainingWater >= globalsettings.WaterConsumptionRate)
@@ -505,15 +606,7 @@ namespace Tac
                     ProtoCrewMember kerbal = HighLogic.CurrentGame.CrewRoster[crewMemberInfo.name];
                     if (kerbal != null && kerbal.type != crewMemberInfo.crewType)
                     {
-                        if (IsDFInstalled && DFWrapper.APIReady)
-                        {
-                            if (!CheckFrozenKerbals(kerbal.name))
-                            {
-                                kerbal.type = crewMemberInfo.crewType;
-                                kerbal.RegisterExperienceTraits(part);
-                            }
-                        }
-                        else
+                        if (!crewMemberInfo.DFfrozen)
                         {
                             kerbal.type = crewMemberInfo.crewType;
                             kerbal.RegisterExperienceTraits(part);
@@ -546,6 +639,13 @@ namespace Tac
             }
         }
 
+        /// <summary>
+        /// Consumes Oxygen for a Kerbal. If oxygen runs out, checks if they have exceeded the no oxygen limit.
+        /// If they have they will enter hibernation or Die.
+        /// </summary>
+        /// <param name="currentTime"></param>
+        /// <param name="vessel"></param>
+        /// <param name="vesselInfo"></param>
         private void ConsumeOxygen(double currentTime, Vessel vessel, VesselInfo vesselInfo)
         {
             if (NeedOxygen(vessel, vesselInfo))
@@ -592,6 +692,13 @@ namespace Tac
             }
         }
 
+        /// <summary>
+        /// Consumes EC for a Vessel. EC consumption is vessel based. If EC runs out, checks if the vessel has exceeded the no EC limit.
+        /// If it has all the kerbals on-board will enter hibernation or Die.
+        /// </summary>
+        /// <param name="currentTime"></param>
+        /// <param name="vessel"></param>
+        /// <param name="vesselInfo"></param>
         private void ConsumeElectricity(double currentTime, Vessel vessel, VesselInfo vesselInfo)
         {
             double rate = vesselInfo.estimatedElectricityConsumptionRate = CalculateElectricityConsumptionRate(vessel, vesselInfo);
@@ -626,13 +733,22 @@ namespace Tac
             }
         }
 
+        /// <summary>
+        /// Updates vessel info for a vessel to be stored in the knownVessels dictionary.
+        /// </summary>
+        /// <param name="vesselInfo"></param>
+        /// <param name="vessel"></param>
+        /// <returns></returns>
         private int UpdateVesselInfo(VesselInfo vesselInfo, Vessel vessel)
         {
             int crewCapacity = 0;
             vesselInfo.ClearAmounts();
             crewCapacity = vessel.GetCrewCapacity();
+            crewCapacity += vesselInfo.numFrozenCrew;
             vesselInfo.numCrew = vessel.GetCrewCount();
             vesselInfo.numOccupiedParts = vessel.crewedParts;
+            vesselInfo.vesselSituation = vessel.situation;
+            vesselInfo.vesselIsPreLaunch = vessel.SituationString == "PRELAUNCH";
             vessel.GetConnectedResourceTotals(globalsettings.FoodId, out vesselInfo.remainingFood, out vesselInfo.maxFood);
             vessel.GetConnectedResourceTotals(globalsettings.WaterId, out vesselInfo.remainingWater, out vesselInfo.maxWater);
             vessel.GetConnectedResourceTotals(globalsettings.OxygenId, out vesselInfo.remainingOxygen, out vesselInfo.maxOxygen);
@@ -643,10 +759,19 @@ namespace Tac
             vessel.GetConnectedResourceTotals(globalsettings.CO2Id, out vesselInfo.remainingCO2, out maxCO2);
             vessel.GetConnectedResourceTotals(globalsettings.WasteId, out vesselInfo.remainingWaste, out maxWaste);
             vessel.GetConnectedResourceTotals(globalsettings.WasteWaterId, out vesselInfo.remainingWasteWater, out maxWasteWater);
-
+            
             return crewCapacity;
         }
 
+        /// <summary>
+        /// Calculates and displays warnings for low resources where appropriate.
+        /// </summary>
+        /// <param name="vesselName"></param>
+        /// <param name="resourceRemaining"></param>
+        /// <param name="max"></param>
+        /// <param name="rate"></param>
+        /// <param name="resourceName"></param>
+        /// <param name="status"></param>
         private void ShowWarnings(string vesselName, double resourceRemaining, double max, double rate, string resourceName, ref VesselInfo.Status status)
         {
             double criticalLevel = rate; // 1 second of resources
@@ -687,13 +812,13 @@ namespace Tac
                 string iconToSet = "/TACgreenIconTB";
                 if (status == VesselInfo.Status.LOW)
                 {
-                    iconToSet = "TACyellowIconTB";
+                    iconToSet = "/TACyellowIconTB";
                 }
                 else
                 {
                     if (status == VesselInfo.Status.CRITICAL)
                     {
-                        iconToSet = "TACredIconTB";
+                        iconToSet = "/TACredIconTB";
                     }
                 }
                 TACMenuAppLToolBar.setToolBarTexturePath(Textures.PathToolbarIconsPath + iconToSet);
@@ -720,6 +845,12 @@ namespace Tac
             }
         }
 
+        /// <summary>
+        /// Calculates and returns the EC consumption for a vessel
+        /// </summary>
+        /// <param name="vessel"></param>
+        /// <param name="vesselInfo"></param>
+        /// <returns></returns>
         private double CalculateElectricityConsumptionRate(Vessel vessel, VesselInfo vesselInfo)
         {
             if (!vessel.isEVA)
@@ -732,6 +863,11 @@ namespace Tac
             }
         }
 
+        /// <summary>
+        /// Fills an EVA suit when a kerbal goes EVA with life support resources from the host vessel.
+        /// </summary>
+        /// <param name="oldPart"></param>
+        /// <param name="newPart"></param>
         private void FillEvaSuit(Part oldPart, Part newPart)
         {
             if (!newPart.Resources.Contains(TacStartOnce.Instance.globalSettings.FoodId))
@@ -750,7 +886,7 @@ namespace Tac
             if (!TacLifeSupport.Instance.gameSettings.knownVessels.TryGetValue(lastVessel.id, out lastVesselInfo))
             {
                 this.Log("FillEvaSuit: Unknown vessel: " + lastVessel.vesselName + " (" + lastVessel.id + ")");
-                lastVesselInfo = new VesselInfo(lastVessel.vesselName, Planetarium.GetUniversalTime());
+                lastVesselInfo = new VesselInfo(lastVessel.vesselName, lastVessel.situation, lastVessel.vesselType, Planetarium.GetUniversalTime());
             }
 
             UpdateVesselInfo(lastVesselInfo, lastVessel);
@@ -769,6 +905,10 @@ namespace Tac
             RSTUtils.Utilities.requireResourceID(newVessel, globalsettings.ElectricityId, -electricityObtained, true, false, false, out electricityGiven, out electricitySpace);
         }
 
+        /// <summary>
+        /// Fills a rescue kerbal EVA suit. The suit is randomly filled to between 30% - 90% capacity.
+        /// </summary>
+        /// <param name="vessel"></param>
         private void FillRescueEvaSuit(Vessel vessel)
         {
             this.Log("FillRescueEvaSuit: Rescue mission EVA: " + vessel.vesselName);
@@ -790,6 +930,11 @@ namespace Tac
             
         }
 
+        /// <summary>
+        /// Empties an EVA suit of life support resources and puts them into the vessel they have boarded
+        /// </summary>
+        /// <param name="oldPart"></param>
+        /// <param name="newPart"></param>
         private void EmptyEvaSuit(Part oldPart, Part newPart)
         {
             Vessel lastVessel = oldPart.vessel;
@@ -814,6 +959,12 @@ namespace Tac
             
         }
         
+        /// <summary>
+        /// Handles a kerbal death
+        /// </summary>
+        /// <param name="crewMember"></param>
+        /// <param name="causeOfDeath"></param>
+        /// <param name="vessel"></param>
         private void KillCrewMember(ProtoCrewMember crewMember, string causeOfDeath, Vessel vessel)
         {
             TimeWarp.SetRate(0, false);
@@ -869,7 +1020,117 @@ namespace Tac
             monitoringWindow.Save(globalNode);
             rosterWindow.Save(globalNode);
         }
-        
+
+        /// <summary>
+        /// Called when GameEvent onLevelWasLoaded is fired.
+        /// If the scene is FlightScene check the Dictionaries for errant entries.
+        /// </summary>
+        private void onLevelWasLoaded(GameScenes scene)
+        {
+            if (scene == GameScenes.FLIGHT && !checkedDictionaries)
+            {
+                checkDictionaries();
+                checkedDictionaries = true;
+            }
+        }
+
+        /// <summary>
+        /// check the knownVessels and knownCrew dictionaries for entries that should be removed and remove them.
+        /// </summary>
+        private void checkDictionaries()
+        {
+            var vesselsToDelete = new List<Guid>();
+            foreach (var vessel in gameSettings.knownVessels)
+            {
+                var gamevessel = FlightGlobals.Vessels.Find(a => a.id == vessel.Key);
+                if (gamevessel == null)
+                {
+                    this.Log("Deleting vessel [" + vessel.Key + "] " + vessel.Value.vesselName + " - vessel does not exist anymore");
+                    vesselsToDelete.Add(vessel.Key);
+                }
+                else
+                {
+                    if (gamevessel.crewedParts == 0 && vessel.Value.numFrozenCrew == 0)
+                    {
+                        this.Log("Deleting vessel [" + vessel.Key + "] " + vessel.Value.vesselName + " - no crewed parts anymore");
+                        vesselsToDelete.Add(vessel.Key);
+                    }
+                }
+            }
+
+            //Delete any vessels (and their crew) that are no longer in the game but in our knownVessels list.
+            for (int i = 0; i < vesselsToDelete.Count; i++)
+            {
+                //Check vessel does not contain frozen crew.
+                if (gameSettings.knownVessels[vesselsToDelete[i]].numFrozenCrew == 0)
+                {
+                    var crewToDelete =
+                        gameSettings.knownCrew.Where(e => e.Value.vesselId == vesselsToDelete[i])
+                            .Select(e => e.Key)
+                            .ToList();
+                    foreach (String name in crewToDelete)
+                    {
+                        this.Log("Deleting crew member: " + name);
+                        gameSettings.knownCrew.Remove(name);
+                    }
+                    gameSettings.knownVessels.Remove(vesselsToDelete[i]);
+                    VesselSortCountervslChgFlag = true;
+                }
+            }
+
+            //Now check the knownCrew dictionary. any entries where that crewmember is not RosterStatus of Assigned is removed.
+            var knownCrew = gameSettings.knownCrew;
+            IEnumerator<ProtoCrewMember> enumerator = HighLogic.CurrentGame.CrewRoster.Kerbals(ProtoCrewMember.KerbalType.Crew, 
+                new ProtoCrewMember.RosterStatus[]
+            {
+                ProtoCrewMember.RosterStatus.Available,
+                ProtoCrewMember.RosterStatus.Dead,
+                ProtoCrewMember.RosterStatus.Missing       
+            }).GetEnumerator();
+            while (enumerator.MoveNext())
+            {
+                if (knownCrew.ContainsKey(enumerator.Current.name))
+                {
+                    this.Log("CrewMember is NOT assigned roster status. Deleting crew member: " + enumerator.Current.name);
+                    knownCrew.Remove(enumerator.Current.name);
+                    VesselSortCountervslChgFlag = true;
+                }
+            }
+            //Now check the knownCrew dictionary. any entries where that tourist is not RosterStatus of Assigned is removed.
+            IEnumerator<ProtoCrewMember> enumerator2 = HighLogic.CurrentGame.CrewRoster.Kerbals(ProtoCrewMember.KerbalType.Tourist,
+                new ProtoCrewMember.RosterStatus[]
+            {
+                ProtoCrewMember.RosterStatus.Available,
+                ProtoCrewMember.RosterStatus.Dead,
+                ProtoCrewMember.RosterStatus.Missing
+            }).GetEnumerator();
+            while (enumerator2.MoveNext())
+            {
+                if (knownCrew.ContainsKey(enumerator2.Current.name))
+                {
+                    this.Log("Tourist is NOT assigned roster status. Deleting crew member: " + enumerator2.Current.name);
+                    knownCrew.Remove(enumerator2.Current.name);
+                    VesselSortCountervslChgFlag = true;
+                }
+            }
+            //Check All Vessels
+            if (FlightGlobals.fetch)
+            {
+                var allVessels = FlightGlobals.Vessels;
+                for (int i = 0; i < allVessels.Count; ++i)
+                {
+                    if (!gameSettings.knownVessels.ContainsKey(allVessels[i].id) && allVessels[i].GetVesselCrew().Count > 0)
+                    {
+                        CreateVesselEntry(allVessels[i]);
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Called when GameEvent OnCrewOnEva is fired.
+        /// </summary>
+        /// <param name="action"></param>
         private void OnCrewOnEva(GameEvents.FromToAction<Part, Part> action)
         {
             this.Log("OnCrewOnEva: from=" + action.from.partInfo.title + "(" + action.from.vessel.vesselName + ")" + ", to=" + action.to.partInfo.title + "(" + action.to.vessel.vesselName + ")");
@@ -877,12 +1138,20 @@ namespace Tac
             FillEvaSuit(action.from, action.to);
         }
 
+        /// <summary>
+        /// Called when GameEvent OnrewboardVessel is fired.
+        /// </summary>
+        /// <param name="action"></param>
         private void OnCrewBoardVessel(GameEvents.FromToAction<Part, Part> action)
         {
             this.Log("OnCrewBoardVessel: from=" + action.from.partInfo.title + "(" + action.from.vessel.vesselName + ")" + ", to=" + action.to.partInfo.title + "(" + action.to.vessel.vesselName + ")");
             EmptyEvaSuit(action.from, action.to);
         }
 
+        /// <summary>
+        /// Called when GameEvent OnGameSceneLoadRequested is fired. Will halt TAC LS processing until the scene changes.
+        /// </summary>
+        /// <param name="gameScene"></param>
         private void OnGameSceneLoadRequested(GameScenes gameScene)
         {
             this.Log("Game scene load requested: " + gameScene);
@@ -890,18 +1159,196 @@ namespace Tac
             // Disable this instance because a new instance will be created after the new scene is loaded
             loadingNewScene = true;
             // Reset DeepFreeze Reflection wrapper on scene change
-            resetDFonSceneChange = true;
+            //resetDFonSceneChange = true;
         }
 
+        /// <summary>
+        /// Called when GameEvent onVesselSwitching occurs. Primarily to resort the Vessel List for the GUI display.
+        /// </summary>
+        /// <param name="from"></param>
+        /// <param name="to"></param>
         private void onVesselSwitching(Vessel from, Vessel to)
         {
-            this.Log("TAC LS Vessel Change Flagged to: " + to.vesselName);
-            resetVesselList();
+            if (to == null)
+            {
+                this.Log("TAC LS Vessel Change Flagged to: " + from.vesselName);
+                CreateVesselEntry(from);
+                resetVesselList(from);
+            }
+            else
+            {
+                this.Log("TAC LS Vessel Change Flagged to: " + to.vesselName);
+                CreateVesselEntry(to);
+                resetVesselList(to);
+            }
         }
 
-        private bool IsLaunched(Vessel vessel)
+        /// <summary>
+        /// Called when GameEvent onVesselTermined occurs. Removes vessel and crew tracking.
+        /// </summary>
+        /// <param name="vessel"></param>
+        private void onVesselTerminated(ProtoVessel vessel)
         {
-            return vessel.missionTime > 0.01 || (Time.timeSinceLevelLoad > 5.0f && vessel.srf_velocity.magnitude > 2.0);
+            this.Log("Vessel Terminated [" + vessel.vesselID + "] " + vessel.vesselName);
+            RemoveVesselTracking(vessel.vesselID);
+        }
+
+        /// <summary>
+        /// Called when GameEvent onVesselDestroy occurs. Removes vessel and crew tracking.
+        /// </summary>
+        /// <param name="vessel"></param>
+        private void onVesselWillDestroy(Vessel vessel)
+        {
+            this.Log("Vessel Destroyed [" + vessel.id + "] " + vessel.vesselName);
+            RemoveVesselTracking(vessel.id);
+        }
+
+        /// <summary>
+        /// Called when GameEvent on Vesselrecovered occurs. Removes vessel and crew tracking.
+        /// </summary>
+        /// <param name="vessel"></param>
+        /// <param name="quick"></param>
+        private void onVesselrecovered(ProtoVessel vessel, bool quick)
+        {
+            this.Log("Vessel Recovered [" + vessel.vesselID + "] " + vessel.vesselName);
+            RemoveVesselTracking(vessel.vesselID);
+        }
+
+        /// <summary>
+        /// Will remove a vessel ID from the knownVessels dictionary and find all Crew assigned to that vessel ID and remove
+        /// then from the knownCrew dictionary.
+        /// </summary>
+        /// <param name="vesselID"></param>
+        private void RemoveVesselTracking(Guid vesselID)
+        {
+            if (gameSettings.knownVessels.ContainsKey(vesselID))
+            {
+                this.Log("Deleting vessel " + vesselID + " - vessel does not exist anymore");
+                gameSettings.knownVessels.Remove(vesselID);
+
+                var crewToDelete =
+                    gameSettings.knownCrew.Where(e => e.Value.vesselId == vesselID).Select(e => e.Key).ToList();
+                foreach (String name in crewToDelete)
+                {
+                    this.Log("Deleting crew member: " + name);
+                    gameSettings.knownCrew.Remove(name);
+                }
+                VesselSortCountervslChgFlag = true;
+            }
+        }
+
+        /// <summary>
+        /// When a vessel is created will add tracking of that Vessel to the knownVessel dictionary and will add tracking of any crew on board.
+        /// </summary>
+        /// <param name="vessel"></param>
+        private void onVesselCreate(Vessel vessel)
+        {
+            if (RSTUtils.Utilities.ValidVslType(vessel))
+            {
+                CreateVesselEntry(vessel);
+            }
+        }
+
+        //todo May need to check DeepFreeze Freezer Module on-board and if frozen kerbals on-board.
+        /// <summary>
+        /// Will check if there is a knownVessels entry or not. If not, it will create one only if the vessel has crew on-board. 
+        /// </summary>
+        /// <param name="vessel"></param>
+        private void CreateVesselEntry(Vessel vessel)
+        {
+            if (gameSettings != null)
+            {
+                if (!gameSettings.knownVessels.ContainsKey(vessel.id) && vessel.GetVesselCrew().Count > 0)
+                {
+                    this.Log("New vessel: " + vessel.vesselName + " (" + vessel.id + ")");
+                    if (vessel.isEVA)
+                    {
+                        ProtoCrewMember crewMember = vessel.GetVesselCrew().FirstOrDefault();
+                        if (crewMember != null)// && gameSettings.knownCrew.ContainsKey(crewMember.name))
+                        {
+                            CrewMemberInfo value;
+                            if (gameSettings.knownCrew.TryGetValue(crewMember.name, out value))
+                            {
+                                if (value == null)
+                                {
+                                    this.Log("Critical Error, failed to get EVA CrewMember Info");
+                                }
+                                else
+                                {
+                                    if (value.recoverykerbal)
+                                    {
+                                        FillRescueEvaSuit(vessel);
+                                        value.recoverykerbal = false;
+                                        //todo find old rescue vessel and remove it from knownVessels.
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    VesselInfo vesselInfo = new VesselInfo(vessel.vesselName, vessel.situation, vessel.vesselType,Planetarium.GetUniversalTime());
+                    
+                    gameSettings.knownVessels[vessel.id] = vesselInfo;
+                    if (vessel.loaded)
+                        UpdateVesselInfo(vesselInfo, vessel);
+                    VesselSortCountervslChgFlag = true;
+                    changeVesselCrew(vessel);
+                }
+            }
+        }
+
+        private bool checkContractsForRescue(ProtoCrewMember crew)
+        {
+            var contracts = Contracts.ContractSystem.Instance.Contracts;
+            for (int i = 0; i < contracts.Count; ++i)
+            {
+                if (contracts[i].Title.Contains(crew.name))
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+        
+        /// <summary>
+        /// Called when GameEvent onVesselWasModified occurs. Checks if vessel has crew or not. IF it has crew we update the
+        /// vessel dictionary (or add a new entry) and the crew dictionary. If there is no crew checks if we have a dictionary entry and
+        /// removes it.
+        /// </summary>
+        /// <param name="vessel"></param>
+        private void onVesselWasModified(Vessel vessel)
+        {
+            this.Log("Vessel Modified: " + vessel.vesselName + " (" + vessel.id + ")");
+            //If vessel has crew we want to track it.
+            if (vessel.GetVesselCrew().Count > 0)
+            {
+                //If we have an entry already, update the tracked crew dictionary.
+                if (gameSettings.knownVessels.ContainsKey(vessel.id))
+                {
+                    changeVesselCrew(vessel);
+                    VesselSortCountervslChgFlag = true;
+                }
+                //We didn't find it so create it.
+                else
+                {
+                    this.Log("Couldn't find vessel, creating: " + vessel.vesselName + " (" + vessel.id + ")");
+                    onVesselCreate(vessel);
+                }
+            }
+            //If there is no crew (including check for frozen), check we don't have an entry, if we do, we want to stop tracking it.
+            else
+            {
+                if (gameSettings.knownVessels.ContainsKey(vessel.id))
+                {
+                    if (gameSettings.knownVessels[vessel.id].numFrozenCrew == 0)
+                        RemoveVesselTracking(vessel.id);
+                }
+            }
+        }
+
+        private void onVesselSituationChange(GameEvents.HostedFromToAction<Vessel, Vessel.Situations> evt)
+        {
+            this.Log("Vessel situation change");
         }
 
         /*
@@ -914,6 +1361,12 @@ namespace Tac
          *  http://en.wikipedia.org/wiki/Effects_of_high_altitude_on_humans
          *  http://www.altitude.org/air_pressure.php
          */
+        /// <summary>
+        /// Determine if vessel actually needs oxygen or can use outside air.
+        /// </summary>
+        /// <param name="vessel"></param>
+        /// <param name="vesselInfo"></param>
+        /// <returns>True if vessel can use outside air, otherwise returns false.</returns>
         private bool NeedOxygen(Vessel vessel, VesselInfo vesselInfo)
         {
             // Need oxygen unless:
@@ -937,6 +1390,12 @@ namespace Tac
             return true;
         }
 
+        /// <summary>
+        /// Determine if vessel can open a window or not if out of EC.
+        /// </summary>
+        /// <param name="vessel"></param>
+        /// <param name="vesselInfo"></param>
+        /// <returns></returns>
         private bool NeedElectricity(Vessel vessel, VesselInfo vesselInfo)
         {
             // Need electricity to survive unless:
@@ -954,6 +1413,9 @@ namespace Tac
             return true;
         }
 
+        /// <summary>
+        /// This class is used to sort the knownVessels list for the GUI.
+        /// </summary>
         private class VesselSorter : IComparer<KeyValuePair<Guid, VesselInfo>>
         {
             private Vessel activeVessel;

@@ -103,51 +103,15 @@ namespace Tac
             GUILayout.Space(4);
 
             double currentTime = Planetarium.GetUniversalTime();
-
-            if (FlightGlobals.ready)
-            {
-                // Draw the active vessel first, if any
-                Vessel activeVessel = FlightGlobals.ActiveVessel;
-                int skipCount = 0;
-                if (activeVessel != null && LifeSupportController.Instance.knownVesselsList.Count > 0)
-                {
-                    var vessel = LifeSupportController.Instance.knownVesselsList[0];
-                    if (FlightGlobals.ActiveVessel.id == vessel.Key)
-                    {
-                        DrawVesselInfo(vessel.Value, currentTime);
-
-                        // Skip the active vessel later when drawing the rest of the vessels
-                        skipCount = 1;
-                    }
-                    else
-                    {
-                        // No info cached about the active vessel -- either it has not launched yet, or there is no crew
-                        int numCrew = activeVessel.GetCrewCount();
-                        GUILayout.Label(activeVessel.vesselName + " (" + numCrew + " crew) [" + activeVessel.vesselType + "]", headerStyle);
-                        if (numCrew > 0)
-                        {
-                            GUILayout.Label("  Prelaunch", labelStyle);
-                        }
-                        else
-                        {
-                            GUILayout.Label("  No Crew", labelStyle);
-                        }
-                    }
-                    GUILayout.Space(10);
-                }
-                for (int i = skipCount; i < LifeSupportController.Instance.knownVesselsList.Count; i ++)
-                { 
-                    DrawVesselInfo(LifeSupportController.Instance.knownVesselsList[i].Value, currentTime);
-                    GUILayout.Space(10);
-                }
+            
+            for (int i = 0; i < LifeSupportController.Instance.knownVesselsList.Count; i++)
+            { 
+                DrawVesselInfo(LifeSupportController.Instance.knownVesselsList[i].Value, currentTime);
+                GUILayout.Space(10);
             }
-            else
+            if (LifeSupportController.Instance.knownVesselsList.Count == 0)
             {
-                for (int i = 0; i < LifeSupportController.Instance.knownVesselsList.Count; i++)
-                { 
-                    DrawVesselInfo(LifeSupportController.Instance.knownVesselsList[i].Value, currentTime);
-                    GUILayout.Space(10);
-                }
+                GUILayout.Label("No Vessels.", headerStyle);
             }
 
             GUILayout.EndVertical();
@@ -166,28 +130,39 @@ namespace Tac
         private void DrawVesselInfo(VesselInfo vesselInfo, double currentTime)
         {
             GUILayout.Label(vesselInfo.vesselName + " (" + vesselInfo.numCrew + " crew) [" + vesselInfo.vesselType + "]", headerStyle);
-            GUILayout.BeginHorizontal();
-            GUILayout.Label("  Last updated:          ", getStyle(vesselInfo.foodStatus), GUILayout.Width(150));
-            GUILayout.Label(Utilities.FormatTime(currentTime - vesselInfo.lastUpdate), labelStyle);
-            GUILayout.EndHorizontal();
-            if (vesselInfo.numCrew > 0)
+            if (vesselInfo.vesselIsPreLaunch)
+            {
+                GUILayout.Label("  Prelaunch Vessel", labelStyle);
+            }
+            else if (vesselInfo.recoveryvessel)
+            {
+                GUILayout.Label("  Rescue Vessel", labelStyle);
+            }
+            else
             {
                 GUILayout.BeginHorizontal();
-                GUILayout.Label("  Food remaining:        ", getStyle(vesselInfo.foodStatus), GUILayout.Width(150)); 
-                GUILayout.Label(Utilities.FormatTime(vesselInfo.estimatedTimeFoodDepleted - currentTime), getStyle(vesselInfo.foodStatus));
+                GUILayout.Label("  Last updated:          ", getStyle(vesselInfo.foodStatus), GUILayout.Width(150));
+                GUILayout.Label(Utilities.FormatTime(currentTime - vesselInfo.lastUpdate), labelStyle);
                 GUILayout.EndHorizontal();
-                GUILayout.BeginHorizontal();
-                GUILayout.Label("  Water remaining:       ", getStyle(vesselInfo.waterStatus), GUILayout.Width(150));
-                GUILayout.Label(Utilities.FormatTime(vesselInfo.estimatedTimeWaterDepleted - currentTime), getStyle(vesselInfo.waterStatus));
-                GUILayout.EndHorizontal();
-                GUILayout.BeginHorizontal();
-                GUILayout.Label("  Oxygen remaining:      ", getStyle(vesselInfo.oxygenStatus), GUILayout.Width(150));
-                GUILayout.Label(Utilities.FormatTime(vesselInfo.estimatedTimeOxygenDepleted - currentTime), getStyle(vesselInfo.oxygenStatus));
-                GUILayout.EndHorizontal();
-                GUILayout.BeginHorizontal();
-                GUILayout.Label("  Electricity remaining: ", getStyle(vesselInfo.electricityStatus), GUILayout.Width(150));
-                GUILayout.Label(Utilities.FormatTime(vesselInfo.estimatedTimeElectricityDepleted - currentTime), getStyle(vesselInfo.electricityStatus));
-                GUILayout.EndHorizontal();
+                if (vesselInfo.numCrew > 0)
+                {
+                    GUILayout.BeginHorizontal();
+                    GUILayout.Label("  Food remaining:        ", getStyle(vesselInfo.foodStatus), GUILayout.Width(150));
+                    GUILayout.Label(Utilities.FormatTime(vesselInfo.estimatedTimeFoodDepleted - currentTime),getStyle(vesselInfo.foodStatus));
+                    GUILayout.EndHorizontal();
+                    GUILayout.BeginHorizontal();
+                    GUILayout.Label("  Water remaining:       ", getStyle(vesselInfo.waterStatus), GUILayout.Width(150));
+                    GUILayout.Label(Utilities.FormatTime(vesselInfo.estimatedTimeWaterDepleted - currentTime),getStyle(vesselInfo.waterStatus));
+                    GUILayout.EndHorizontal();
+                    GUILayout.BeginHorizontal();
+                    GUILayout.Label("  Oxygen remaining:      ", getStyle(vesselInfo.oxygenStatus), GUILayout.Width(150));
+                    GUILayout.Label(Utilities.FormatTime(vesselInfo.estimatedTimeOxygenDepleted - currentTime),getStyle(vesselInfo.oxygenStatus));
+                    GUILayout.EndHorizontal();
+                    GUILayout.BeginHorizontal();
+                    GUILayout.Label("  Electricity remaining: ", getStyle(vesselInfo.electricityStatus),GUILayout.Width(150));
+                    GUILayout.Label(Utilities.FormatTime(vesselInfo.estimatedTimeElectricityDepleted - currentTime),getStyle(vesselInfo.electricityStatus));
+                    GUILayout.EndHorizontal();
+                }
             }
         }
 

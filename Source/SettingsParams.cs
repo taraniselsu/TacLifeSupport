@@ -91,7 +91,11 @@ namespace Tac
         public override bool Interactible(MemberInfo member, GameParameters parameters)
         {
             if (member.Name == "enabled")
-                return true;
+            {
+                if (HighLogic.LoadedScene == GameScenes.MAINMENU || HighLogic.LoadedScene == GameScenes.SETTINGS ||
+                    HighLogic.LoadedScene == GameScenes.SPACECENTER)
+                    return true;
+            }
             if (member.Name == "respawnDelay")
             {
                 if (enabled && hibernate != "Die")
