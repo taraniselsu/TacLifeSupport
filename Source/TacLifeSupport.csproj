@@ -129,13 +129,13 @@
     <ChangelogUrl>https://github.com/KSP-RO/TacLifeSupport/wiki/Changes</ChangelogUrl>
     <KspVersionMajor>1</KspVersionMajor>
     <KspVersionMinor>2</KspVersionMinor>
-    <KspVersionPatch>0</KspVersionPatch>
+    <KspVersionPatch>1</KspVersionPatch>
     <KspMinVersionMajor>1</KspMinVersionMajor>
     <KspMinVersionMinor>2</KspMinVersionMinor>
     <KspMinVersionPatch>0</KspMinVersionPatch>
     <KspMaxVersionMajor>1</KspMaxVersionMajor>
     <KspMaxVersionMinor>2</KspMaxVersionMinor>
-    <KspMaxVersionPatch>0</KspMaxVersionPatch>
+    <KspMaxVersionPatch>1</KspMaxVersionPatch>
   </PropertyGroup>
   <Target Name="GitInfo">
     <!-- Get the current git SHA1 -->

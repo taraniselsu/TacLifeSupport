@@ -74,7 +74,7 @@ namespace Tac
                 criticalStyle.normal.textColor = Color.red;
 
                 frozenStyle = new GUIStyle(labelStyle);
-                frozenStyle.normal.textColor = Color.blue;
+                frozenStyle.normal.textColor = Color.cyan;
 
                 headerStyle = new GUIStyle(labelStyle);
                 headerStyle.fontStyle = FontStyle.Bold;
