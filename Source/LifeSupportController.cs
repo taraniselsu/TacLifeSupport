@@ -1178,6 +1178,7 @@ namespace Tac
             else
             {
                 this.Log("TAC LS Vessel Change Flagged to: " + to.vesselName);
+                checkVesselHasCrew(from);
                 CreateVesselEntry(to);
                 resetVesselList(to);
             }
@@ -1338,11 +1339,16 @@ namespace Tac
             //If there is no crew (including check for frozen), check we don't have an entry, if we do, we want to stop tracking it.
             else
             {
-                if (gameSettings.knownVessels.ContainsKey(vessel.id))
-                {
-                    if (gameSettings.knownVessels[vessel.id].numFrozenCrew == 0)
-                        RemoveVesselTracking(vessel.id);
-                }
+                checkVesselHasCrew(vessel);
+            }
+        }
+
+        private void checkVesselHasCrew(Vessel vessel)
+        {
+            if (vessel.GetVesselCrew().Count == 0 && gameSettings.knownVessels.ContainsKey(vessel.id))
+            {
+                if (gameSettings.knownVessels[vessel.id].numFrozenCrew == 0)
+                    RemoveVesselTracking(vessel.id);
             }
         }
 
