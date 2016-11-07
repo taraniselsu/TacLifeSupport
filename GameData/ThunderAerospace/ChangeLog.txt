@@ -1,3 +1,10 @@
+v0.12.7
+	Removed tracking of vessels that did have crew but now don't. - no more empty vessels being tracked.
+	Added conversionRate field to TACGenericConverter. This is an optional field and defaults to a value of 1. this is to support numerous requests to add this feature
+	back into to this module as it was removed when the module was changed to stock in v0.12.5. If you specify this field in your converter config file the value must be
+	greater than zero (or it sets it back to the default) and can be any decimal value. Whatever value you specify will be used as a multiplier against all INPUT, OUTPUT and 
+	REQUIREMENTS config nodes and their specified resources.
+	
 v0.12.6
 	Fix PreLaunch Vessel handling. Any vessel that is PreLaunch will display as such and will not consume resources (with the exception of ElectricCharge),
 	however, TACLS will not track EC drain for a PreLaunch vessel so it is possible if you leave a vessel on the pad with no EC generation that immediately on launch
