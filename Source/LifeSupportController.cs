@@ -1135,6 +1135,16 @@ namespace Tac
         {
             this.Log("OnCrewOnEva: from=" + action.from.partInfo.title + "(" + action.from.vessel.vesselName + ")" + ", to=" + action.to.partInfo.title + "(" + action.to.vessel.vesselName + ")");
             //action.to.gameObject.AddComponent<LifeSupportModule>();
+            Vessel lastVessel = action.from.vessel;
+            if (gameSettings.knownVessels.ContainsKey(lastVessel.id))
+            {
+                if (gameSettings.knownVessels[lastVessel.id].recoveryvessel)
+                {
+                    this.Log("EVA from Recovery Vessel, Remove Recovery Vessel from Tracking");
+                    RemoveVesselTracking(lastVessel.id);
+                    return;    
+                }
+            }
             FillEvaSuit(action.from, action.to);
         }
 
@@ -1278,9 +1288,9 @@ namespace Tac
                                 {
                                     if (value.recoverykerbal)
                                     {
+                                        //The vessel the Recovery Kerbal EVA'd from is removed from TACLS tracking in OnCrewOnEva when it is fired.
                                         FillRescueEvaSuit(vessel);
                                         value.recoverykerbal = false;
-                                        //todo find old rescue vessel and remove it from knownVessels.
                                     }
                                 }
                             }
