@@ -5,7 +5,9 @@ v0.12.7
 	greater than zero (or it sets it back to the default) and can be any decimal value. Whatever value you specify will be used as a multiplier against all INPUT, OUTPUT and 
 	REQUIREMENTS config nodes and their specified resources.
 	Tweak to EVA pack resources when Kerbal EVAs from regular vessel vs a Recovery Contract Vessel.
+	Fixed CrewType tracking.
 	Updated Community Resource Pack to version 0.6.2.	
+	Remove requirement for RSTKSPGameEvents dll dependency. Changed to leverage 1.2.2 GameEvents extensions.
 v0.12.6
 	Fix PreLaunch Vessel handling. Any vessel that is PreLaunch will display as such and will not consume resources (with the exception of ElectricCharge),
 	however, TACLS will not track EC drain for a PreLaunch vessel so it is possible if you leave a vessel on the pad with no EC generation that immediately on launch
