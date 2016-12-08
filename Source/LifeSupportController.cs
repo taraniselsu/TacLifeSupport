@@ -456,6 +456,7 @@ namespace Tac
                     var knownvessel = gameSettings.knownVessels[knowncrew.vesselId];
                     knownvessel.numFrozenCrew++;
                 }
+                changeVesselCrew(part.vessel);
             }
         }
 
@@ -483,6 +484,7 @@ namespace Tac
                     var knownvessel = gameSettings.knownVessels[knowncrew.vesselId];
                     knownvessel.numFrozenCrew--;
                 }
+                changeVesselCrew(part.vessel);
             }
         }
         
@@ -509,7 +511,7 @@ namespace Tac
                 {
                     CrewMemberInfo crewMemberInfo = knownCrew[crewMember.name];
                     Part part = (crewMember.KerbalRef != null) ? crewMember.KerbalRef.InPart : vessel.rootPart;
-
+                    
                     ConsumeFood(currentTime, vessel, vesselInfo, crewMember, crewMemberInfo, part);
                     ConsumeWater(currentTime, vessel, vesselInfo, crewMember, crewMemberInfo, part);
 
@@ -538,6 +540,25 @@ namespace Tac
                 }
             }
 
+            //If Deepfreeze and vessel has frozen crew. Process them.
+            //todo: this is terrible. We need a List of frozen Kerbals not iterate the whole dictionary of knownKerbals.
+            // Fix this next version.
+            if (vesselInfo.numFrozenCrew > 0)
+            {
+                foreach (var crewMember in knownCrew)
+                {
+                    if (crewMember.Value.DFfrozen && crewMember.Value.vesselId == vessel.id)
+                    {
+                        crewMember.Value.lastUpdate = currentTime;
+                        crewMember.Value.lastFood = currentTime;
+                        crewMember.Value.lastWater = currentTime;
+                        crewMember.Value.vesselId = vessel.id;
+                        crewMember.Value.vesselName = (!vessel.isEVA) ? vessel.vesselName : "EVA";
+                        crewMember.Value.vesselIsPreLaunch = false;
+                    }
+                }
+            }
+            
             vesselInfo.lastUpdate = currentTime;
             vesselInfo.vesselName = vessel.vesselName;
             vesselInfo.vesselType = vessel.vesselType;

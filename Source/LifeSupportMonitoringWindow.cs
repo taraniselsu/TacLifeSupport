@@ -95,6 +95,7 @@ namespace Tac
 
                 frozenStyle = new GUIStyle(labelStyle);
                 frozenStyle.normal.textColor = Color.cyan;
+                frozenStyle.fontStyle = FontStyle.Bold;
 
                 scrollStyle = new GUIStyle(GUI.skin.scrollView);
 
