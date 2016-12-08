@@ -7,8 +7,10 @@ v0.12.7
 	Tweak to EVA pack resources when Kerbal EVAs from regular vessel vs a Recovery Contract Vessel.
 	Fixed CrewType tracking.
 	Finally fixed Rescue Kerbal vessel.kerbal tracking.
-	Updated Community Resource Pack to version 0.6.2.	
+	Updated Community Resource Pack to version 0.6.3.
+	Updated Community Category Kit to 1.2.0.	
 	Remove requirement for RSTKSPGameEvents dll dependency. Changed to leverage 1.2.2 GameEvents extensions.
+	If DeepFreeze mod is also installed Vessel Info UI window will show Totals for both Frozen and Unfrozen kerbals.
 v0.12.6
 	Fix PreLaunch Vessel handling. Any vessel that is PreLaunch will display as such and will not consume resources (with the exception of ElectricCharge),
 	however, TACLS will not track EC drain for a PreLaunch vessel so it is possible if you leave a vessel on the pad with no EC generation that immediately on launch
