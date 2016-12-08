@@ -36,6 +36,7 @@ namespace Tac
         //private readonly TacGameSettings gameSettings;
         private readonly RosterWindow rosterWindow;
         private readonly string version;
+        private readonly bool DeepFreezeInstalled = false;
         
         private GUIStyle labelStyle;
         private GUIStyle warningStyle;
@@ -43,6 +44,7 @@ namespace Tac
         private GUIStyle headerStyle;
         private GUIStyle scrollStyle;
         private GUIStyle versionStyle;
+        private GUIStyle frozenStyle;
         private Vector2 scrollPosition = Vector2.zero;
 
         public LifeSupportMonitoringWindow(AppLauncherToolBar TACMenuAppLToolBar,  RosterWindow rosterWindow)
@@ -51,6 +53,7 @@ namespace Tac
             //this.gameSettings = gameSettings;
             this.rosterWindow = rosterWindow;
             version = Utilities.GetDllVersion(this);
+            DeepFreezeInstalled = RSTUtils.Utilities.IsModInstalled("DeepFreeze");
 
             windowPos.y = 75;
             SetVisible(true);
@@ -89,6 +92,10 @@ namespace Tac
 
                 headerStyle = new GUIStyle(labelStyle);
                 headerStyle.fontStyle = FontStyle.Bold;
+
+                frozenStyle = new GUIStyle(labelStyle);
+                frozenStyle.normal.textColor = Color.cyan;
+                frozenStyle.fontStyle = FontStyle.Bold;
 
                 scrollStyle = new GUIStyle(GUI.skin.scrollView);
 
@@ -129,7 +136,18 @@ namespace Tac
 
         private void DrawVesselInfo(VesselInfo vesselInfo, double currentTime)
         {
-            GUILayout.Label(vesselInfo.vesselName + " (" + vesselInfo.numCrew + " crew) [" + vesselInfo.vesselType + "]", headerStyle);
+            if (DeepFreezeInstalled)
+            {
+                GUILayout.BeginHorizontal();
+                GUILayout.Label(vesselInfo.vesselName + " (" + vesselInfo.numCrew + "/", headerStyle);
+                GUILayout.Label(vesselInfo.numFrozenCrew.ToString(), frozenStyle);
+                GUILayout.Label(" crew) [" + vesselInfo.vesselType + "]", headerStyle);
+                GUILayout.EndHorizontal();
+            }
+            else
+            {
+                GUILayout.Label(vesselInfo.vesselName + " (" + vesselInfo.numCrew + " crew) [" +vesselInfo.vesselType + "]", headerStyle);
+            }
             if (vesselInfo.vesselIsPreLaunch)
             {
                 GUILayout.Label("  Prelaunch Vessel", labelStyle);

@@ -42,6 +42,8 @@ namespace Tac
         [KSPField] public bool alwaysActive = false;
 
         [KSPField] public bool requiresOxygenAtmo = false;
+
+        [KSPField] public float conversionRate = 1f;
         
         protected override void PreProcessing()
         {
@@ -61,6 +63,62 @@ namespace Tac
         {
             var diff = Math.Abs(deltaTime - result.TimeFactor);
             converterEnabled = diff < 0.00001f;
+        }
+
+        protected override ConversionRecipe LoadRecipe()
+        {
+            var r = new ConversionRecipe();
+            try
+            {
+                //conversionRate must be > 0, otherwise set to default = 1.
+                if (conversionRate < 0)
+                    conversionRate = 1f;
+                //if conversionRate is not equal to 1 multiply all Inputs, Outputs and Requirements resource Ratios
+                // by the value of conversionRate.
+                if (conversionRate != 1f)
+                {
+                    for (int i = 0; i < inputList.Count; i++)
+                    {
+                        double tmpRate = inputList[i].Ratio * conversionRate;
+                        ResourceRatio tmpRat = new ResourceRatio(inputList[i].ResourceName, tmpRate,
+                            inputList[i].DumpExcess) {FlowMode = inputList[i].FlowMode};
+                        r.Inputs.Add(tmpRat);
+                    }
+                    for (int i = 0; i < outputList.Count; i++)
+                    {
+                        double tmpRate = outputList[i].Ratio * conversionRate;
+                        ResourceRatio tmpRat = new ResourceRatio(outputList[i].ResourceName, tmpRate,
+                            outputList[i].DumpExcess)
+                        { FlowMode = outputList[i].FlowMode };
+                        r.Outputs.Add(tmpRat);
+                    }
+                    for (int i = 0; i < reqList.Count; i++)
+                    {
+                        double tmpRate = reqList[i].Ratio * conversionRate;
+                        ResourceRatio tmpRat = new ResourceRatio(reqList[i].ResourceName, tmpRate,
+                            reqList[i].DumpExcess)
+                        { FlowMode = reqList[i].FlowMode };
+                        r.Requirements.Add(tmpRat);
+                    }
+                }
+                // else, conversion rate is 1. We just use the values from the cfg file.
+                else
+                {
+
+                    r.Inputs.AddRange(inputList);
+                    r.Outputs.AddRange(outputList);
+                    r.Requirements.AddRange(reqList);
+                }
+
+                // if CovertByMass then convert Recipe to Units.
+                if (ConvertByMass)
+                    ConvertRecipeToUnits(r);
+            }
+            catch (Exception)
+            {
+                this.LogError("[TACGenericConverter] Error creating recipe");
+            }
+            return r;
         }
 
         public override string GetInfo()

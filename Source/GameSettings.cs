@@ -38,10 +38,10 @@ namespace Tac
         private const string configNodeName = "SavedGameSettings";
 
         public bool IsNewSave;
-        
+
         public Dictionary<string, CrewMemberInfo> knownCrew { get; private set; }
         public Dictionary<Guid, VesselInfo> knownVessels { get; private set; }
-
+        
         public TacGameSettings()
         {
             IsNewSave = true;
