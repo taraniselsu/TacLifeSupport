@@ -583,7 +583,7 @@ namespace Tac
             vesselInfo.vesselName = vessel.vesselName;
             vesselInfo.vesselType = vessel.vesselType;
         }
-
+        
         /// <summary>
         /// Consumes Food for a Kerbal. If food runs out, checks if they have exceeded the no food limit.
         /// If they have they will enter hibernation or Die.
@@ -809,7 +809,7 @@ namespace Tac
                 vesselInfo.lastElectricity += currentTime - vesselInfo.lastUpdate;
             }
         }
-
+        
         /// <summary>
         /// Updates vessel info for a vessel to be stored in the knownVessels dictionary.
         /// </summary>
@@ -936,8 +936,32 @@ namespace Tac
             }
             else
             {
-                return globalsettings.EvaElectricityConsumptionRate;
+                return globalsettings.EvaElectricityConsumptionRate + ConsumeEVALightEC(vessel);
             }
+        }
+
+        /// <summary>
+        /// Call ONLY if vessel is an EVA vessel.
+        /// Finds if the kerbalEVA has their lampOn and if it is returns the EVAlampEC rate.
+        /// Otherwise returns zero.
+        /// </summary>
+        /// <param name="vessel">The vessel</param>
+        /// <returns>Returns the global setting for EVA Lamp EC consumption or zero</returns>
+        private double ConsumeEVALightEC(Vessel vessel)
+        {
+            double returnAmount = 0;
+            if (vessel.isEVA)
+            {
+                KerbalEVA kerbalEVA = vessel.FindPartModuleImplementing<KerbalEVA>();
+                if (kerbalEVA != null)
+                {
+                    if (kerbalEVA.lampOn) //Ok so if their lamp is on, consume EC
+                    {
+                        returnAmount = globalsettings.EvaLampElectricityConsumptionRate;
+                    }
+                }
+            }
+            return returnAmount;
         }
 
         /// <summary>

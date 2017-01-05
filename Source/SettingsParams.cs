@@ -175,6 +175,10 @@ namespace Tac
             toolTip = "EVA Electricity Consumption Rate (units per Minute).", minValue = 0.01f, maxValue = 150f, displayFormat = "F3", stepCount = 400)]
         public float EvaElectricityConsumptionRate = 0.255f;
 
+        [GameParameters.CustomFloatParameterUI("EVA Lamp Electricity Rate p/m",
+            toolTip = "EVA Lamp Electricity Consumption Rate (units per Minute).", minValue = 0.00f, maxValue = 50f, displayFormat = "F3", stepCount = 400)]
+        public float EvaLampElectricityConsumptionRate = 0.1278f;
+
         [GameParameters.CustomFloatParameterUI("CO2 Production Rate p/d",
             toolTip = "Per Kerbal CarbonDioxide Production Rate (units per Day).", minValue = 0.1f, maxValue = 600f, displayFormat = "F5", stepCount = 600)]
         public float CO2ProductionRate = 31.97978f;
@@ -261,6 +265,8 @@ namespace Tac
                     (float) (TacStartOnce.Instance.globalSettings.ElectricityConsumptionRate*60*60*hoursDay);
                 EvaElectricityConsumptionRate =
                     (float) (TacStartOnce.Instance.globalSettings.EvaElectricityConsumptionRate*60);
+                EvaLampElectricityConsumptionRate =
+                    (float)(TacStartOnce.Instance.globalSettings.EvaLampElectricityConsumptionRate * 60);
                 CO2ProductionRate = (float) (TacStartOnce.Instance.globalSettings.CO2ProductionRate*60*60*hoursDay);
                 WasteProductionRate = (float) (TacStartOnce.Instance.globalSettings.WasteProductionRate*60*60*hoursDay);
                 
@@ -284,6 +290,7 @@ namespace Tac
                 TacStartOnce.Instance.globalSettings.BaseElectricityConsumptionRate = BaseElectricityConsumptionRate/60/60/hoursDay;
                 TacStartOnce.Instance.globalSettings.ElectricityConsumptionRate = ElectricityConsumptionRate/60/60/hoursDay;
                 TacStartOnce.Instance.globalSettings.EvaElectricityConsumptionRate = EvaElectricityConsumptionRate/60;
+                TacStartOnce.Instance.globalSettings.EvaLampElectricityConsumptionRate = EvaLampElectricityConsumptionRate / 60;
                 TacStartOnce.Instance.globalSettings.CO2ProductionRate = CO2ProductionRate/60/60/hoursDay;
                 TacStartOnce.Instance.globalSettings.WasteProductionRate = WasteProductionRate/60/60/hoursDay;
                 TacStartOnce.Instance.globalSettings.WasteWaterProductionRate = WasteWaterProductionRate/60/60/hoursDay;
