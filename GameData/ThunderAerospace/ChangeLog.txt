@@ -1,3 +1,12 @@
+v0.12.8
+	Round all part costs off & Fix syntax 2.75m Sabatier https://github.com/KSP-RO/TacLifeSupport/issues/62
+	Fix TACLS and CCK part category filters. There can be only one. https://github.com/KSP-RO/TacLifeSupport/issues/66
+	Cater for Life support values being changed in settings to correctly apply/adjust EVA kerbals. https://github.com/KSP-RO/TacLifeSupport/issues/69
+	Changed handling of rescue kerbals to support kerbals that are already on EVA (not in a part). Rescue kerbals will not not consume resources until their vessel is Owned by the player. This occurs when the player switches to them or they come within loaded range of the active vessel (2.2km). https://github.com/KSP-RO/TacLifeSupport/issues/63
+	Show an info string in flight view for the mini-settings as the player cannot change them in flight view and they are disabled.
+	Remove tracking for lost vessel (through docking or destruction). https://github.com/KSP-RO/TacLifeSupport/issues/70
+	Nerfed Specialist Bonuses for all converters. https://github.com/KSP-RO/TacLifeSupport/issues/71
+	Added EC consumption for EVA kerbal lights (can be changed in the Settings menu). https://github.com/KSP-RO/TacLifeSupport/issues/67
 v0.12.7
 	Removed tracking of vessels that did have crew but now don't. - no more empty vessels being tracked.
 	Added conversionRate field to TACGenericConverter. This is an optional field and defaults to a value of 1. Back by popular demand, this is to support numerous requests to add this feature
