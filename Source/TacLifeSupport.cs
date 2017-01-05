@@ -49,6 +49,7 @@ namespace Tac
         public void Start()
         {
             GameEvents.OnGameSettingsApplied.Add(ApplySettings);
+            GameEvents.onLevelWasLoaded.Add(LevelLoaded);
             Textures.LoadIconAssets();
         }
 
@@ -72,6 +73,7 @@ namespace Tac
         public void OnDestroy()
         {
             GameEvents.OnGameSettingsApplied.Remove(ApplySettings);
+            GameEvents.onLevelWasLoaded.Remove(LevelLoaded);
         }
 
         public void ApplySettings()
@@ -95,6 +97,15 @@ namespace Tac
             {
                 HighLogic.CurrentGame.Parameters.CustomParams<TAC_SettingsParms>().EditorFilter = false;
                 TACEditorFilter.Instance.Setup();
+            }
+        }
+
+        //If the MainMenu is loaded we reset the AddLifeSupport.initialized bool so the resources get re-added to the kerbal EVA prefabs.
+        public void LevelLoaded(GameScenes scene)
+        {
+            if (scene == GameScenes.MAINMENU)
+            {
+                AddLifeSupport.initialized = false;
             }
         }
     }
