@@ -254,7 +254,7 @@ namespace Tac
                         }
                     }
                 }
-
+                
                 //Unloaded vessels processing happens here. In a future release.
                 //todo unloaded vessels resource processing.
                 else
@@ -281,6 +281,10 @@ namespace Tac
                         {
                             RemoveVesselTracking(unloadedvessel.id);
                         }
+                    }
+                    else  //The vessel was not loaded and was not unloaded. It's gone (through docking probably or destroyed)
+                    {
+                        RemoveVesselTracking(entry.Key);
                     }
                 }
                 Profiler.EndSample();
