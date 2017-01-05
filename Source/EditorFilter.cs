@@ -42,10 +42,11 @@ namespace Tac
         {
             this.Log("TACLS EditorFilter Setup");
             RemoveSubFilter();
-            if (!RSTUtils.Utilities.IsModInstalled("CCK"))
+            if (RSTUtils.Utilities.IsModInstalled("CCK")) //If CCK is installed we don't use this category
             {
-                AddPartUtilitiesCat();
+                return;
             }
+            AddPartUtilitiesCat();
             GameEvents.onGUIEditorToolbarReady.Remove(SubCategories);
             
             if (!HighLogic.CurrentGame.Parameters.CustomParams<TAC_SettingsParms>().EditorFilter)

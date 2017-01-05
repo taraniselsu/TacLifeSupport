@@ -182,21 +182,36 @@ namespace Tac
                 {
                     Vessel vsl = null;
                     var allvessels = FlightGlobals.Vessels;
-                    bool isEVA = false;
+                    bool isOwned = false;
                     for (int i = 0; i < allvessels.Count; ++i)
                     {
                         if (allvessels[i].id == entry.Key)
                         {
                             vsl = allvessels[i];
-                            if (allvessels[i].isEVA)
+                            // Once a rescue vessel becomes Owned (Loaded by coming in range of active vessel or switched to the vessel)
+                            // It is no longer a rescue vessel. It is filled with random resource values and is processed like any other vessel.
+                            if (allvessels[i].DiscoveryInfo.Level == DiscoveryLevels.Owned)
                             {
-                                isEVA = true;
+                                isOwned = true; 
+                                entry.Value.recoveryvessel = false;
+                                foreach (var crew in TacLifeSupport.Instance.gameSettings.knownCrew)
+                                {
+                                    if (crew.Value.vesselId == entry.Key)
+                                    {
+                                        crew.Value.recoverykerbal = false;
+                                    }
+                                }
+                                if (!vsl.rootPart.Resources.Contains(TacStartOnce.Instance.globalSettings.FoodId))
+                                {
+                                    this.LogWarning("FillRescueVessel: new Rescue Vessel has no Resources. Adding some.");
+                                    FillRescuePart(vsl);
+                                }
                             }
                             break;
                         }
                     }
-                    //If it's not EVA we skip.
-                    if (!isEVA)
+                    //If it's not Owned we skip the rescue vessel.
+                    if (!isOwned)
                     {
                         updateVslCrewCurrentTime(vsl, entry, currentTime);
                         continue;
@@ -239,7 +254,7 @@ namespace Tac
                         }
                     }
                 }
-
+                
                 //Unloaded vessels processing happens here. In a future release.
                 //todo unloaded vessels resource processing.
                 else
@@ -266,6 +281,10 @@ namespace Tac
                         {
                             RemoveVesselTracking(unloadedvessel.id);
                         }
+                    }
+                    else  //The vessel was not loaded and was not unloaded. It's gone (through docking probably or destroyed)
+                    {
+                        RemoveVesselTracking(entry.Key);
                     }
                 }
                 Profiler.EndSample();
@@ -393,7 +412,7 @@ namespace Tac
                     crewMemberInfo.crewType = vslCrew[i].type;
                     crewMemberInfo.vesselIsPreLaunch = vessel.SituationString == "PRELAUNCH";
                     //If rescue kerbal set their last use to current time.
-                    //IE: We are now start consuming resources. When the EVA processing completes.
+                    //IE: We will now start consuming resources. When the EVA processing completes.
                     if (crewMemberInfo.recoverykerbal)
                     {
                         crewMemberInfo.lastFood = crewMemberInfo.lastWater = crewMemberInfo.lastUpdate = currentTime;
@@ -416,6 +435,7 @@ namespace Tac
                         cmi.vesselIsPreLaunch = false;
                         CreateVesselEntry(vessel);
                         gameSettings.knownVessels[vessel.id].recoveryvessel = true;
+                        FillRescuePart(vessel);
                     }
                     //save knownCrew record.
                     gameSettings.knownCrew[vslCrew[i].name] = cmi;
@@ -563,7 +583,7 @@ namespace Tac
             vesselInfo.vesselName = vessel.vesselName;
             vesselInfo.vesselType = vessel.vesselType;
         }
-
+        
         /// <summary>
         /// Consumes Food for a Kerbal. If food runs out, checks if they have exceeded the no food limit.
         /// If they have they will enter hibernation or Die.
@@ -789,7 +809,7 @@ namespace Tac
                 vesselInfo.lastElectricity += currentTime - vesselInfo.lastUpdate;
             }
         }
-
+        
         /// <summary>
         /// Updates vessel info for a vessel to be stored in the knownVessels dictionary.
         /// </summary>
@@ -916,8 +936,32 @@ namespace Tac
             }
             else
             {
-                return globalsettings.EvaElectricityConsumptionRate;
+                return globalsettings.EvaElectricityConsumptionRate + ConsumeEVALightEC(vessel);
             }
+        }
+
+        /// <summary>
+        /// Call ONLY if vessel is an EVA vessel.
+        /// Finds if the kerbalEVA has their lampOn and if it is returns the EVAlampEC rate.
+        /// Otherwise returns zero.
+        /// </summary>
+        /// <param name="vessel">The vessel</param>
+        /// <returns>Returns the global setting for EVA Lamp EC consumption or zero</returns>
+        private double ConsumeEVALightEC(Vessel vessel)
+        {
+            double returnAmount = 0;
+            if (vessel.isEVA)
+            {
+                KerbalEVA kerbalEVA = vessel.FindPartModuleImplementing<KerbalEVA>();
+                if (kerbalEVA != null)
+                {
+                    if (kerbalEVA.lampOn) //Ok so if their lamp is on, consume EC
+                    {
+                        returnAmount = globalsettings.EvaLampElectricityConsumptionRate;
+                    }
+                }
+            }
+            return returnAmount;
         }
 
         /// <summary>
@@ -963,28 +1007,54 @@ namespace Tac
         }
 
         /// <summary>
-        /// Fills a rescue kerbal EVA suit. The suit is randomly filled to between 30% - 90% capacity.
+        /// Fills a rescue Part. The part is randomly filled to between 30% - 90% capacity.
         /// </summary>
         /// <param name="vessel"></param>
-        private void FillRescueEvaSuit(Vessel vessel)
+        private void FillRescuePart(Vessel vessel)
         {
-            this.Log("FillRescueEvaSuit: Rescue mission EVA: " + vessel.vesselName);
+            this.Log("FillRescuePart: Rescue mission: " + vessel.vesselName);
             Part part = vessel.rootPart;
 
             // Only fill the suit to 30-90% full
             double fillAmount = UnityEngine.Random.Range(0.3f, 0.9f);
-            part.AddResource(PartResourceLibrary.Instance.GetDefinition(globalsettings.ElectricityId).Config);
-            part.AddResource(PartResourceLibrary.Instance.GetDefinition(globalsettings.FoodId).Config);
-            part.AddResource(PartResourceLibrary.Instance.GetDefinition(globalsettings.WaterId).Config);
-            part.AddResource(PartResourceLibrary.Instance.GetDefinition(globalsettings.OxygenId).Config);
+            RescuePartAddResource(part, globalsettings.Electricity,fillAmount * (globalsettings.BaseElectricityConsumptionRate + globalsettings.ElectricityConsumptionRate) * globalsettings.EvaDefaultResourceAmount);
+            RescuePartAddResource(part, globalsettings.Food, fillAmount * globalsettings.FoodConsumptionRate * globalsettings.EvaDefaultResourceAmount);
+            RescuePartAddResource(part, globalsettings.Water, fillAmount * globalsettings.WaterConsumptionRate * globalsettings.EvaDefaultResourceAmount);
+            RescuePartAddResource(part, globalsettings.Oxygen, fillAmount * globalsettings.OxygenConsumptionRate * globalsettings.EvaDefaultResourceAmount);
+            vessel.UpdateResourceSets();
+        }
 
-            double foodObtained, waterObtained, oxygenObtained, electricityObtained = 0;
-            double foodSpace, waterSpace, oxygenSpace, electricitySpace = 0;
-            RSTUtils.Utilities.requireResourceID(vessel, globalsettings.ElectricityId, -fillAmount * globalsettings.EvaElectricityConsumptionRate * globalsettings.EvaDefaultResourceAmount, true, false, false, out electricityObtained, out electricitySpace);
-            RSTUtils.Utilities.requireResourceID(vessel, globalsettings.FoodId, -fillAmount * globalsettings.FoodConsumptionRate * globalsettings.EvaDefaultResourceAmount, true, false, false, out foodObtained, out foodSpace);
-            RSTUtils.Utilities.requireResourceID(vessel, globalsettings.WaterId, -fillAmount * globalsettings.WaterConsumptionRate * globalsettings.EvaDefaultResourceAmount, true, false, false, out waterObtained, out waterSpace);
-            RSTUtils.Utilities.requireResourceID(vessel, globalsettings.OxygenId, -fillAmount * globalsettings.OxygenConsumptionRate * globalsettings.EvaDefaultResourceAmount, true, false, false, out oxygenObtained, out oxygenSpace);
-            
+        /// <summary>
+        /// Adds TAC LS Resource definition and amount to Rescue Part 
+        /// </summary>
+        /// <param name="part">the part</param>
+        /// <param name="name">resource name</param>
+        /// <param name="fillAmount">max amount</param>
+        public void RescuePartAddResource(Part part, string name, double fillAmount)
+        {
+            try
+            {
+                ConfigNode resourceNode = new ConfigNode("RESOURCE");
+                resourceNode.AddValue("name", name);
+                resourceNode.AddValue("maxAmount", fillAmount);
+                resourceNode.AddValue("amount", fillAmount);
+                resourceNode.AddValue("isTweakable", false);
+                //Check part doesn't have resource already. If it does remove it first, then re-add it.
+                if (part.Resources.Contains(name))
+                {
+                    part.Resources.Remove(name);
+                }
+                PartResource resource = part.AddResource(resourceNode);
+                resource.flowState = true;
+                resource.flowMode = PartResource.FlowMode.Both;
+            }
+            catch (Exception ex)
+            {
+                if (!ex.Message.Contains("Object reference not set"))
+                {
+                    this.LogError("Unexpected error while adding resource " + name + " to the RescuePart: " + ex.Message + "\n" + ex.StackTrace);
+                }
+            }
         }
 
         /// <summary>
@@ -1343,28 +1413,7 @@ namespace Tac
                 if (!gameSettings.knownVessels.ContainsKey(vessel.id) && vessel.GetVesselCrew().Count > 0)
                 {
                     this.Log("New vessel: " + vessel.vesselName + " (" + vessel.id + ")");
-                    if (vessel.isEVA)
-                    {
-                        ProtoCrewMember crewMember = vessel.GetVesselCrew().FirstOrDefault();
-                        if (crewMember != null)// && gameSettings.knownCrew.ContainsKey(crewMember.name))
-                        {
-                            //CrewMemberInfo value = new CrewMemberInfo("", "", vessel.id, );
-                            if (gameSettings.knownCrew.ContainsKey(crewMember.name))
-                            {
-                                if (gameSettings.knownCrew[crewMember.name].recoverykerbal)
-                                {
-                                    //The vessel the Recovery Kerbal EVA'd from is removed from TACLS tracking in OnCrewOnEva when it is fired.
-                                    FillRescueEvaSuit(vessel);
-                                    gameSettings.knownCrew[crewMember.name].recoverykerbal = false;
-                                }
-                            }
-                            else
-                            {
-                                this.Log("Critical Error, failed to get EVA CrewMember Info");
-                            }
-                        }
-                    }
-
+                    
                     VesselInfo vesselInfo = new VesselInfo(vessel.vesselName, vessel.situation, vessel.vesselType,Planetarium.GetUniversalTime());
                     
                     gameSettings.knownVessels[vessel.id] = vesselInfo;
@@ -1376,14 +1425,22 @@ namespace Tac
             }
         }
 
+        /// <summary>
+        /// Scans the active contracts for any that contain the Crew Member and returns true or false.
+        /// </summary>
+        /// <param name="crew">PCM of the crew member</param>
+        /// <returns>True if contract with crew member, false if not.</returns>
         private bool checkContractsForRescue(ProtoCrewMember crew)
         {
-            var contracts = Contracts.ContractSystem.Instance.Contracts;
-            for (int i = 0; i < contracts.Count; ++i)
+            if (Contracts.ContractSystem.Instance != null)
             {
-                if (contracts[i].Title.Contains(crew.name))
+                var contracts = Contracts.ContractSystem.Instance.Contracts;
+                for (int i = 0; i < contracts.Count; ++i)
                 {
-                    return true;
+                    if (contracts[i].Title.Contains(crew.name))
+                    {
+                        return true;
+                    }
                 }
             }
             return false;

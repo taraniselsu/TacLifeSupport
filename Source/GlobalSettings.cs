@@ -48,6 +48,7 @@ namespace Tac
         public double ElectricityConsumptionRate;
         public double BaseElectricityConsumptionRate;
         public double EvaElectricityConsumptionRate;
+        public double EvaLampElectricityConsumptionRate;
         public double CO2ProductionRate;
         public double WasteProductionRate;
         public double WasteWaterProductionRate;
@@ -103,7 +104,7 @@ namespace Tac
             BaseElectricityConsumptionRate = 0.02125; // 76.5 per hour or 1.275 per minute, about 75% of a stock probe core's consumption (1.7 per min)
             ElectricityConsumptionRate = 0.014166666666667; // 51 per hour or 0.85 per minute, about 50% of a stock probe core's consumption
             EvaElectricityConsumptionRate = 0.00425; // 91.8 per 6 hours (1 Kerbin day), 15.3 per hour, 15% of a probe core or 12% compared to in a pod
-
+            EvaLampElectricityConsumptionRate = 0.00213;// 45.9 per 6 hours (1 Kerbin day), 7.65 per hour
             // Amount of resources to load crewable parts with, in seconds
             EvaDefaultResourceAmount = 1.0 * SECONDS_PER_KERBIN_DAY; // 1 Kerbin day, 6 hours
 
@@ -135,6 +136,7 @@ namespace Tac
             node.TryGetValue("ElectricityConsumptionRate", ref ElectricityConsumptionRate);
             node.TryGetValue("BaseElectricityConsumptionRate", ref BaseElectricityConsumptionRate);
             node.TryGetValue("EvaElectricityConsumptionRate", ref EvaElectricityConsumptionRate);
+            node.TryGetValue("EvaLampElectricityConsumptionRate", ref EvaLampElectricityConsumptionRate);
             node.TryGetValue("CO2ProductionRate", ref CO2ProductionRate);
             node.TryGetValue("WasteProductionRate", ref WasteProductionRate);
             node.TryGetValue("WasteWaterProductionRate", ref WasteWaterProductionRate);

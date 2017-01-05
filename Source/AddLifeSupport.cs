@@ -28,12 +28,13 @@
 
 using System;
 using System.Linq;
+using UnityEngine;
 
 namespace Tac
 {
     class AddLifeSupport
     {
-        private static bool initialized = false;
+        internal static bool initialized = false;
         private GlobalSettings globalSettings;
 
         public AddLifeSupport()
@@ -42,6 +43,7 @@ namespace Tac
             this.globalSettings = TacStartOnce.Instance.globalSettings;
         }
 
+        //Run from the SpaceCenter if TAC LS is enabled - once only. Adds lifesupport to EVA kerbal prefabs.
         public void run()
         {
             if (!initialized)
@@ -64,13 +66,30 @@ namespace Tac
             }
         }
 
+        //Run when user changes settings - change the EVA kerbal prefab resource values.
+        public void ChangeValues()
+        {
+            try
+            {
+                var evaParts = PartLoader.LoadedPartsList.Where(p => p.name.Equals("kerbalEVA") || p.name.Equals("kerbalEVAfemale"));
+                foreach (var evaPart in evaParts)
+                {
+                    EvaAddLifeSupport(evaPart);
+                }
+            }
+            catch (Exception ex)
+            {
+                this.LogError("Failed to add Life Support to the EVA.\n" + ex.Message + "\n" + ex.StackTrace);
+            }
+        }
+
         private void EvaAddLifeSupport(AvailablePart part)
         {
             Part prefabPart = part.partPrefab;
 
             this.Log("Adding resources to " + part.name + "/" + prefabPart.partInfo.title);
 
-            EvaAddPartModule(prefabPart);
+            EvaAddPartModule(prefabPart); 
             EvaAddResource(prefabPart, globalSettings.EvaElectricityConsumptionRate, globalSettings.Electricity, false);
             EvaAddResource(prefabPart, globalSettings.FoodConsumptionRate, globalSettings.Food, false);
             EvaAddResource(prefabPart, globalSettings.WaterConsumptionRate, globalSettings.Water, false);
@@ -91,8 +110,18 @@ namespace Tac
             {
                 ConfigNode node = new ConfigNode("MODULE");
                 node.AddValue("name", "LifeSupportModule");
-
-                part.AddModule(node);
+                int c = part.Modules.Count;
+                bool Found = false;
+                for (int mI = 0; mI < c; ++mI)
+                {
+                    if (part.Modules[mI].moduleName == "LifeSupportModule")
+                    {
+                        Found = true;
+                        break;
+                    }
+                }
+                if (!Found)
+                    part.AddModule(node);
 
                 this.LogWarning("The expected exception did not happen when adding the Life Support part module to the EVA!");
             }
@@ -126,6 +155,11 @@ namespace Tac
                     resourceNode.AddValue("amount", 0);
                 }
                 resourceNode.AddValue("isTweakable", false);
+                //Check prefab part doesn't have resource already. If it does remove it first, then re-add it.
+                if (part.Resources.Contains(name))
+                {
+                    part.Resources.Remove(name);
+                }
                 PartResource resource = part.AddResource(resourceNode);
                 resource.flowState = true;
                 resource.flowMode = PartResource.FlowMode.Both;

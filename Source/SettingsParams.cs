@@ -25,6 +25,8 @@
  * purposes. It is in no way meant to represent a real entity. Any similarity to a real entity
  * is purely coincidental.
  */
+
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Reflection;
@@ -40,7 +42,10 @@ namespace Tac
         public override bool HasPresets { get { return false; } }
         public override string Section { get { return "TAC Life Support"; } }
         public override int SectionOrder { get { return 1; } }
-        
+
+        [GameParameters.CustomStringParameterUI("Test String UI", lines = 4, title = "", toolTip = "You cannot change TAC LS settings in Flight!")]
+        public string CBstring = "You cannot change TAC LS settings in Flight!";
+
         [GameParameters.CustomParameterUI("Enabled", autoPersistance = true, toolTip = "If on, TAC/LS is enabled in this save,\nIf off, it's not enabled in this save.")]
         public bool enabled = true;
 
@@ -75,11 +80,18 @@ namespace Tac
             }
         }
         
-        public override
-            bool Enabled(MemberInfo member, GameParameters parameters)
+        public override bool Enabled(MemberInfo member, GameParameters parameters)
         {
             if (HighLogic.fetch != null)
             {
+                if (member.Name == "CBstring")
+                {
+                    if (HighLogic.LoadedScene == GameScenes.FLIGHT)
+                        return true;
+                    else
+                        return false;
+                }
+
                 if (HighLogic.LoadedScene == GameScenes.MAINMENU || HighLogic.LoadedScene == GameScenes.SETTINGS || HighLogic.LoadedScene == GameScenes.SPACECENTER)
                 {
                     return true;
@@ -136,6 +148,8 @@ namespace Tac
             get { return 2; }
         }
         private bool FirstRun = true;
+        [GameParameters.CustomStringParameterUI("Test String UI", lines = 4, title = "", toolTip = "You have been warned!")]
+        public string CBstring = "Changing these values in an active game will impact Active Kerbals. It is recommended you restart KSP. Even then Kerbals on EVA will not be updated.";
 
         [GameParameters.CustomFloatParameterUI("Food Consumption Rate p/d",
             toolTip = "Amt of food consumed per Kerbal (units per Day).", minValue = 0.01f, maxValue = 6f, displayFormat = "F6", stepCount = 400)]
@@ -160,6 +174,10 @@ namespace Tac
         [GameParameters.CustomFloatParameterUI("EVA Electricity Rate p/m",
             toolTip = "EVA Electricity Consumption Rate (units per Minute).", minValue = 0.01f, maxValue = 150f, displayFormat = "F3", stepCount = 400)]
         public float EvaElectricityConsumptionRate = 0.255f;
+
+        [GameParameters.CustomFloatParameterUI("EVA Lamp Electricity Rate p/m",
+            toolTip = "EVA Lamp Electricity Consumption Rate (units per Minute).", minValue = 0.00f, maxValue = 50f, displayFormat = "F3", stepCount = 400)]
+        public float EvaLampElectricityConsumptionRate = 0.1278f;
 
         [GameParameters.CustomFloatParameterUI("CO2 Production Rate p/d",
             toolTip = "Per Kerbal CarbonDioxide Production Rate (units per Day).", minValue = 0.1f, maxValue = 600f, displayFormat = "F5", stepCount = 600)]
@@ -206,6 +224,13 @@ namespace Tac
         {
             if (HighLogic.fetch != null)
             {
+                if (member.Name == "CBstring")
+                {
+                    if (HighLogic.LoadedScene == GameScenes.MAINMENU || HighLogic.LoadedScene == GameScenes.SETTINGS)
+                    {
+                        return false;
+                    }
+                }
                 if (HighLogic.LoadedScene == GameScenes.MAINMENU || HighLogic.LoadedScene == GameScenes.SETTINGS ||
                     HighLogic.LoadedScene == GameScenes.SPACECENTER)
                 {
@@ -240,6 +265,8 @@ namespace Tac
                     (float) (TacStartOnce.Instance.globalSettings.ElectricityConsumptionRate*60*60*hoursDay);
                 EvaElectricityConsumptionRate =
                     (float) (TacStartOnce.Instance.globalSettings.EvaElectricityConsumptionRate*60);
+                EvaLampElectricityConsumptionRate =
+                    (float)(TacStartOnce.Instance.globalSettings.EvaLampElectricityConsumptionRate * 60);
                 CO2ProductionRate = (float) (TacStartOnce.Instance.globalSettings.CO2ProductionRate*60*60*hoursDay);
                 WasteProductionRate = (float) (TacStartOnce.Instance.globalSettings.WasteProductionRate*60*60*hoursDay);
                 
@@ -257,15 +284,20 @@ namespace Tac
             else
             {
                 var hoursDay = GameSettings.KERBIN_TIME ? 6 : 24;
-                TacStartOnce.Instance.globalSettings.FoodConsumptionRate = (FoodConsumptionRate/60/60/hoursDay);
-                TacStartOnce.Instance.globalSettings.WaterConsumptionRate = (WaterConsumptionRate/60/60/hoursDay);
-                TacStartOnce.Instance.globalSettings.OxygenConsumptionRate = (OxygenConsumptionRate/60/60/hoursDay);
-                TacStartOnce.Instance.globalSettings.BaseElectricityConsumptionRate = (BaseElectricityConsumptionRate/60/60/hoursDay);
-                TacStartOnce.Instance.globalSettings.ElectricityConsumptionRate = (ElectricityConsumptionRate/60/60/hoursDay);
-                TacStartOnce.Instance.globalSettings.EvaElectricityConsumptionRate = (EvaElectricityConsumptionRate/60);
-                TacStartOnce.Instance.globalSettings.CO2ProductionRate = (CO2ProductionRate/60/60/hoursDay);
-                TacStartOnce.Instance.globalSettings.WasteProductionRate = (WasteProductionRate/60/60/hoursDay);
-                TacStartOnce.Instance.globalSettings.WasteWaterProductionRate = (WasteWaterProductionRate/60/60/hoursDay);
+                TacStartOnce.Instance.globalSettings.FoodConsumptionRate = FoodConsumptionRate/60/60/hoursDay;
+                TacStartOnce.Instance.globalSettings.WaterConsumptionRate = WaterConsumptionRate/60/60/hoursDay;
+                TacStartOnce.Instance.globalSettings.OxygenConsumptionRate = OxygenConsumptionRate/60/60/hoursDay;
+                TacStartOnce.Instance.globalSettings.BaseElectricityConsumptionRate = BaseElectricityConsumptionRate/60/60/hoursDay;
+                TacStartOnce.Instance.globalSettings.ElectricityConsumptionRate = ElectricityConsumptionRate/60/60/hoursDay;
+                TacStartOnce.Instance.globalSettings.EvaElectricityConsumptionRate = EvaElectricityConsumptionRate/60;
+                TacStartOnce.Instance.globalSettings.EvaLampElectricityConsumptionRate = EvaLampElectricityConsumptionRate / 60;
+                TacStartOnce.Instance.globalSettings.CO2ProductionRate = CO2ProductionRate/60/60/hoursDay;
+                TacStartOnce.Instance.globalSettings.WasteProductionRate = WasteProductionRate/60/60/hoursDay;
+                TacStartOnce.Instance.globalSettings.WasteWaterProductionRate = WasteWaterProductionRate/60/60/hoursDay;
+                
+                //Change EVA resource values
+                AddLifeSupport als = new AddLifeSupport();
+                als.ChangeValues();
             }
         }
     }
@@ -279,6 +311,8 @@ namespace Tac
         public override string Section { get { return "TAC Life Support"; } }
         public override int SectionOrder { get { return 3; } }
         private bool FirstRun = true;
+        [GameParameters.CustomStringParameterUI("Test String UI", lines = 4, title = "", toolTip = "You have been warned!")]
+        public string CBstring = "Changing these values in an active game will impact Active Kerbals. It is recommended you restart KSP. Even then Kerbals on EVA will not be updated.";
 
         [GameParameters.CustomIntParameterUI("Max Delta Time", toolTip = "This is the maximum time multiplier used between resource calculations.", minValue = 3000, maxValue = 200000)]
         public int MaxDeltaTime = 86400;
@@ -334,6 +368,13 @@ namespace Tac
         {
             if (HighLogic.fetch != null)
             {
+                if (member.Name == "CBstring")
+                {
+                    if (HighLogic.LoadedScene == GameScenes.MAINMENU || HighLogic.LoadedScene == GameScenes.SETTINGS)
+                    {
+                        return false;
+                    }
+                }
                 if (HighLogic.LoadedScene == GameScenes.MAINMENU || HighLogic.LoadedScene == GameScenes.SETTINGS || HighLogic.LoadedScene == GameScenes.SPACECENTER)
                 {
                     return true;
@@ -384,7 +425,15 @@ namespace Tac
                 TacStartOnce.Instance.globalSettings.MaxTimeWithoutOxygen = MaxTimeWithoutOxygen*60;
                 TacStartOnce.Instance.globalSettings.MaxTimeWithoutWater = MaxTimeWithoutWater*60*60;
                 TacStartOnce.Instance.globalSettings.MaxTimeWithoutElectricity = MaxTimeWithoutElectricity*60;
-                TacStartOnce.Instance.globalSettings.EvaDefaultResourceAmount = EvaDefaultResourceAmount;
+                double TOLERANCE = 1;
+                if (Math.Abs(TacStartOnce.Instance.globalSettings.EvaDefaultResourceAmount - EvaDefaultResourceAmount) > TOLERANCE)
+                {
+                    TacStartOnce.Instance.globalSettings.EvaDefaultResourceAmount = EvaDefaultResourceAmount;
+                    //Change EVA resource values
+                    AddLifeSupport als = new AddLifeSupport();
+                    als.ChangeValues();
+                }
+
             }
         }
     }

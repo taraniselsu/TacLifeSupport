@@ -107,7 +107,7 @@
   <PropertyGroup>
     <AssemblyMajorVersion>0</AssemblyMajorVersion>
     <AssemblyMinorVersion>12</AssemblyMinorVersion>
-    <AssemblyBuildNumber>7</AssemblyBuildNumber>
+    <AssemblyBuildNumber>8</AssemblyBuildNumber>
     <AssemblyFileMajorVersion>$(AssemblyMajorVersion)</AssemblyFileMajorVersion>
     <AssemblyFileMinorVersion>$(AssemblyMinorVersion)</AssemblyFileMinorVersion>
     <AssemblyFileBuildNumber>$(AssemblyBuildNumber)</AssemblyFileBuildNumber>
