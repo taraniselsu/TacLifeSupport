@@ -921,9 +921,9 @@ namespace RSTUtils
 				}
 				return true;
 			}
-			//Now we push or pull
+			//Now we push or pull - Cater for push negative values (abs).
 			var amountdrawn = craft.RequestResource(craft.rootPart, res, resAmount, pulling);
-			if (amountdrawn < resAmount * 0.99)
+			if (Math.Abs(amountdrawn) < (Math.Abs(resAmount) * 0.99))
 			{
 				resavail = amountdrawn;
 				return false;
