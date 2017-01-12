@@ -29,6 +29,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Contracts.Templates;
 using KSP.UI.Screens;
 using RSTUtils;
 using UnityEngine;
@@ -109,6 +110,7 @@ namespace Tac
             GameEvents.onVesselWasModified.Add(onVesselWasModified);
             GameEvents.onVesselSituationChange.Add(onVesselSituationChange);
             GameEvents.onLevelWasLoaded.Add(onLevelWasLoaded);
+            GameEvents.Contract.onCancelled.Add(onContractCancelled);
             onKerbalFrozenEvent = GameEvents.FindEvent<EventData<Part, ProtoCrewMember>>("onKerbalFrozen");
             if (onKerbalFrozenEvent != null)
                 onKerbalFrozenEvent.Add(onKerbalFrozen);
@@ -141,6 +143,7 @@ namespace Tac
             GameEvents.onVesselWasModified.Remove(onVesselWasModified);
             GameEvents.onVesselSituationChange.Remove(onVesselSituationChange);
             GameEvents.onLevelWasLoaded.Remove(onLevelWasLoaded);
+            GameEvents.Contract.onCancelled.Remove(onContractCancelled);
             if (onKerbalFrozenEvent != null)
                 onKerbalFrozenEvent.Remove(onKerbalFrozen);
             if (onKerbalThawEvent != null)
@@ -1401,6 +1404,37 @@ namespace Tac
             }
         }
 
+        /// <summary>
+        /// When a contract is cancelled this method will check if it is a Recover contract and then search for
+        /// any Kerbals and their associated vessels and remove them from TAC LS tracking.
+        /// </summary>
+        /// <param name="contract"></param>
+        private void onContractCancelled(Contracts.Contract contract)
+        {
+            if (contract.GetType() == typeof(RecoverAsset)) //If a RecoverAsset Contract
+            {
+                if (contract.Title.Contains("Rescue ")) //And the title starts with Rescue
+                {
+                    //Construct the Kerbals Name and search if we are tracking them and remove them and their vessel
+                    string[] words = contract.Title.Split(new char[] {' '}, StringSplitOptions.RemoveEmptyEntries);
+                    if (words.Length >= 3)
+                    {
+                        string kerbalName = words[1] + " " + words[2];
+                        if (gameSettings.knownCrew.ContainsKey(kerbalName))
+                        {
+                            this.Log("Rescue Contract cancelled for crew member: " + kerbalName);
+                            var knowncrew = gameSettings.knownCrew[kerbalName];
+                            if (gameSettings.knownVessels.ContainsKey(knowncrew.vesselId))
+                            {
+                                RemoveVesselTracking(knowncrew.vesselId);
+                            }
+                            gameSettings.knownCrew.Remove(kerbalName);
+                        }
+                    }
+                }
+            }
+        }
+
         //todo May need to check DeepFreeze Freezer Module on-board and if frozen kerbals on-board.
         /// <summary>
         /// Will check if there is a knownVessels entry or not. If not, it will create one only if the vessel has crew on-board. 
@@ -1438,7 +1472,7 @@ namespace Tac
                 for (int i = 0; i < contracts.Count; ++i)
                 {
                     if (contracts[i].Title.Contains(crew.name))
-                    {
+                    { 
                         return true;
                     }
                 }

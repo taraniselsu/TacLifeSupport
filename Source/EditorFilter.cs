@@ -44,6 +44,7 @@ namespace Tac
             RemoveSubFilter();
             if (RSTUtils.Utilities.IsModInstalled("CCK")) //If CCK is installed we don't use this category
             {
+                RemovePartUtilitiesCat();
                 return;
             }
             AddPartUtilitiesCat();
