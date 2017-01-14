@@ -1471,7 +1471,7 @@ namespace Tac
                 var contracts = Contracts.ContractSystem.Instance.Contracts;
                 for (int i = 0; i < contracts.Count; ++i)
                 {
-                    if (contracts[i].Title.Contains(crew.name))
+                    if (contracts[i].Title.Contains(FinePrint.Utilities.StringUtilities.ShortKerbalName(crew.name)))
                     { 
                         return true;
                     }

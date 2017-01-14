@@ -304,8 +304,10 @@ namespace RSTUtils
         /// <param name="visible">True if set to visible, false will turn it off</param>
         public void setAppLSceneVisibility(ApplicationLauncher.AppScenes visibleinScenes)
         {
-            VisibleinScenes = visibleinScenes;
-            stockToolbarButton.VisibleInScenes = VisibleinScenes;
+            if (VisibleinScenes != null)
+                VisibleinScenes = visibleinScenes;
+            if (stockToolbarButton != null)
+                stockToolbarButton.VisibleInScenes = VisibleinScenes;
         }
 
         /// <summary>
