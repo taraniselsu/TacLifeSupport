@@ -49,6 +49,7 @@ namespace Tac
         private bool VesselSortCountervslChgFlag = false;
         public static LifeSupportController Instance;
         private bool checkedDictionaries = false;
+        private List<Guid> vesselstoDelete;
 
         private TAC_SettingsParms settings_sec1;
         internal List<KeyValuePair<Guid, VesselInfo>> knownVesselsList;
@@ -69,7 +70,7 @@ namespace Tac
             {
                 Destroy(this);
             }
-
+            vesselstoDelete = new List<Guid>();
             TACMenuAppLToolBar = new AppLauncherToolBar("TACLifeSupport", "TAC Life Support",
                 Textures.PathToolbarIconsPath + "/TACgreenIconTB",
                 ApplicationLauncher.AppScenes.TRACKSTATION | ApplicationLauncher.AppScenes.FLIGHT | ApplicationLauncher.AppScenes.SPACECENTER,
@@ -111,6 +112,8 @@ namespace Tac
             GameEvents.onVesselSituationChange.Add(onVesselSituationChange);
             GameEvents.onLevelWasLoaded.Add(onLevelWasLoaded);
             GameEvents.Contract.onCancelled.Add(onContractCancelled);
+            GameEvents.onPartUndock.Add(onPartUndock);
+
             onKerbalFrozenEvent = GameEvents.FindEvent<EventData<Part, ProtoCrewMember>>("onKerbalFrozen");
             if (onKerbalFrozenEvent != null)
                 onKerbalFrozenEvent.Add(onKerbalFrozen);
@@ -144,6 +147,7 @@ namespace Tac
             GameEvents.onVesselSituationChange.Remove(onVesselSituationChange);
             GameEvents.onLevelWasLoaded.Remove(onLevelWasLoaded);
             GameEvents.Contract.onCancelled.Remove(onContractCancelled);
+            GameEvents.onPartUndock.Remove(onPartUndock);
             if (onKerbalFrozenEvent != null)
                 onKerbalFrozenEvent.Remove(onKerbalFrozen);
             if (onKerbalThawEvent != null)
@@ -174,10 +178,15 @@ namespace Tac
             }
             
             double currentTime = Planetarium.GetUniversalTime();
-            var loadedVessels = FlightGlobals.VesselsLoaded;
-            var unloadedVessels = FlightGlobals.VesselsUnloaded;
+            List<Vessel> loadedVessels = FlightGlobals.VesselsLoaded;
+            List<Vessel> unloadedVessels = FlightGlobals.VesselsUnloaded;
+            if (vesselstoDelete.Count > 0)
+            {
+                vesselstoDelete.Clear();
+            }
+
             //Iterate the knownVessels dictionary
-            foreach (var entry in gameSettings.knownVessels)
+            foreach (KeyValuePair<Guid, VesselInfo> entry in gameSettings.knownVessels)
             {
                 //If vessel is a recovery vessel check if it's EVA (Kerbal) or not. If it isn't we skip it completely.
                 //If it is EVA (rescue kerbal) we continue processing.
@@ -282,12 +291,12 @@ namespace Tac
                         //If there are no longer any crew stop tracking vessel.
                         if (entry.Value.numCrew == 0)
                         {
-                            RemoveVesselTracking(unloadedvessel.id);
+                            vesselstoDelete.Add(unloadedvessel.id);
                         }
                     }
                     else  //The vessel was not loaded and was not unloaded. It's gone (through docking probably or destroyed)
                     {
-                        RemoveVesselTracking(entry.Key);
+                        vesselstoDelete.Add(entry.Key);
                     }
                 }
                 Profiler.EndSample();
@@ -295,6 +304,10 @@ namespace Tac
                 Profiler.BeginSample("doWarningProcessing");
                 doWarningProcessing(entry.Value, currentTime);
                 Profiler.EndSample();
+            }
+            for (int i = 0; i < vesselstoDelete.Count; i++)
+            {
+                RemoveVesselTracking(vesselstoDelete[i]);
             }
 
             //Will re-create and sort the knownVesselsList that is used by the GUI.
@@ -965,6 +978,104 @@ namespace Tac
                 }
             }
             return returnAmount;
+        }
+
+        /// <summary>
+        /// called on Part undock. but we are using it here for when a kerbal leaves an external seat.
+        /// If the kerbal is exiting a CommandSeat will go through their Life Support resources and fill them up
+        /// from the vessel the CommandSeat is a part of. Will also leave behind waste resources.
+        /// </summary>
+        /// <param name="kerbal"></param>
+        /// <param name="entering"></param>
+        private void onPartUndock(Part part)
+        {
+            // Find partModule KerbalEVA on part. If not there we are not interested.
+            PartModule kerbalEvaModule = part.FindModuleImplementing<KerbalEVA>();
+            if (kerbalEvaModule == null)
+            {
+                return;
+            }
+            KerbalEVA kerbalEVA = kerbalEvaModule as KerbalEVA;
+
+            //Create oldVsl PartSet and newVsl PartSet to move resouces around.
+            HashSet<Part> oldParts = new HashSet<Part>();
+            for (int j = 0; j < part.vessel.Parts.Count; j++)
+            {
+                if (part.vessel.Parts[j] != part)
+                {
+                    oldParts.Add(part.vessel.Parts[j]);
+                }
+            }
+            PartSet oldVslPartSet = new PartSet(oldParts);
+            HashSet<Part> NewParts = new HashSet<Part>();
+            NewParts.Add(part);
+            PartSet newVslPartSet = new PartSet(NewParts);
+
+            //loop through kerbal part Resources to top them up.
+            for (int i = 0; i < kerbalEVA.part.Resources.Count; i++)
+            {
+                //Set the resourceID
+                int resourceID = 0;
+                if (kerbalEVA.part.Resources[i].resourceName == globalsettings.Food)
+                {
+                    resourceID = globalsettings.FoodId;
+                }
+                if (kerbalEVA.part.Resources[i].resourceName == globalsettings.Oxygen)
+                {
+                    resourceID = globalsettings.OxygenId;
+                }
+                if (kerbalEVA.part.Resources[i].resourceName == globalsettings.Water)
+                {
+                    resourceID = globalsettings.WaterId;
+                }
+                if (kerbalEVA.part.Resources[i].resourceName == globalsettings.Electricity)
+                {
+                    resourceID = globalsettings.ElectricityId;
+                }
+                if (kerbalEVA.part.Resources[i].resourceName == globalsettings.WasteWater)
+                {
+                    resourceID = globalsettings.WasteWaterId;
+                }
+                if (kerbalEVA.part.Resources[i].resourceName == globalsettings.Waste)
+                {
+                    resourceID = globalsettings.WasteId;
+                }
+                if (kerbalEVA.part.Resources[i].resourceName == globalsettings.CO2)
+                {
+                    resourceID = globalsettings.CO2Id;
+                }
+
+                if (resourceID == globalsettings.FoodId ||
+                    resourceID == globalsettings.WaterId ||
+                    resourceID == globalsettings.OxygenId ||
+                    resourceID == globalsettings.ElectricityId)
+                {
+                    //If it's a TAC LS resource and we have room. Top it up.
+                    double missingAmount = kerbalEVA.part.Resources[i].maxAmount - kerbalEVA.part.Resources[i].amount;
+                    if (missingAmount > 0)
+                    {
+                        
+                        //Get resource from oldVslPartSet
+                        double amtReceived = oldVslPartSet.RequestResource(part.vessel.rootPart, resourceID,  missingAmount, true);
+                        //Top up the newVslPartSet
+                        double amtPut = newVslPartSet.RequestResource(part, resourceID, -amtReceived, true);
+                    }
+                }
+
+                if (resourceID == globalsettings.CO2Id ||
+                    resourceID == globalsettings.WasteId ||
+                    resourceID == globalsettings.WasteWaterId)
+                {
+                    //If it's a TAC LS resource Leave it behind.
+                    if (kerbalEVA.part.Resources[i].amount > 0)
+                    {
+                        //Get resource from newVslPartSet
+                        double amtReceived = newVslPartSet.RequestResource(part, resourceID, kerbalEVA.part.Resources[i].amount, true);
+                        //Top up the oldVslPartSet
+                        double amtPut = oldVslPartSet.RequestResource(part.vessel.rootPart, resourceID, -amtReceived, true);
+                    }
+                }
+            }
         }
 
         /// <summary>
