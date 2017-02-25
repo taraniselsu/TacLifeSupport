@@ -54,6 +54,9 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="..\..\REPOSoftTechKSPUtils\AppLauncherToolBarExtension.cs">
+      <Link>AppLauncherToolBarExtension.cs</Link>
+    </Compile>
     <Compile Include="..\..\REPOSoftTechKSPUtils\RSTutilities.cs">
       <Link>RSTutilities.cs</Link>
     </Compile>
@@ -73,14 +76,12 @@
       <Link>Window.cs</Link>
     </Compile>
     <Compile Include="AddLifeSupport.cs" />
-    <Compile Include="AppLauncherToolBarExtension.cs" />
     <Compile Include="BuildAidWindow.cs" />
     <Compile Include="EditorFilter.cs" />
     <Compile Include="EngineersReportLifeSupportTests.cs" />
     <Compile Include="GameSettings.cs" />
     <Compile Include="EditorController.cs" />
     <Compile Include="InstallChecker.cs" />
-    <Compile Include="RectExtentions.cs" />
     <Compile Include="SettingsParams.cs" />
     <Compile Include="SpaceCenterManager.cs" />
     <Compile Include="TacLifeSupport.cs" />
@@ -107,7 +108,7 @@
   <PropertyGroup>
     <AssemblyMajorVersion>0</AssemblyMajorVersion>
     <AssemblyMinorVersion>12</AssemblyMinorVersion>
-    <AssemblyBuildNumber>8</AssemblyBuildNumber>
+    <AssemblyBuildNumber>9</AssemblyBuildNumber>
     <AssemblyFileMajorVersion>$(AssemblyMajorVersion)</AssemblyFileMajorVersion>
     <AssemblyFileMinorVersion>$(AssemblyMinorVersion)</AssemblyFileMinorVersion>
     <AssemblyFileBuildNumber>$(AssemblyBuildNumber)</AssemblyFileBuildNumber>

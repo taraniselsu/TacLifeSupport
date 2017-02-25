@@ -1,3 +1,9 @@
+v0.12.9
+	Fix Rescue kerbal checking where contract only contains kerbal's first name.
+	Fix when Rescue contracts cancelled. Untrack Kerbals on Rescue contracts if the contract is cancelled.
+	When a Kerbal that is in an External Command Seat leaves that seat TAC LS will now fill up their EVA life support resources from the vessel
+	the command seat is a part of and leave behind any waste resources in the vessel.	
+	Changed Converter parts to have a bonus base of 1 and specialist efficiency factor of 0.5. This should make the values more what they should be.
 v0.12.8
 	Round all part costs off & Fix syntax 2.75m Sabatier https://github.com/KSP-RO/TacLifeSupport/issues/62
 	Fix TACLS and CCK part category filters. There can be only one. https://github.com/KSP-RO/TacLifeSupport/issues/66
