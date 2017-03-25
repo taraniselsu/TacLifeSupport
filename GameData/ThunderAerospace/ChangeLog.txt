@@ -1,3 +1,7 @@
+v0.13.0
+    Fix Rescue kerbal for kerbals on the ground due to contracts system not being loaded in time.
+	Change Water purifier Water output rate to match water usage rates so as to avoid positive water scenario.
+	Fix issue with Low Electricity Warning at high warp rate.
 v0.12.9
 	Fix Rescue kerbal checking where contract only contains kerbal's first name.
 	Fix when Rescue contracts cancelled. Untrack Kerbals on Rescue contracts if the contract is cancelled.

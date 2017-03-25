@@ -27,6 +27,7 @@
  */
 
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using Contracts.Templates;
@@ -801,6 +802,7 @@ namespace Tac
                 {
                     double deltaTime = Math.Min(currentTime - vesselInfo.lastElectricity, Math.Max(globalsettings.ElectricityMaxDeltaTime, TimeWarp.fixedDeltaTime));
                     double desiredElectricity = rate * deltaTime;
+                    vesselInfo.estimatedElectricityConsumptionRate = desiredElectricity;
                     double electricityObtained, electricitySpace = 0;
                     RSTUtils.Utilities.requireResourceID(vessel, globalsettings.ElectricityId,
                         desiredElectricity, true, true, false, out electricityObtained, out electricitySpace);
@@ -1271,7 +1273,6 @@ namespace Tac
             if (scene == GameScenes.FLIGHT && !checkedDictionaries)
             {
                 checkDictionaries();
-                checkedDictionaries = true;
             }
         }
 
@@ -1279,7 +1280,7 @@ namespace Tac
         /// check the knownVessels and knownCrew dictionaries for entries that should be removed and remove them.
         /// Check all vessels in game that have crew and if we are not tracking them add them to vessel tracking.
         /// </summary>
-        private void checkDictionaries()
+        private IEnumerator checkDictionaries()
         {
             var vesselsToDelete = new List<Guid>();
             foreach (var vessel in gameSettings.knownVessels)
@@ -1355,8 +1356,16 @@ namespace Tac
                     VesselSortCountervslChgFlag = true;
                 }
             }
+            //If Contracts system is active. Wait for it to finish loading contracts first.
+            if (Contracts.ContractSystem.Instance != null)
+            {
+                if (!Contracts.ContractSystem.loaded)
+                {
+                    yield return null;
+                }
+            }
             //Check All Vessels, if they have crew and we are not tracking the vessel add it to tracking.
-            if (FlightGlobals.fetch)
+                if (FlightGlobals.fetch)
             {
                 var allVessels = FlightGlobals.Vessels;
                 for (int i = 0; i < allVessels.Count; ++i)
@@ -1367,6 +1376,7 @@ namespace Tac
                     }
                 }
             }
+            checkedDictionaries = true;
         }
 
         /// <summary>

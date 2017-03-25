@@ -107,8 +107,8 @@
   <Import Project="$(PROGRAMFILES)\MSBuild\ExtensionPack\4.0\MSBuild.ExtensionPack.tasks" Condition="Exists('$(PROGRAMFILES)\MSBuild\ExtensionPack\4.0\MSBuild.ExtensionPack.tasks')" />
   <PropertyGroup>
     <AssemblyMajorVersion>0</AssemblyMajorVersion>
-    <AssemblyMinorVersion>12</AssemblyMinorVersion>
-    <AssemblyBuildNumber>9</AssemblyBuildNumber>
+    <AssemblyMinorVersion>13</AssemblyMinorVersion>
+    <AssemblyBuildNumber>0</AssemblyBuildNumber>
     <AssemblyFileMajorVersion>$(AssemblyMajorVersion)</AssemblyFileMajorVersion>
     <AssemblyFileMinorVersion>$(AssemblyMinorVersion)</AssemblyFileMinorVersion>
     <AssemblyFileBuildNumber>$(AssemblyBuildNumber)</AssemblyFileBuildNumber>

@@ -1,0 +1,3 @@
+﻿You have installed the TAC Life Support, version 0.13.0.0 ('41d6a35'+'41d6a35' with modifications).
+
+See the Readme.txt and LICENSE.txt files for more information.
