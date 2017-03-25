@@ -247,7 +247,7 @@ namespace Tac
                     int crewCapacity = UpdateVesselInfo(entry.Value, loadedvessel);
                     if (crewCapacity == 0)
                     {
-                        checkDictionaries();
+                        StartCoroutine(checkDictionaries());
                         continue;
                     }
                     //If vessel is PRELAUNCH
@@ -1272,7 +1272,7 @@ namespace Tac
         {
             if (scene == GameScenes.FLIGHT && !checkedDictionaries)
             {
-                checkDictionaries();
+                StartCoroutine(checkDictionaries());
             }
         }
 
