@@ -214,7 +214,7 @@ namespace Tac
                     this.OnLoad(node);
                     break;
                 case GameParameters.Preset.Custom:
-                    TacStartOnce.Instance.LoadGlobalSettings();
+                    //TacStartOnce.Instance.LoadGlobalSettings();
                     this.OnLoad(node);
                     break;
             }
