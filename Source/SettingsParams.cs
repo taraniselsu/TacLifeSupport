@@ -41,6 +41,7 @@ namespace Tac
         public override GameParameters.GameMode GameMode { get { return GameParameters.GameMode.ANY; } }
         public override bool HasPresets { get { return false; } }
         public override string Section { get { return "TAC Life Support"; } }
+        public override string DisplaySection { get { return "TAC Life Support"; } }
         public override int SectionOrder { get { return 1; } }
 
         [GameParameters.CustomStringParameterUI("Test String UI", lines = 4, title = "", toolTip = "You cannot change TAC LS settings in Flight!")]
@@ -139,6 +140,10 @@ namespace Tac
         }
 
         public override string Section
+        {
+            get { return "TAC Life Support"; }
+        }
+        public override string DisplaySection
         {
             get { return "TAC Life Support"; }
         }
@@ -309,6 +314,7 @@ namespace Tac
         public override GameParameters.GameMode GameMode { get { return GameParameters.GameMode.ANY; } }
         public override bool HasPresets { get { return true; } }
         public override string Section { get { return "TAC Life Support"; } }
+        public override string DisplaySection { get { return "TAC Life Support"; } }
         public override int SectionOrder { get { return 3; } }
         private bool FirstRun = true;
         [GameParameters.CustomStringParameterUI("Test String UI", lines = 4, title = "", toolTip = "You have been warned!")]

@@ -55,7 +55,7 @@ namespace Tac
                     DialogGUIBase[] dialogGUIBase = new DialogGUIBase[1];
                     dialogGUIBase[0] = new DialogGUIButton("Ok", delegate { });
                     PopupDialog.SpawnPopupDialog(anchormin, anchormax,
-                        new MultiOptionDialog(msg, title, skin, dialogGUIBase), false, HighLogic.UISkin, true,
+                        new MultiOptionDialog("TACReminder", msg, title, skin, dialogGUIBase), false, HighLogic.UISkin, true,
                         string.Empty);
                     TacLifeSupport.Instance.gameSettings.IsNewSave = false;
                 }
