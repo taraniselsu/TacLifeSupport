@@ -1,0 +1,16 @@
+This code is covered by a restricted rights license.
+
+Copyright © Jamie Leighton, 2017 All Rights Reserved
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files 
+(the "Software"), to use the software as is.
+You are not allowed to deal in the Software to modify, merge, publish, distribute (unless the copyright holder has placed the software in a location themselves for distribution), 
+sublicense, and/or sell copies of the Software.
+You are not allowed to fork, copy or modify the source code.
+
+The above copyright notice and this permission notice shall be included with all copies of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, 
+INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. 
+IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, 
+OR OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.

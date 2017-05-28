@@ -27,24 +27,26 @@
 
 namespace Tac
 {
+
     public class VesselInfo
     {
         public const string ConfigNodeName = "VesselInfo";
 
-        public string vesselName;
-        public VesselType vesselType = VesselType.Unknown;
-        public Vessel.Situations vesselSituation = Vessel.Situations.PRELAUNCH;
-        public bool vesselIsPreLaunch = true;
-        public int numCrew;
-        public int numOccupiedParts;
-        public int numFrozenCrew;
+        public string vesselName;  //The Vessel Name
+        public VesselType vesselType = VesselType.Unknown;  //The Vessel Type
+        public Vessel.Situations vesselSituation = Vessel.Situations.PRELAUNCH; //The Vessel Situation
+        public bool vesselIsPreLaunch = true;  //True if vessel is PreLaunch
+        public int numCrew;  //The number of crew on board
+        public int numOccupiedParts; //The number of occupied parts
+        public int numFrozenCrew; //The number of frozen crew on board (DeepFreeze compatibility)
 
-        public double lastUpdate;
-        public double lastFood;
-        public double lastWater;
-        public double lastOxygen;
-        public double lastElectricity;
+        public double lastUpdate;  //The last time the vesselinfo was updated
+        public double lastFood;    //The last time food was consumed
+        public double lastWater;   //The last time water was consumed
+        public double lastOxygen;  //The last time oxygen was consumed
+        public double lastElectricity; //The last time electricity was consumed
 
+        public Status overallStatus = Status.GOOD;
         public Status foodStatus = Status.GOOD;
         public Status waterStatus = Status.GOOD;
         public Status oxygenStatus = Status.GOOD;
@@ -70,7 +72,8 @@ namespace Tac
 
         public double estimatedElectricityConsumptionRate;
         public bool hibernating;
-        public bool recoveryvessel;
+        public bool recoveryvessel;  //True if Vessel is a Recover Kerbal/Part Contract Vessel.
+        public bool windowOpen; //True if we are out of EC, but in atmosphere so have the windows open.
 
         public VesselInfo(string vesselName, Vessel.Situations situation, VesselType vesseltype, double currentTime)
         {
@@ -86,6 +89,7 @@ namespace Tac
             vesselIsPreLaunch = situation == Vessel.Situations.PRELAUNCH;
             vesselType = vesseltype;
             recoveryvessel = false;
+            windowOpen = false;
         }
 
         public static VesselInfo Load(ConfigNode node)
@@ -133,6 +137,7 @@ namespace Tac
 
             info.hibernating = Utilities.GetValue(node, "hibernating", false);
             info.recoveryvessel = Utilities.GetValue(node, "recoveryvessel", false);
+            info.windowOpen = Utilities.GetValue(node, "windowOpen", false);           
 
             return info;
         }
@@ -171,10 +176,15 @@ namespace Tac
 
             node.AddValue("hibernating", hibernating);
             node.AddValue("recoveryvessel", recoveryvessel);
+            node.AddValue("windowOpen", windowOpen);
 
             return node;
         }
 
+        /// <summary>
+        /// Clears the Amounts in VesselInfo as they are about to be recalculated
+        /// Includes the number of crew, remaining counters, max counters
+        /// </summary>
         public void ClearAmounts()
         {
             numCrew = 0;
@@ -192,11 +202,11 @@ namespace Tac
             maxElectricity = 0.0;
         }
 
-        public enum Status
+        public enum Status 
         {
-            GOOD,
-            LOW,
-            CRITICAL
+            GOOD = 1,
+            LOW = 2,
+            CRITICAL = 3
         }
     }
 }

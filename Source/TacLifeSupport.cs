@@ -79,24 +79,27 @@ namespace Tac
         public void ApplySettings()
         {
             // If TAC LS is enabled re-apply TACLS custom Part filter and if it is not, turn off the TACLS custom Part filter.
-            if (HighLogic.CurrentGame.Parameters.CustomParams<TAC_SettingsParms>().enabled)
+            if (HighLogic.CurrentGame != null & HighLogic.CurrentGame.Parameters.CustomParams<TAC_SettingsParms>() != null)
             {
-                if (TacLifeSupport.Instance != null)
+                if (HighLogic.CurrentGame.Parameters.CustomParams<TAC_SettingsParms>().enabled)
                 {
-                    if (TacLifeSupport.Instance.gameSettings == null)
+                    if (TacLifeSupport.Instance != null)
                     {
-                        TacLifeSupport.Instance.gameSettings = new TacGameSettings();
+                        if (TacLifeSupport.Instance.gameSettings == null)
+                        {
+                            TacLifeSupport.Instance.gameSettings = new TacGameSettings();
+                        }
+                    }
+                    if (HighLogic.LoadedScene == GameScenes.SPACECENTER)
+                    {
+                        TACEditorFilter.Instance.Setup();
                     }
                 }
-                if (HighLogic.LoadedScene == GameScenes.SPACECENTER)
+                else
                 {
+                    HighLogic.CurrentGame.Parameters.CustomParams<TAC_SettingsParms>().EditorFilter = false;
                     TACEditorFilter.Instance.Setup();
                 }
-            }
-            else
-            {
-                HighLogic.CurrentGame.Parameters.CustomParams<TAC_SettingsParms>().EditorFilter = false;
-                TACEditorFilter.Instance.Setup();
             }
         }
 
@@ -127,7 +130,9 @@ namespace Tac
             get
             {
                 if (HighLogic.CurrentGame != null)
-                return HighLogic.CurrentGame.Parameters.CustomParams<TAC_SettingsParms>().enabled;
+                {
+                    return HighLogic.CurrentGame.Parameters.CustomParams<TAC_SettingsParms>().enabled;
+                }
                 return true;
             }
         }

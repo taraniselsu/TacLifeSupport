@@ -3,24 +3,39 @@ using PreFlightTests;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using KSP.Localization;
 
 namespace Tac
 {
     public class CheckSupplies : DesignConcernBase
     {
+        #region Cache Strings
+
+        private static string cacheautoLOC_TACLS_00255;
+        private static string cacheautoLOC_TACLS_00256;
+
+        private static void CacheLocalStrings()
+        {
+            cacheautoLOC_TACLS_00255 = Localizer.Format("#autoLOC_TACLS_00255");
+            cacheautoLOC_TACLS_00256 = Localizer.Format("#autoLOC_TACLS_00256");
+        }
+
+        #endregion
+
         public CheckSupplies()
         {
             this.Log("constructor");
+            CacheLocalStrings();
         }
 
         public override string GetConcernDescription()
         {
-            return "Did you remember to check your life support supplies to ensure that you have enough?";
+            return cacheautoLOC_TACLS_00256;
         }
 
         public override string GetConcernTitle()
         {
-            return "Check Life Support.";
+            return cacheautoLOC_TACLS_00255;
         }
 
         public override bool TestCondition()

@@ -28,6 +28,8 @@
 
 using RSTUtils;
 using UnityEngine;
+using KSP.Localization;
+using System.Collections.Generic;
 
 namespace Tac
 {
@@ -42,13 +44,38 @@ namespace Tac
         private GUIStyle frozenStyle;
         private GUIStyle headerStyle;
         private Vector2 scrollPosition;
+        #region Localization Tag cache
 
+        private static string cacheautoLOC_TACLS_00027;
+        private static string cacheautoLOC_TACLS_00028;
+        private static string cacheautoLOC_TACLS_00029;
+        private static string cacheautoLOC_TACLS_00030;
+        private static string cacheautoLOC_TACLS_00031;
+        private static string cacheautoLOC_TACLS_00032;
+        private static string cacheautoLOC_TACLS_00033;
+        private static string cacheautoLOC_TACLS_00034;
+        private static string cacheautoLOC_TACLS_00035;
+        
+        private void cacheLocalStrings()
+        {
+            cacheautoLOC_TACLS_00027 = Localizer.Format("#autoLOC_TACLS_00027"); // cacheautoLOC_TACLS_00027 = \u0020\u0020Prelaunch - Frozen
+            cacheautoLOC_TACLS_00028 = Localizer.Format("#autoLOC_TACLS_00028"); // cacheautoLOC_TACLS_00028 = \u0020\u0020Frozen
+            cacheautoLOC_TACLS_00029 = Localizer.Format("#autoLOC_TACLS_00029"); // cacheautoLOC_TACLS_00029 = \u0020\u0020Prelaunch
+            cacheautoLOC_TACLS_00030 = Localizer.Format("#autoLOC_TACLS_00030"); // cacheautoLOC_TACLS_00030 = \u0020\u0020Rescue Me!
+            cacheautoLOC_TACLS_00031 = Localizer.Format("#autoLOC_TACLS_00031"); // cacheautoLOC_TACLS_00031 = \u0020\u0020Last updated:\u0020
+            cacheautoLOC_TACLS_00032 = Localizer.Format("#autoLOC_TACLS_00032"); // cacheautoLOC_TACLS_00032 = \u0020\u0020Last food:\u0020
+            cacheautoLOC_TACLS_00033 = Localizer.Format("#autoLOC_TACLS_00033"); // cacheautoLOC_TACLS_00033 = \u0020\u0020Last water:\u0020
+            cacheautoLOC_TACLS_00034 = Localizer.Format("#autoLOC_TACLS_00034"); // cacheautoLOC_TACLS_00034 = \u0020\u0020Hibernating:\u0020
+            cacheautoLOC_TACLS_00035 = Localizer.Format("#autoLOC_TACLS_00035"); // cacheautoLOC_TACLS_00035 = No Crew.
+        }
+
+        #endregion
         public RosterWindow(AppLauncherToolBar TACMenuAppLToolBar, GlobalSettings globalSettings, TacGameSettings gameSettings)
-            : base(TACMenuAppLToolBar, "Life Support Crew Roster", 320, 200)
+            : base(TACMenuAppLToolBar, Localizer.Format("#autoLOC_TACLS_00026"), 320, 200) // #autoLOC_TACLS_00026 = Life Support Crew Roster
         {
             this.globalSettings = globalSettings;
             this.gameSettings = gameSettings;
-
+            cacheLocalStrings();
             SetVisible(true);
         }
 
@@ -88,42 +115,44 @@ namespace Tac
             GUILayout.Space(4);
 
             double currentTime = Planetarium.GetUniversalTime();
-            
-            foreach (CrewMemberInfo crewInfo in gameSettings.knownCrew.Values)
+
+            Dictionary<string, CrewMemberInfo>.Enumerator crewenumerator = gameSettings.knownCrew.GetDictEnumerator();
+            while (crewenumerator.MoveNext())
             {
+                CrewMemberInfo crewInfo = crewenumerator.Current.Value;
                 GUILayout.Label(crewInfo.name + " (" + crewInfo.vesselName + ")", headerStyle);
                 if (crewInfo.DFfrozen)
                 {
                     if (crewInfo.vesselIsPreLaunch)
                     {
-                        GUILayout.Label("  Prelaunch - Frozen", frozenStyle);
+                        GUILayout.Label(cacheautoLOC_TACLS_00027, frozenStyle); // cacheautoLOC_TACLS_00027 = \u0020\u0020Prelaunch - Frozen
                     }
                     else
                     {
-                        GUILayout.Label("  Frozen", frozenStyle);
+                        GUILayout.Label(cacheautoLOC_TACLS_00028, frozenStyle); // cacheautoLOC_TACLS_00028 = \u0020\u0020Frozen
                     }
                 }
                 else if (crewInfo.vesselIsPreLaunch)
                 {
-                    GUILayout.Label("  Prelaunch", labelStyle);
+                    GUILayout.Label(cacheautoLOC_TACLS_00029, labelStyle); // cacheautoLOC_TACLS_00029 = \u0020\u0020Prelaunch
                 }
                 else if (crewInfo.recoverykerbal)
                 {
-                    GUILayout.Label("  Rescue Me!", labelStyle);
+                    GUILayout.Label(cacheautoLOC_TACLS_00030, labelStyle); // cacheautoLOC_TACLS_00030 = \u0020\u0020Rescue Me!
                 }
                 else
                 {
                     GUILayout.BeginHorizontal();
-                    GUILayout.Label("  Last updated: ", labelStyle, GUILayout.Width(100));
+                    GUILayout.Label(cacheautoLOC_TACLS_00031, labelStyle, GUILayout.Width(100)); // cacheautoLOC_TACLS_00031 = \u0020\u0020Last updated:\u0020
                     GUILayout.Label(Utilities.FormatTime(currentTime - crewInfo.lastUpdate), labelStyle);
                     GUILayout.EndHorizontal();
                     GUILayout.BeginHorizontal();
-                    GUILayout.Label("  Last food: ", labelStyle, GUILayout.Width(100));
+                    GUILayout.Label(cacheautoLOC_TACLS_00032, labelStyle, GUILayout.Width(100)); // cacheautoLOC_TACLS_00032 = \u0020\u0020Last food:\u0020
                     GUILayout.Label(Utilities.FormatTime(currentTime - crewInfo.lastFood),
                         getStyle(crewInfo.lastUpdate, crewInfo.lastFood, globalSettings.MaxTimeWithoutFood));
                     GUILayout.EndHorizontal();
                     GUILayout.BeginHorizontal();
-                    GUILayout.Label("  Last water: ", labelStyle, GUILayout.Width(100));
+                    GUILayout.Label(cacheautoLOC_TACLS_00033, labelStyle, GUILayout.Width(100)); // cacheautoLOC_TACLS_00033 = \u0020\u0020Last water:\u0020
                     GUILayout.Label(Utilities.FormatTime(currentTime - crewInfo.lastWater),
                         getStyle(crewInfo.lastUpdate, crewInfo.lastWater, globalSettings.MaxTimeWithoutWater));
                     GUILayout.EndHorizontal();
@@ -131,7 +160,7 @@ namespace Tac
                         crewInfo.hibernating)
                     {
                         GUILayout.BeginHorizontal();
-                        GUILayout.Label("  Hibernating: ", labelStyle, GUILayout.Width(100));
+                        GUILayout.Label(cacheautoLOC_TACLS_00034, labelStyle, GUILayout.Width(100));  // cacheautoLOC_TACLS_00034 = \u0020\u0020Hibernating:\u0020
                         GUILayout.Label(crewInfo.hibernating.ToString(), labelStyle);
                         GUILayout.EndHorizontal();
                     }
@@ -140,7 +169,7 @@ namespace Tac
             }
             if (gameSettings.knownCrew.Count == 0)
             {
-                GUILayout.Label("No Crew.", headerStyle);
+                GUILayout.Label(cacheautoLOC_TACLS_00035, headerStyle); // cacheautoLOC_TACLS_00035 = No Crew.
             }
 
             GUILayout.EndVertical();

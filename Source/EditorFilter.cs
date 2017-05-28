@@ -14,6 +14,7 @@ using System.Collections.Generic;
 using KSP.UI.Screens;
 using RUI.Icons.Selectable;
 using UnityEngine;
+using KSP.Localization;
 
 namespace Tac
 {
@@ -23,9 +24,8 @@ namespace Tac
         // This class ass a Filter Icon to the Editor to show TACLS Parts
         private static List<AvailablePart> TacavPartItems = new List<AvailablePart>();
         public static TACEditorFilter Instance;
-        internal string category = "Filter by Function";
-        internal string subCategoryTitle = "TAC LS Items";
-        internal string defaultTitle = "Tac";
+        internal string category = "Filter by function";
+        internal string subCategoryName = "TAC LS Items";        
         internal bool filter = true;
         
         public void Awake()
@@ -42,8 +42,19 @@ namespace Tac
         {
             this.Log("TACLS EditorFilter Setup");
             RemoveSubFilter();
+            if (HighLogic.CurrentGame != null & HighLogic.CurrentGame.Parameters.CustomParams<TAC_SettingsParms>() != null)
+            {
+                if (HighLogic.CurrentGame.Parameters.CustomParams<TAC_SettingsParms>().enabled == false)
+                {
+                    TacMMCallBack();
+                    RemovePartUtilitiesCat();
+                    return;
+                }
+            }
+
             if (RSTUtils.Utilities.IsModInstalled("CCK")) //If CCK is installed we don't use this category
             {
+                TacMMCallBack();
                 RemovePartUtilitiesCat();
                 return;
             }
@@ -106,7 +117,7 @@ namespace Tac
                 PartCategorizer.Category Filter = PartCategorizer.Instance.filters.Find(f => f.button.categoryName == category);
                 if (Filter != null)
                 {
-                    PartCategorizer.Category subFilter = Filter.subcategories.Find(f => f.button.categoryName == subCategoryTitle);
+                    PartCategorizer.Category subFilter = Filter.subcategories.Find(f => f.button.categoryName == subCategoryName);
                     if (subFilter != null)
                     {
                         subFilter.DeleteSubcategory();
@@ -145,7 +156,7 @@ namespace Tac
             RemoveSubFilter();
             Icon filterTacLS = new Icon("TACLSEditor", Textures.EditorCatIcon, Textures.EditorCatIcon, true);
             PartCategorizer.Category Filter = PartCategorizer.Instance.filters.Find(f => f.button.categoryName == category);
-            PartCategorizer.AddCustomSubcategoryFilter(Filter, subCategoryTitle, filterTacLS, p => EditorItemsFilter(p));
+            PartCategorizer.AddCustomSubcategoryFilter(Filter, subCategoryName, Localizer.Format("#autoLOC_TACLS_00252"), filterTacLS, p => EditorItemsFilter(p));
             //GameEvents.onGUIEditorToolbarReady.Remove(SubCategories);
         }
     }
