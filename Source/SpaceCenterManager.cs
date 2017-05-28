@@ -27,6 +27,7 @@
  */
 
 using UnityEngine;
+using KSP.Localization;
 
 namespace Tac
 {
@@ -42,24 +43,24 @@ namespace Tac
             this.Log("Start, new game = " + TacLifeSupport.Instance.gameSettings.IsNewSave);
             if (HighLogic.CurrentGame.Parameters.CustomParams<TAC_SettingsParms>().enabled)
             {
-                if (TacLifeSupport.Instance.gameSettings.IsNewSave)
+                //Disabled this Pop-Up - Think most players known by now.
+                /*if (TacLifeSupport.Instance.gameSettings.IsNewSave)
                 {
                     this.Log("New save detected!");
                     //TACMenuAppLToolBar.onAppLaunchToggle();
                     Vector2 anchormin = new Vector2(0.5f, 0.5f);
                     Vector2 anchormax = new Vector2(0.5f, 0.5f);
-                    string msg =
-                        "TAC LS Config Settings are now available via the KSP Settings - Difficulty Options Window.";
-                    string title = "TAC Life Support";
+                    string msg = Localizer.Format("#autoLOC_TACLS_00036"); //#autoLOC_TACLS_00036 = TAC LS Config Settings are now available via the KSP Settings - Difficulty Options Window.                          
+                    string title = Localizer.Format("#autoLOC_TACLS_00037");  //#autoLOC_TACLS_00037 = TAC Life Support
                     UISkinDef skin = HighLogic.UISkin;
                     DialogGUIBase[] dialogGUIBase = new DialogGUIBase[1];
-                    dialogGUIBase[0] = new DialogGUIButton("Ok", delegate { });
+                    dialogGUIBase[0] = new DialogGUIButton(Localizer.Format("#autoLOC_417274"), delegate { });  // #autoLOC_417274 = Ok
                     PopupDialog.SpawnPopupDialog(anchormin, anchormax,
-                        new MultiOptionDialog(msg, title, skin, dialogGUIBase), false, HighLogic.UISkin, true,
+                        new MultiOptionDialog("TACReminder", msg, title, skin, dialogGUIBase), false, HighLogic.UISkin, true,
                         string.Empty);
-                    TacLifeSupport.Instance.gameSettings.IsNewSave = false;
-                }
-
+                    //TacLifeSupport.Instance.gameSettings.IsNewSave = false;
+                }*/
+                TacLifeSupport.Instance.gameSettings.IsNewSave = false;
                 AddLifeSupport als = new AddLifeSupport();
                 als.run();
             }

@@ -30,6 +30,7 @@ using System.Collections.Generic;
 using KSP.UI;
 using RSTUtils;
 using UnityEngine;
+using KSP.Localization;
 
 namespace Tac
 {
@@ -67,10 +68,42 @@ namespace Tac
         private string wasteWaterRoomMaxCrew = "";
         private string carbonDioxideRoomMaxCrew = "";
 
+        #region Localization Tag cache
+                
+        private static string cacheautoLOC_TACLS_00014;
+        private static string cacheautoLOC_TACLS_00015;
+        private static string cacheautoLOC_TACLS_00016;
+        private static string cacheautoLOC_TACLS_00017;
+        private static string cacheautoLOC_TACLS_00018;
+        private static string cacheautoLOC_TACLS_00019;
+        private static string cacheautoLOC_TACLS_00020;
+        private static string cacheautoLOC_TACLS_00021;
+        private static string cacheautoLOC_TACLS_00022;
+        private static string cacheautoLOC_TACLS_00023;
+        private static string cacheautoLOC_TACLS_00024;
+        private static string cacheautoLOC_TACLS_00025;
+        private void cacheLocalStrings()
+        {
+            cacheautoLOC_TACLS_00014 = Localizer.Format("#autoLOC_TACLS_00014"); // cacheautoLOC_TACLS_00014 = Current crew
+            cacheautoLOC_TACLS_00015 = Localizer.Format("#autoLOC_TACLS_00015"); // cacheautoLOC_TACLS_00015 = Maximum crew
+            cacheautoLOC_TACLS_00016 = Localizer.Format("#autoLOC_TACLS_00016"); // cacheautoLOC_TACLS_00016 = Food
+            cacheautoLOC_TACLS_00017 = Localizer.Format("#autoLOC_TACLS_00017"); // cacheautoLOC_TACLS_00017 = Water
+            cacheautoLOC_TACLS_00018 = Localizer.Format("#autoLOC_TACLS_00018"); // cacheautoLOC_TACLS_00018 = Oxygen
+            cacheautoLOC_TACLS_00019 = Localizer.Format("#autoLOC_TACLS_00019"); // cacheautoLOC_TACLS_00019 = Electricity
+            cacheautoLOC_TACLS_00020 = Localizer.Format("#autoLOC_TACLS_00020"); // cacheautoLOC_TACLS_00020 = Waste
+            cacheautoLOC_TACLS_00021 = Localizer.Format("#autoLOC_TACLS_00021"); // cacheautoLOC_TACLS_00021 = Waste Water
+            cacheautoLOC_TACLS_00022 = Localizer.Format("#autoLOC_TACLS_00022"); // cacheautoLOC_TACLS_00022 = Carbon Dioxide
+            cacheautoLOC_TACLS_00023 = Localizer.Format("#autoLOC_TACLS_00023"); // cacheautoLOC_TACLS_00023 = Amount
+            cacheautoLOC_TACLS_00024 = Localizer.Format("#autoLOC_TACLS_00024"); // cacheautoLOC_TACLS_00024 = With Current Crew
+            cacheautoLOC_TACLS_00025 = Localizer.Format("#autoLOC_TACLS_00025"); // cacheautoLOC_TACLS_00025 = With Max Crew
+        }
+
+        #endregion
         public BuildAidWindow(AppLauncherToolBar TACMenuAppLToolBar, GlobalSettings globalSettings)
-            : base(TACMenuAppLToolBar, "Life Support Build Aid", 300, 180)
+            : base(TACMenuAppLToolBar, Localizer.Format("#autoLOC_TACLS_00013"), 300, 180) //#autoLOC_TACLS_00013 = Life Support Build Aid
         {
             this.globalSettings = globalSettings;
+            cacheLocalStrings();
         }
 
         protected override void ConfigureStyles()
@@ -108,8 +141,8 @@ namespace Tac
             GUILayout.BeginHorizontal();
 
             GUILayout.BeginVertical();
-            GUILayout.Label("Current crew", labelStyle);
-            GUILayout.Label("Maximum crew", labelStyle);
+            GUILayout.Label(cacheautoLOC_TACLS_00014, labelStyle); // cacheautoLOC_TACLS_00014 = Current Crew
+            GUILayout.Label(cacheautoLOC_TACLS_00015, labelStyle); // cacheautoLOC_TACLS_00015 = Maximum Crew
             GUILayout.EndVertical();
 
             GUILayout.BeginVertical();
@@ -125,18 +158,18 @@ namespace Tac
 
             GUILayout.BeginVertical();
             GUILayout.Label("  ", labelStyle);
-            GUILayout.Label("Food", labelStyle);
-            GUILayout.Label("Water", labelStyle);
-            GUILayout.Label("Oxygen", labelStyle);
-            GUILayout.Label("Electricity", labelStyle);
+            GUILayout.Label(cacheautoLOC_TACLS_00016, labelStyle); // cacheautoLOC_TACLS_00016 = Food
+            GUILayout.Label(cacheautoLOC_TACLS_00017, labelStyle); // cacheautoLOC_TACLS_00017 = Water
+            GUILayout.Label(cacheautoLOC_TACLS_00018, labelStyle); // cacheautoLOC_TACLS_00018 = Oxygen
+            GUILayout.Label(cacheautoLOC_TACLS_00019, labelStyle); // cacheautoLOC_TACLS_00019 = Electricity
             GUILayout.Space(10f);
-            GUILayout.Label("Waste", labelStyle);
-            GUILayout.Label("Waste Water", labelStyle);
-            GUILayout.Label("Carbon Dioxide", labelStyle);
+            GUILayout.Label(cacheautoLOC_TACLS_00020, labelStyle); // cacheautoLOC_TACLS_00020 = Waste
+            GUILayout.Label(cacheautoLOC_TACLS_00021, labelStyle); // cacheautoLOC_TACLS_00021 = Waste Water
+            GUILayout.Label(cacheautoLOC_TACLS_00022, labelStyle); // cacheautoLOC_TACLS_00022 = Carbon Dioxide
             GUILayout.EndVertical();
 
             GUILayout.BeginVertical();
-            GUILayout.Label("Amount", valueStyle);
+            GUILayout.Label(cacheautoLOC_TACLS_00023, valueStyle); // cacheautoLOC_TACLS_00023 = Amount
             GUILayout.Label(food, valueStyle);
             GUILayout.Label(water, valueStyle);
             GUILayout.Label(oxygen, valueStyle);
@@ -148,7 +181,7 @@ namespace Tac
             GUILayout.EndVertical();
 
             GUILayout.BeginVertical();
-            GUILayout.Label("With Current Crew", valueStyle);
+            GUILayout.Label(cacheautoLOC_TACLS_00024, valueStyle); // cacheautoLOC_TACLS_00024 = With Current Crew
             GUILayout.Label(foodDuration, valueStyle);
             GUILayout.Label(waterDuration, valueStyle);
             GUILayout.Label(oxygenDuration, valueStyle);
@@ -160,7 +193,7 @@ namespace Tac
             GUILayout.EndVertical();
 
             GUILayout.BeginVertical();
-            GUILayout.Label("With Max Crew", valueStyle);
+            GUILayout.Label(cacheautoLOC_TACLS_00025, valueStyle); // cacheautoLOC_TACLS_00025 = With Max Crew
             GUILayout.Label(foodDurationMaxCrew, valueStyle);
             GUILayout.Label(waterDurationMaxCrew, valueStyle);
             GUILayout.Label(oxygenDurationMaxCrew, valueStyle);
@@ -193,9 +226,7 @@ namespace Tac
                 double carbonDioxideValue = 0;
 
                 for (int i = 0; i < EditorLogic.fetch.ship.parts.Count; i++)
-                { 
-                //foreach (Part part in EditorLogic.fetch.ship.parts)
-                //{
+                {                 
                     if (EditorLogic.fetch.ship.parts[i].CrewCapacity > 0)
                     {
                         ++numOccupiableParts;

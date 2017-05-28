@@ -1,3 +1,17 @@
+v0.13.1
+	Update for KSP 1.3.
+	Localization support added. All languages in English for now. Other Language contributions welcome! :)
+	Unloaded Vessel Resource processing. TAC LS now processes Life Support resources for unloaded vessels.
+	Fix Issue with Electric Charge not being calculated and reported correctly.
+	Now checks if vessel is on or above a body that has an atmosphere that contains oxygen and allows the windows to be opened, or vents opened (if enough EC) to use the air from the atmosphere instead of on-board Oxygen.
+	Fix Issue with Electric Charge - Opening the Windows in Atmosphere option and show this in the UI.
+	Include Electricity readout for PreLaunch vessels (as they still consume EC for non TAC-LS reasons.
+	Fix App Launcher Icon colour showing correct overall status of vessels.
+	More performance tweaks and improvements under the hood.
+	Removed pop-up at KSC for new games advising where Settings are. (People should know where they are by now).
+	Fix Settings being reset when clicking Custom difficulty option.
+	Fix Life Support Parts showing in Utilities category when Community Category Kit is installed.
+	Update to latest Community Category Kit and Community Resource Kit.	
 v0.13.0
     Fix Rescue kerbal for kerbals on the ground due to contracts system not being loaded in time.
 	Change Water purifier Water output rate to match water usage rates so as to avoid positive water scenario.

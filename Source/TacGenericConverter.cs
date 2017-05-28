@@ -28,6 +28,7 @@
 
 using System;
 using System.Text;
+using KSP.Localization;
 
 namespace Tac
 {
@@ -44,7 +45,35 @@ namespace Tac
         [KSPField] public bool requiresOxygenAtmo = false;
 
         [KSPField] public float conversionRate = 1f;
+
+        #region Localization Tag cache
+
+        private static string cacheautoLOC_TACLS_00234;
+        private static string cacheautoLOC_TACLS_00235;
+        private static string cacheautoLOC_TACLS_00236;
         
+        private static void cacheLocalStrings()
+        {
+            cacheautoLOC_TACLS_00234 = Localizer.Format("#autoLOC_TACLS_00234"); //#autoLOC_TACLS_00234 = Atmo lacks oxygen.
+            cacheautoLOC_TACLS_00235 = Localizer.Format("#autoLOC_TACLS_00235"); //#autoLOC_TACLS_00235 = \nRequires an atmosphere containing Oxygen.
+            cacheautoLOC_TACLS_00236 = Localizer.Format("#autoLOC_TACLS_00236"); //#autoLOC_TACLS_00236 = \nCannot be turned off.
+        }
+
+        #endregion
+
+        public override void OnAwake()
+        {
+            this.Log("OnAwake");
+            base.OnAwake();
+            cacheLocalStrings();
+        }
+
+        public override void OnStart(PartModule.StartState state)
+        {
+            this.Log("OnStart: " + state);
+            base.OnStart(state);
+        }
+
         protected override void PreProcessing()
         {
             if (HighLogic.LoadedScene == GameScenes.FLIGHT)
@@ -54,7 +83,7 @@ namespace Tac
 
                     IsActivated = false;
                     converterEnabled = false;
-                    status = "Atmo lacks oxygen.";
+                    status = cacheautoLOC_TACLS_00234;
                 }
             }
         }
@@ -123,16 +152,20 @@ namespace Tac
 
         public override string GetInfo()
         {
+            if (string.IsNullOrEmpty(cacheautoLOC_TACLS_00235))
+            {
+                cacheLocalStrings();
+            }
             StringBuilder sb = new StringBuilder();
             sb.Append(base.GetInfo());
             sb.Append("\n");
             if (requiresOxygenAtmo)
             {
-                sb.Append("\nRequires an atmosphere containing Oxygen.");
+                sb.Append(cacheautoLOC_TACLS_00235);
             }
             if (alwaysActive)
             {
-                sb.Append("\nCannot be turned off.");
+                sb.Append(cacheautoLOC_TACLS_00236);
             }
 
             return sb.ToString();
