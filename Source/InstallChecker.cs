@@ -13,19 +13,21 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using UnityEngine;
+using KSP.Localization;
 
 namespace Tac
 {
     [KSPAddon(KSPAddon.Startup.Instantly, true)]
     internal class InstallChecker : MonoBehaviour
     {
-        private const string modName = "TAC Life Support";
+        private string modName;
         private const string expectedPath = "ThunderAerospace/TacLifeSupport/Plugins";
 
         protected void Start()
         {
             try
             {
+                modName = Localizer.Format("#autoLOC_TACLS_00037");
                 // Log some information that might be of interest when debugging
                 this.Log(modName + " - KSPUtil.ApplicationRootPath = " + KSPUtil.ApplicationRootPath);
                 this.Log(modName + " - GameDatabase.Instance.PluginDataFolder = " + GameDatabase.Instance.PluginDataFolder);
@@ -39,18 +41,18 @@ namespace Tac
                     var badPaths = assemblies.Select(a => a.path).Select(p => Uri.UnescapeDataString(new Uri(Path.GetFullPath(KSPUtil.ApplicationRootPath)).MakeRelativeUri(new Uri(p)).ToString().Replace('/', Path.DirectorySeparatorChar)));
                     string badPathsString = String.Join("\n", badPaths.ToArray());
                     this.Log(modName + " - Incorrectly installed, bad paths:\n" + badPathsString);
-                    PopupDialog.SpawnPopupDialog(new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), "Incorrect " + modName + " Installation", "Incorrect " + modName + " Installation",
-                        modName + " has been installed incorrectly and will not function properly. All files should be located in KSP/GameData/" + expectedPath + ". Do not move any files from inside that folder.\n\nIncorrect path(s):\n" + badPathsString,
-                        "OK", false, HighLogic.UISkin);
+                    PopupDialog.SpawnPopupDialog(new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), "Incorrect " + modName + " Installation", Localizer.Format("#autoLOC_TACLS_00046", modName),
+                        Localizer.Format("#autoLOC_TACLS_00047", modName, expectedPath, badPathsString),
+                        Localizer.Format("#autoLOC_417274"), false, HighLogic.UISkin);
                 }
 
                 // Check for Module Manager
                 if (!AssemblyLoader.loadedAssemblies.Any(a => a.assembly.GetName().Name.StartsWith("ModuleManager") && a.url == ""))
                 {
                     this.Log(modName + " - Missing or incorrectly installed ModuleManager.");
-                    PopupDialog.SpawnPopupDialog(new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), "Missing Module Manager", "Missing Module Manager",
-                        modName + " requires the Module Manager mod in order to function properly.\n\nPlease download from http://forum.kerbalspaceprogram.com/index.php?/topic/50533-12 and copy to the KSP/GameData/ directory.",
-                        "OK", false, HighLogic.UISkin);
+                    PopupDialog.SpawnPopupDialog(new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), "Missing Module Manager", Localizer.Format("#autoLOC_TACLS_00048"),
+                        Localizer.Format("#autoLOC_TACLS_00049", modName),
+                        Localizer.Format("#autoLOC_417274"), false, HighLogic.UISkin);
                 }
 
                 // Is AddonController installed? (It could potentially cause problems.)
@@ -70,13 +72,9 @@ namespace Tac
             catch (Exception ex)
             {
                 this.LogError(modName + " - Caught an exception:\n" + ex.Message + "\n" + ex.StackTrace);
-                PopupDialog.SpawnPopupDialog(new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), "Incorrect " + modName + " Installation", "Incorrect " + modName + " Installation",
-                    "A very serious error has occurred while checking the installation of " + modName + ".\n\n" +
-                    "You need to\n" +
-                    "  (1) shut down KSP,\n" +
-                    "  (2) send a complete copy of the entire log file to the mod developer (see https://github.com/KSP-RO/TacLifeSupport/wiki/Help\n" +
-                    "  (3) completely delete and re-install " + modName,
-                    "OK", false, HighLogic.UISkin);
+                PopupDialog.SpawnPopupDialog(new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), "Incorrect " + modName + " Installation", Localizer.Format("#autoLOC_TACLS_00046", modName),
+                    Localizer.Format("#autoLOC_TACLS_00050", modName, modName),
+                    Localizer.Format("#autoLOC_417274"), false, HighLogic.UISkin);
             }
         }
 
@@ -128,9 +126,9 @@ namespace Tac
             if (requireRestart)
             {
                 this.Log(modName + " - requiring restart.");
-                PopupDialog.SpawnPopupDialog(new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), "Incorrect " + modName + " Installation", "Incorrect " + modName + " Installation",
-                    "Files from a previous version of " + modName + " were found and deleted. You need to restart KSP now.",
-                    "OK", false, HighLogic.UISkin);
+                PopupDialog.SpawnPopupDialog(new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), "Incorrect " + modName + " Installation", Localizer.Format("#autoLOC_TACLS_00046", modName),
+                    Localizer.Format("#autoLOC_TACLS_00051", modName),
+                    Localizer.Format("#autoLOC_417274"), false, HighLogic.UISkin);
             }
         }
     }

@@ -28,12 +28,12 @@
 
 using RSTUtils;
 using UnityEngine;
+using KSP.Localization;
 
 namespace Tac
 {
     class LifeSupportMonitoringWindow : Window<LifeSupportMonitoringWindow>
-    {
-        //private readonly TacGameSettings gameSettings;
+    {        
         private readonly RosterWindow rosterWindow;
         private readonly string version;
         private readonly bool DeepFreezeInstalled = false;
@@ -47,14 +47,45 @@ namespace Tac
         private GUIStyle frozenStyle;
         private Vector2 scrollPosition = Vector2.zero;
 
-        public LifeSupportMonitoringWindow(AppLauncherToolBar TACMenuAppLToolBar,  RosterWindow rosterWindow)
-            : base(TACMenuAppLToolBar, "Life Support Monitoring", 300, 300)
+        #region Localization Tag cache
+
+        private static string cacheautoLOC_TACLS_00002;
+        private static string cacheautoLOC_TACLS_00003;
+        private static string cacheautoLOC_TACLS_00004;
+        private static string cacheautoLOC_TACLS_00005;
+        private static string cacheautoLOC_TACLS_00006;
+        private static string cacheautoLOC_TACLS_00007;
+        private static string cacheautoLOC_TACLS_00008;
+        private static string cacheautoLOC_TACLS_00009;
+        private static string cacheautoLOC_TACLS_00010;
+        private static string cacheautoLOC_TACLS_00011;
+        private static string cacheautoLOC_TACLS_00012;
+        private static string cacheautoLOC_TACLS_00233;
+        private void cacheLocalStrings()
         {
-            //this.gameSettings = gameSettings;
+            cacheautoLOC_TACLS_00002 = Localizer.Format("#autoLOC_TACLS_00002"); // cacheautoLOC_TACLS_00002 = No Vessels.
+            cacheautoLOC_TACLS_00003 = Localizer.Format("#autoLOC_TACLS_00003"); // cacheautoLOC_TACLS_00003 = R
+            cacheautoLOC_TACLS_00004 = Localizer.Format("#autoLOC_TACLS_00004", version); // cacheautoLOC_TACLS_00004 = TAC Life Support v<<1>>
+            cacheautoLOC_TACLS_00005 = Localizer.Format("#autoLOC_TACLS_00005"); // cacheautoLOC_TACLS_00005 = crew
+            cacheautoLOC_TACLS_00006 = Localizer.Format("#autoLOC_TACLS_00006"); // cacheautoLOC_TACLS_00006 = \u0020\u0020Prelaunch Vessel
+            cacheautoLOC_TACLS_00007 = Localizer.Format("#autoLOC_TACLS_00007"); // cacheautoLOC_TACLS_00007 = \u0020\u0020Rescue Vessel
+            cacheautoLOC_TACLS_00008 = Localizer.Format("#autoLOC_TACLS_00008"); // cacheautoLOC_TACLS_00008 = \u0020\u0020Last updated:
+            cacheautoLOC_TACLS_00009 = Localizer.Format("#autoLOC_TACLS_00009"); // cacheautoLOC_TACLS_00009 = \u0020\u0020Food remaining:
+            cacheautoLOC_TACLS_00010 = Localizer.Format("#autoLOC_TACLS_00010"); // cacheautoLOC_TACLS_00010 = \u0020\u0020Water remaining:
+            cacheautoLOC_TACLS_00011 = Localizer.Format("#autoLOC_TACLS_00011"); // cacheautoLOC_TACLS_00011 = \u0020\u0020Oxygen remaining:
+            cacheautoLOC_TACLS_00012 = Localizer.Format("#autoLOC_TACLS_00012"); // cacheautoLOC_TACLS_00012 = \u0020\u0020Electricity remaining:
+            cacheautoLOC_TACLS_00233 = Localizer.Format("#autoLOC_TACLS_00233"); // cacheautoLOC_TACLS_00012 = \u0020\u0020Out of EC, Windows are Open
+        }
+
+        #endregion
+
+        public LifeSupportMonitoringWindow(AppLauncherToolBar TACMenuAppLToolBar,  RosterWindow rosterWindow)
+            : base(TACMenuAppLToolBar, Localizer.Format("#autoLOC_TACLS_00001"), 300, 300)
+        {                      
             this.rosterWindow = rosterWindow;
             version = Utilities.GetDllVersion(this);
             DeepFreezeInstalled = RSTUtils.Utilities.IsModInstalled("DeepFreeze");
-
+            cacheLocalStrings();
             windowPos.y = 75;
             SetVisible(true);
         }
@@ -118,7 +149,7 @@ namespace Tac
             }
             if (LifeSupportController.Instance.knownVesselsList.Count == 0)
             {
-                GUILayout.Label("No Vessels.", headerStyle);
+                GUILayout.Label(cacheautoLOC_TACLS_00002, headerStyle);  // cacheautoLOC_TACLS_00002 = No Vessels.
             }
 
             GUILayout.EndVertical();
@@ -126,60 +157,80 @@ namespace Tac
 
             GUILayout.Space(8);
 
-            if (GUI.Button(new Rect(windowPos.width - 46, 4, 20, 20), "R", closeButtonStyle))
+            if (GUI.Button(new Rect(windowPos.width - 46, 4, 20, 20), cacheautoLOC_TACLS_00003, closeButtonStyle)) // cacheautoLOC_TACLS_00003 = R
             {
                 rosterWindow.SetVisible(!rosterWindow.IsVisible());
             }
 
-            GUI.Label(new Rect(4, windowPos.height - 13, windowPos.width - 20, 12), "TAC Life Support v" + version, versionStyle);
+            GUI.Label(new Rect(4, windowPos.height - 13, windowPos.width - 20, 12), cacheautoLOC_TACLS_00004, versionStyle); // cacheautoLOC_TACLS_00004 = TAC Life Support v<<1>> where 1 = version
         }
 
         private void DrawVesselInfo(VesselInfo vesselInfo, double currentTime)
         {
-            if (DeepFreezeInstalled)
+            if (DeepFreezeInstalled & vesselInfo.numFrozenCrew > 0)
             {
                 GUILayout.BeginHorizontal();
                 GUILayout.Label(vesselInfo.vesselName + " (" + vesselInfo.numCrew + "/", headerStyle);
                 GUILayout.Label(vesselInfo.numFrozenCrew.ToString(), frozenStyle);
-                GUILayout.Label(" crew) [" + vesselInfo.vesselType + "]", headerStyle);
+                GUILayout.Label(" " + cacheautoLOC_TACLS_00005 + ") [" + vesselInfo.vesselType + "]", headerStyle); //cacheautoLOC_TACLS_00005 = crew
+
                 GUILayout.EndHorizontal();
             }
             else
             {
-                GUILayout.Label(vesselInfo.vesselName + " (" + vesselInfo.numCrew + " crew) [" +vesselInfo.vesselType + "]", headerStyle);
+                GUILayout.Label(vesselInfo.vesselName + " (" + vesselInfo.numCrew + cacheautoLOC_TACLS_00005 + ") [" +vesselInfo.vesselType + "]", headerStyle); //cacheautoLOC_TACLS_00005 = crew
             }
             if (vesselInfo.vesselIsPreLaunch)
             {
-                GUILayout.Label("  Prelaunch Vessel", labelStyle);
+                GUILayout.Label(cacheautoLOC_TACLS_00006, labelStyle); // cacheautoLOC_TACLS_00006 = \u0020\u0020Prelaunch Vessel
+                if (vesselInfo.numCrew > 0)
+                {
+                    GUILayout.BeginHorizontal();
+                    GUILayout.Label(cacheautoLOC_TACLS_00012, getStyle(vesselInfo.electricityStatus), GUILayout.Width(150)); // cacheautoLOC_TACLS_00012 = \u0020\u0020Electricity remaining:
+                    GUILayout.Label(Utilities.FormatTime(vesselInfo.estimatedTimeElectricityDepleted - currentTime), getStyle(vesselInfo.electricityStatus));
+                    GUILayout.EndHorizontal();
+                    if (vesselInfo.windowOpen)
+                    {
+                        GUILayout.BeginHorizontal();
+                        GUILayout.Label(cacheautoLOC_TACLS_00233, getStyle(VesselInfo.Status.CRITICAL), GUILayout.Width(150)); // #autoLOC_TACLS_00233 = \u0020\u0020Out of EC, Windows are Open
+                        GUILayout.EndHorizontal();
+                    }
+                }
             }
             else if (vesselInfo.recoveryvessel)
             {
-                GUILayout.Label("  Rescue Vessel", labelStyle);
+                GUILayout.Label(cacheautoLOC_TACLS_00007, labelStyle); // cacheautoLOC_TACLS_00007 = \u0020\u0020Rescue Vessel
             }
             else
             {
                 GUILayout.BeginHorizontal();
-                GUILayout.Label("  Last updated:          ", getStyle(vesselInfo.foodStatus), GUILayout.Width(150));
+                GUILayout.Label(cacheautoLOC_TACLS_00008, getStyle(vesselInfo.foodStatus), GUILayout.Width(150)); // cacheautoLOC_TACLS_00008 = \u0020\u0020Last updated:
                 GUILayout.Label(Utilities.FormatTime(currentTime - vesselInfo.lastUpdate), labelStyle);
                 GUILayout.EndHorizontal();
                 if (vesselInfo.numCrew > 0)
                 {
                     GUILayout.BeginHorizontal();
-                    GUILayout.Label("  Food remaining:        ", getStyle(vesselInfo.foodStatus), GUILayout.Width(150));
+                    GUILayout.Label(cacheautoLOC_TACLS_00009, getStyle(vesselInfo.foodStatus), GUILayout.Width(150)); // cacheautoLOC_TACLS_00009 = \u0020\u0020Food remaining:
                     GUILayout.Label(Utilities.FormatTime(vesselInfo.estimatedTimeFoodDepleted - currentTime),getStyle(vesselInfo.foodStatus));
                     GUILayout.EndHorizontal();
                     GUILayout.BeginHorizontal();
-                    GUILayout.Label("  Water remaining:       ", getStyle(vesselInfo.waterStatus), GUILayout.Width(150));
+                    GUILayout.Label(cacheautoLOC_TACLS_00010, getStyle(vesselInfo.waterStatus), GUILayout.Width(150)); // cacheautoLOC_TACLS_00010 = \u0020\u0020Water remaining:
                     GUILayout.Label(Utilities.FormatTime(vesselInfo.estimatedTimeWaterDepleted - currentTime),getStyle(vesselInfo.waterStatus));
                     GUILayout.EndHorizontal();
                     GUILayout.BeginHorizontal();
-                    GUILayout.Label("  Oxygen remaining:      ", getStyle(vesselInfo.oxygenStatus), GUILayout.Width(150));
+                    GUILayout.Label(cacheautoLOC_TACLS_00011, getStyle(vesselInfo.oxygenStatus), GUILayout.Width(150)); // cacheautoLOC_TACLS_00011 = \u0020\u0020Oxygen remaining:
                     GUILayout.Label(Utilities.FormatTime(vesselInfo.estimatedTimeOxygenDepleted - currentTime),getStyle(vesselInfo.oxygenStatus));
                     GUILayout.EndHorizontal();
                     GUILayout.BeginHorizontal();
-                    GUILayout.Label("  Electricity remaining: ", getStyle(vesselInfo.electricityStatus),GUILayout.Width(150));
+                    GUILayout.Label(cacheautoLOC_TACLS_00012, getStyle(vesselInfo.electricityStatus),GUILayout.Width(150)); // cacheautoLOC_TACLS_00012 = \u0020\u0020Electricity remaining:
                     GUILayout.Label(Utilities.FormatTime(vesselInfo.estimatedTimeElectricityDepleted - currentTime),getStyle(vesselInfo.electricityStatus));
                     GUILayout.EndHorizontal();
+                    if (vesselInfo.windowOpen)
+                    {
+                        GUILayout.BeginHorizontal();
+                        GUILayout.Label(cacheautoLOC_TACLS_00233, getStyle(VesselInfo.Status.CRITICAL), GUILayout.Width(150)); // #autoLOC_TACLS_00233 = \u0020\u0020Out of EC, Windows are Open
+                        GUILayout.EndHorizontal();
+                    }
                 }
             }
         }

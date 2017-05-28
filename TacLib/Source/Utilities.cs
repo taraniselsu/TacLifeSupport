@@ -28,20 +28,32 @@
 using KSP.IO;
 using System;
 using UnityEngine;
+using KSP.Localization;
+using System.Text;
 
 namespace Tac
 {
     public static class Utilities
     {
-        public static double ToDegrees(double radians)
+        #region strings cache
+
+        private static string cacheautoLOC_6002321; //#autoLOC_6002321 = y
+        private static string cacheautoLOC_6002320; //#autoLOC_6002320 = d 
+        private static string cacheautoLOC_6002319; //#autoLOC_6002319 = h
+        private static string cacheautoLOC_6002318; //#autoLOC_6002318 = m
+        private static string cacheautoLOC_6002317; //#autoLOC_6002317 = s
+        private static bool stringsCached = false;
+        
+        private static void CacheStrings()
         {
-            return radians * 180.0 / Math.PI;
+            cacheautoLOC_6002321 = Localizer.Format("#autoLOC_6002321");
+            cacheautoLOC_6002320 = Localizer.Format("#autoLOC_6002320");
+            cacheautoLOC_6002319 = Localizer.Format("#autoLOC_6002319");
+            cacheautoLOC_6002318 = Localizer.Format("#autoLOC_6002318");
+            cacheautoLOC_6002317 = Localizer.Format("#autoLOC_6002317");
         }
 
-        public static double ToRadians(double degrees)
-        {
-            return degrees * Math.PI / 180.0;
-        }
+        #endregion
 
         public static Rect EnsureVisible(Rect pos, float min = 16.0f)
         {
@@ -67,48 +79,6 @@ namespace Tac
             pos.y = Mathf.Clamp(pos.y, yMin, yMax);
 
             return pos;
-        }
-
-        public static Rect ClampToScreenEdge(Rect pos)
-        {
-            float topSeparation = Math.Abs(pos.y);
-            float bottomSeparation = Math.Abs(Screen.height - pos.y - pos.height);
-            float leftSeparation = Math.Abs(pos.x);
-            float rightSeparation = Math.Abs(Screen.width - pos.x - pos.width);
-
-            if (topSeparation <= bottomSeparation && topSeparation <= leftSeparation && topSeparation <= rightSeparation)
-            {
-                pos.y = 0;
-            }
-            else if (leftSeparation <= topSeparation && leftSeparation <= bottomSeparation && leftSeparation <= rightSeparation)
-            {
-                pos.x = 0;
-            }
-            else if (bottomSeparation <= topSeparation && bottomSeparation <= leftSeparation && bottomSeparation <= rightSeparation)
-            {
-                pos.y = Screen.height - pos.height;
-            }
-            else if (rightSeparation <= topSeparation && rightSeparation <= bottomSeparation && rightSeparation <= leftSeparation)
-            {
-                pos.x = Screen.width - pos.width;
-            }
-
-            return pos;
-        }
-
-        public static Texture2D LoadImage<T>(string filename)
-        {
-            if (File.Exists<T>(filename))
-            {
-                var bytes = File.ReadAllBytes<T>(filename);
-                Texture2D texture = new Texture2D(16, 16, TextureFormat.ARGB32, false);
-                texture.LoadImage(bytes);
-                return texture;
-            }
-            else
-            {
-                return null;
-            }
         }
 
         public static bool GetValue(ConfigNode config, string name, bool currentValue)
@@ -189,64 +159,6 @@ namespace Tac
             return currentValue;
         }
 
-        public static double ShowTextField(string label, GUIStyle labelStyle, double currentValue, int maxLength, GUIStyle editStyle, params GUILayoutOption[] options)
-        {
-            GUILayout.BeginHorizontal();
-            GUILayout.Label(label, labelStyle);
-            GUILayout.FlexibleSpace();
-            string result = GUILayout.TextField(currentValue.ToString(), maxLength, editStyle, options);
-            GUILayout.EndHorizontal();
-
-            double newValue;
-            if (double.TryParse(result, out newValue))
-            {
-                return newValue;
-            }
-            else
-            {
-                return currentValue;
-            }
-        }
-
-        public static double ShowTextField(double currentValue, int maxLength, GUIStyle style, params GUILayoutOption[] options)
-        {
-            double newValue;
-            string result = GUILayout.TextField(currentValue.ToString(), maxLength, style, options);
-            if (double.TryParse(result, out newValue))
-            {
-                return newValue;
-            }
-            else
-            {
-                return currentValue;
-            }
-        }
-
-        public static float ShowTextField(float currentValue, int maxLength, GUIStyle style, params GUILayoutOption[] options)
-        {
-            float newValue;
-            string result = GUILayout.TextField(currentValue.ToString(), maxLength, style, options);
-            if (float.TryParse(result, out newValue))
-            {
-                return newValue;
-            }
-            else
-            {
-                return currentValue;
-            }
-        }
-
-        public static bool ShowToggle(string label, GUIStyle labelStyle, bool currentValue)
-        {
-            GUILayout.BeginHorizontal();
-            GUILayout.Label(label, labelStyle);
-            GUILayout.FlexibleSpace();
-            bool result = GUILayout.Toggle(currentValue, "");
-            GUILayout.EndHorizontal();
-
-            return result;
-        }
-
         public static string FormatTime(double value, int numDecimals = 0)
         {
             const double SECONDS_PER_MINUTE = 60.0;
@@ -254,6 +166,11 @@ namespace Tac
             double HOURS_PER_DAY = (GameSettings.KERBIN_TIME) ? 6.0 : 24.0;
             double DAYS_PER_YEAR = (GameSettings.KERBIN_TIME) ? 426.0 : 365.0;
 
+            if (!stringsCached)
+            {
+                CacheStrings();
+                stringsCached = true;
+            }
             string sign = "";
             if (value < 0.0)
             {
@@ -277,24 +194,22 @@ namespace Tac
 
             if (years > 0)
             {
-                return sign + years.ToString("#0") + "y "
-                       + days.ToString("##0") + "d "
-                       + hours.ToString("00") + ":"
-                       + minutes.ToString("00");// + ":"
-                    //+ Math.Floor(seconds).ToString("00");
+
+                return sign + years.ToString("#0") + cacheautoLOC_6002321 + " "
+                       + days.ToString("##0") + cacheautoLOC_6002320 + " "
+                       + hours.ToString("00") + cacheautoLOC_6002319 + " "
+                       + minutes.ToString("00") + cacheautoLOC_6002318;
             }
             if (days > 0)
             {
-                return sign + days.ToString("#0") + "d "
-                       + hours.ToString("00") + ":"
-                       + minutes.ToString("00");// + ":"
-                    //+ Math.Floor(seconds).ToString("00");
+                return sign + days.ToString("#0") + cacheautoLOC_6002320 + " "
+                       + hours.ToString("00") + cacheautoLOC_6002319 + " "
+                       + minutes.ToString("00") + cacheautoLOC_6002318;
             }
             else if (hours > 0)
             {
-                return sign + hours.ToString("#0") + ":"
-                       + minutes.ToString("00");// + ":"
-                    //+ Math.Floor(seconds).ToString("00");
+                return sign + hours.ToString("#0") + cacheautoLOC_6002319 + " "
+                       + minutes.ToString("00") + cacheautoLOC_6002318;
             }
             else
             {
@@ -312,67 +227,10 @@ namespace Tac
                     secondsString = Math.Floor(seconds).ToString("00");
                 }
 
-                return sign + minutes.ToString("#0") + ":"
-                    + secondsString;
+                return sign + minutes.ToString("#0") + cacheautoLOC_6002318 + " "
+                    + secondsString + cacheautoLOC_6002317;
             }
         }
-
-        public static string FormatValue(double value, int numDecimals = 2, bool fixedDecimals = false)
-        {
-            string sign = "";
-            if (value < 0.0)
-            {
-                sign = "-";
-                value = -value;
-            }
-
-            string format = "0";
-            if (numDecimals > 0)
-            {
-                if (fixedDecimals)
-                {
-                    format += "." + new String('0', numDecimals);
-                }
-                else
-                {
-                    format += "." + new String('#', numDecimals);
-                }
-            }
-
-            if (value == 0.0)
-            {
-                return sign + value.ToString(format) + " ";
-            }
-            else if (value > 1000000000.0)
-            {
-                return sign + (value / 1000000000.0).ToString(format) + " G";
-            }
-            else if (value > 1000000.0)
-            {
-                return sign + (value / 1000000.0).ToString(format) + " M";
-            }
-            else if (value > 1000.0)
-            {
-                return sign + (value / 1000.0).ToString(format) + " k";
-            }
-            else if (value < 0.000000001)
-            {
-                return sign + (value * 1000000000.0).ToString(format) + " n";
-            }
-            else if (value < 0.000001)
-            {
-                return sign + (value * 1000000.0).ToString(format) + " µ";
-            }
-            else if (value < 0.001)
-            {
-                return sign + (value * 1000.0).ToString(format) + " m";
-            }
-            else
-            {
-                return sign + value.ToString(format) + " ";
-            }
-        }
-
         public static string GetDllVersion<T>(T t)
         {
             System.Reflection.Assembly assembly = t.GetType().Assembly;
@@ -394,15 +252,6 @@ namespace Tac
             versionStyle.wordWrap = false;
             return versionStyle;
         }
-
-        public static float RoundUp(float value, float step)
-        {
-            return Mathf.Ceil(value / step) * step;
-        }
-
-        public static float RoundDown(float value, float step)
-        {
-            return Mathf.Floor(value / step) * step;
-        }
+        
     }
 }

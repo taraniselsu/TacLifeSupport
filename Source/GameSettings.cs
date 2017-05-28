@@ -28,8 +28,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
 namespace Tac
 {
@@ -39,15 +37,15 @@ namespace Tac
 
         public bool IsNewSave;
 
-        public Dictionary<string, CrewMemberInfo> knownCrew { get; private set; }
-        public Dictionary<Guid, VesselInfo> knownVessels { get; private set; }
+        public DictionaryValueList<string, CrewMemberInfo> knownCrew { get; private set; }
+        public DictionaryValueList<Guid, VesselInfo> knownVessels { get; private set; }
         
         public TacGameSettings()
         {
             IsNewSave = true;
             
-            knownCrew = new Dictionary<string, CrewMemberInfo>();
-            knownVessels = new Dictionary<Guid, VesselInfo>();
+            knownCrew = new DictionaryValueList<string, CrewMemberInfo>();
+            knownVessels = new DictionaryValueList<Guid, VesselInfo>();
         }
 
         public void Load(ConfigNode node)
@@ -93,17 +91,19 @@ namespace Tac
             }
 
             settingsNode.AddValue("IsNewSave", IsNewSave);
-            
-            foreach (CrewMemberInfo crewMemberInfo in knownCrew.Values)
-            {
-                crewMemberInfo.Save(settingsNode);
-            }
 
-            foreach (var entry in knownVessels)
+            Dictionary<string, CrewMemberInfo>.Enumerator crewenumerator = knownCrew.GetDictEnumerator();
+            while (crewenumerator.MoveNext())
             {
-                ConfigNode vesselNode = entry.Value.Save(settingsNode);
-                vesselNode.AddValue("Guid", entry.Key);
+                crewenumerator.Current.Value.Save(settingsNode);
             }
+            
+            Dictionary<Guid, VesselInfo>.Enumerator vslenumerator = knownVessels.GetDictEnumerator();
+            while (vslenumerator.MoveNext())
+            {
+                ConfigNode vesselNode = vslenumerator.Current.Value.Save(settingsNode);
+                vesselNode.AddValue("Guid", vslenumerator.Current.Key);
+            }            
         }
     }
 }

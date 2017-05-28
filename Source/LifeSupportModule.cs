@@ -27,16 +27,29 @@
  */
 
 using System.Collections.Generic;
+using KSP.Localization;
 
 namespace Tac
 {
     [KSPModule("TAC Life Support")]
     class LifeSupportModule : PartModule, IResourceConsumer
     {
+        #region Localization Tag cache
+
+        private static string cacheautoLOC_TACLS_00106;
+
+        private void cacheLocalStrings()
+        {
+            cacheautoLOC_TACLS_00106 = Localizer.Format("#autoLOC_TACLS_00106"); // cacheautoLOC_TACLS_00106 = \nEquipped with the Thunder Aerospace Corporation (TAC) Life Support System.\n
+
+        }
+
+        #endregion
         public override void OnAwake()
         {
             this.Log("OnAwake");
             base.OnAwake();
+            cacheLocalStrings();            
         }
 
         public override void OnStart(PartModule.StartState state)
@@ -47,7 +60,11 @@ namespace Tac
 
         public override string GetInfo()
         {
-            return base.GetInfo() + "\nEquipped with the Thunder Aerospace Corporation (TAC) Life Support System.\n";
+            if (string.IsNullOrEmpty(cacheautoLOC_TACLS_00106))
+            {
+                cacheLocalStrings();
+            }
+            return base.GetInfo() + cacheautoLOC_TACLS_00106; // cacheautoLOC_TACLS_00106 = "\nEquipped with the Thunder Aerospace Corporation (TAC) Life Support System.\n";
         }
 
         public List<PartResourceDefinition> GetConsumedResources()

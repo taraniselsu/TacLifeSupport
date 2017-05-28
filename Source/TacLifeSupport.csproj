@@ -38,6 +38,9 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\KSPDLLs - 1.3\Assembly-CSharp.dll</HintPath>
     </Reference>
+    <Reference Include="BackgroundResources">
+      <HintPath>..\..\REPOSoftTechKSPUtils\BackgroundResources\bin\Debug\BackgroundResources.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
@@ -126,14 +129,14 @@
     <DownloadUrl>https://github.com/KSP-RO/TacLifeSupport/releases</DownloadUrl>
     <ChangelogUrl>https://github.com/KSP-RO/TacLifeSupport/wiki/Changes</ChangelogUrl>
     <KspVersionMajor>1</KspVersionMajor>
-    <KspVersionMinor>2</KspVersionMinor>
-    <KspVersionPatch>9</KspVersionPatch>
+    <KspVersionMinor>3</KspVersionMinor>
+    <KspVersionPatch>0</KspVersionPatch>
     <KspMinVersionMajor>1</KspMinVersionMajor>
-    <KspMinVersionMinor>2</KspMinVersionMinor>
-    <KspMinVersionPatch>9</KspMinVersionPatch>
+    <KspMinVersionMinor>3</KspMinVersionMinor>
+    <KspMinVersionPatch>0</KspMinVersionPatch>
     <KspMaxVersionMajor>1</KspMaxVersionMajor>
-    <KspMaxVersionMinor>2</KspMaxVersionMinor>
-    <KspMaxVersionPatch>9</KspMaxVersionPatch>
+    <KspMaxVersionMinor>3</KspMaxVersionMinor>
+    <KspMaxVersionPatch>0</KspMaxVersionPatch>
   </PropertyGroup>
   <Target Name="GitInfo">
     <!-- Get the current git SHA1 -->

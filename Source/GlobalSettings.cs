@@ -25,6 +25,7 @@
  * purposes. It is in no way meant to represent a real entity. Any similarity to a real entity
  * is purely coincidental.
  */
+using KSP.Localization;
 
 namespace Tac
 {
@@ -35,13 +36,20 @@ namespace Tac
         public int MaxDeltaTime;
         public int ElectricityMaxDeltaTime; 
         
-        public string Food;
-        public string Water;
-        public string Oxygen;
-        public string Electricity;
-        public string CO2;
-        public string Waste;
-        public string WasteWater;
+        public string Food;  //English name/key
+        public string Water; //English name/key
+        public string Oxygen; //English name/key
+        public string Electricity; //English name/key
+        public string CO2; //English name/key
+        public string Waste; //English name/key
+        public string WasteWater; //English name/key
+        public string displayFood; //Localized name for UI
+        public string displayWater; //Localized name for UI
+        public string displayOxygen; //Localized name for UI
+        public string displayElectricity; //Localized name for UI
+        public string displayCO2; //Localized name for UI
+        public string displayWaste; //Localized name for UI
+        public string displayWasteWater; //Localized name for UI
         public double FoodConsumptionRate;
         public double WaterConsumptionRate;
         public double OxygenConsumptionRate;
@@ -75,12 +83,19 @@ namespace Tac
             ElectricityMaxDeltaTime = 1; // max 1 second per physics update
 
             Food = "Food";
+            displayFood = Localizer.Format("#autoLOC_TACLS_00016");
             Water = "Water";
+            displayWater = Localizer.Format("#autoLOC_TACLS_00017");
             Oxygen = "Oxygen";
+            displayOxygen = Localizer.Format("#autoLOC_TACLS_00018");
             Electricity = "ElectricCharge";
+            displayElectricity = Localizer.Format("#autoLOC_TACLS_00019");
             CO2 = "CarbonDioxide";
+            displayCO2 = Localizer.Format("#autoLOC_TACLS_00022");
             Waste = "Waste";
+            displayWaste = Localizer.Format("#autoLOC_TACLS_00020");
             WasteWater = "WasteWater";
+            displayWasteWater = Localizer.Format("#autoLOC_TACLS_00021");
             FoodId = PartResourceLibrary.Instance.GetDefinition(Food).id;
             WaterId = PartResourceLibrary.Instance.GetDefinition(Water).id;
             OxygenId = PartResourceLibrary.Instance.GetDefinition(Oxygen).id;

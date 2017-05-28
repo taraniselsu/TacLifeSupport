@@ -39,10 +39,10 @@ namespace Tac
         public double lastWater;
         public string vesselName;
         public Guid vesselId;
-        public bool vesselIsPreLaunch;
-        public bool hibernating;
-        public bool DFfrozen;
-        public bool recoverykerbal;
+        public bool vesselIsPreLaunch;  //True if the vessel this kerbal is on is PreLaunch status
+        public bool hibernating;  //True if Kerbal is hibernating (rather than dead)
+        public bool DFfrozen;  //True if DeepFreeze Mod is installed and this kerbal is frozen
+        public bool recoverykerbal;  //True if this kerbal is part of a Recover Contract
         public ProtoCrewMember.KerbalType crewType;
         public readonly double respite = UnityEngine.Random.Range(60, 600);
 
