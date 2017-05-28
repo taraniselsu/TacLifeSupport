@@ -316,11 +316,13 @@ namespace Tac
                 {
                     vesselstoDelete.Add(vslenumerator.Current.Key);
                 }
-
-                //Do warning processing on all vessels except PreLaunch.
-                if (vessel.situation != Vessel.Situations.PRELAUNCH)
+                if (vessel != null)
                 {
-                    doWarningProcessing(vslenumerator.Current.Value, currentTime);
+                    //Do warning processing on all vessels except PreLaunch.
+                    if (vessel.situation != Vessel.Situations.PRELAUNCH)
+                    {
+                        doWarningProcessing(vslenumerator.Current.Value, currentTime);
+                    }
                 }
             }
             for (int i = 0; i < vesselstoDelete.Count; i++)
