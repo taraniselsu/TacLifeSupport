@@ -57,7 +57,7 @@ namespace Tac
         [GameParameters.CustomParameterUI("#autoLOC_TACLS_00055", toolTip = "#autoLOC_TACLS_00056")] //#autoLOC_TACLS_00055 = Use Stock App Launcher Icon //# autoLOC_TACLS_00056 = If on, the Stock Application launcher will be used,\nif off will use Blizzy Toolbar if installed.
         public bool UseAppLToolbar = true;
 
-        [GameParameters.CustomParameterUI("#autoLOC_TACLS_00057", autoPersistance = true, toolTip = "#autoLOC_TACLS_00057")] //#autoLOC_TACLS_00057 = Editor Filter //# autoLOC_TACLS_00058 = Turn the TAC/LS Editor filter Category on and off.
+        [GameParameters.CustomParameterUI("#autoLOC_TACLS_00057", autoPersistance = true, toolTip = "#autoLOC_TACLS_00058")] //#autoLOC_TACLS_00057 = Editor Filter //# autoLOC_TACLS_00058 = Turn the TAC/LS Editor filter Category on and off.
         public bool EditorFilter = true;
 
         [GameParameters.CustomParameterUI("#autoLOC_TACLS_00059", toolTip = "#autoLOC_TACLS_00060")] //#autoLOC_TACLS_00059 = When resources run out, kerbals.. //# autoLOC_TACLS_00060 = When LS resources run out,\nyou can select that kerbals die or hibernate.
