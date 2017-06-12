@@ -1,3 +1,7 @@
+v0.13.3
+	Fix EC processing for unloaded vessels.
+	Expanded Unloaded vessel resource processing to Produce EC for vessels that have solar panels and generators (including Kopernicus Solar Panels).
+	Russian Localization texts included- Thanks go to forum user Tirathangil.
 v0.13.2
 	Fix Null Reference errors for probe vessels.
 v0.13.1

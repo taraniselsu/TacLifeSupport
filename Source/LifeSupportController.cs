@@ -64,6 +64,7 @@ namespace Tac
         private List<Vessel> allVessels;
         private VesselInfo.Status overallLifeSupportStatus;
         private VesselSorter vesselSorter;
+        private bool backgroundProcessingAvailable = false;
 
         #endregion
 
@@ -146,6 +147,8 @@ namespace Tac
             {
                 onFrozenKerbalDiedEvent.Add(onFrozenKerbalDie);
             }
+
+            backgroundProcessingAvailable = RSTUtils.Utilities.IsModInstalled("BackgroundResources");
             
             // Double check that we have the right sea level pressure for Kerbin
             seaLevelPressure = FlightGlobals.Bodies[1].GetPressure(0);
@@ -276,7 +279,7 @@ namespace Tac
                         if (vessel.situation == Vessel.Situations.PRELAUNCH)
                         {
                             updateVslCrewCurrentTime(vessel, vslenumerator.Current, currentTime, true);
-                            vslenumerator.Current.Value.estimatedTimeElectricityDepleted = vslenumerator.Current.Value.lastElectricity + (vslenumerator.Current.Value.remainingElectricity / CalculateElectricityConsumptionRate(vessel, vslenumerator.Current.Value));
+                            vslenumerator.Current.Value.estimatedTimeElectricityDepleted = vslenumerator.Current.Value.lastElectricity + (vslenumerator.Current.Value.remainingElectricity / vslenumerator.Current.Value.estimatedElectricityConsumptionRate);
                         }
                         //Vessel is NOT PRELAUNCH
                         else
@@ -285,21 +288,25 @@ namespace Tac
                         }
                     }
                     else  //Process Unloaded Vessel                   
-                    {                        
-                        //vslenumerator.Current.Value.numCrew = vessel.GetCrewCount();
-                        //vslenumerator.Current.Value.numFrozenCrew = vslenumerator.Current.Value.numFrozenCrew;
-                        //vslenumerator.Current.Value.numOccupiedParts = vessel.crewedParts;
-                        int numCrew = UpdateUnloadedVesselInfo(vslenumerator.Current.Value, vessel);
+                    {
+                        if (settings_sec1.backgroundresources && backgroundProcessingAvailable)
+                        {
+                            if (UnloadedResources.Instance != null)
+                            {
+                                UnloadedResources.Instance.AddInterestedVessel(vessel.protoVessel);
+                            }
+                        }
+                        UpdateUnloadedVesselInfo(vslenumerator.Current.Value, vessel);
                         //If vessel is PRELAUNCH
                         if (vessel.situation == Vessel.Situations.PRELAUNCH)
                         {
                             updateVslCrewCurrentTime(vessel, vslenumerator.Current, currentTime, true);
-                            vslenumerator.Current.Value.estimatedTimeElectricityDepleted = vslenumerator.Current.Value.lastElectricity + (vslenumerator.Current.Value.remainingElectricity / CalculateElectricityConsumptionRate(vessel, vslenumerator.Current.Value));
+                            vslenumerator.Current.Value.estimatedTimeElectricityDepleted = vslenumerator.Current.Value.lastElectricity + (vslenumerator.Current.Value.remainingElectricity / vslenumerator.Current.Value.estimatedElectricityConsumptionRate);
                         }
                         //Vessel is NOT PRELAUNCH
                         else
                         {
-                            if (settings_sec1.backgroundresources)
+                            if (settings_sec1.backgroundresources && backgroundProcessingAvailable)
                             {
                                 ConsumeResources(currentTime, vessel, vslenumerator.Current.Value);
                             }
@@ -321,7 +328,7 @@ namespace Tac
                     //Do warning processing on all vessels except PreLaunch.
                     if (vessel.situation != Vessel.Situations.PRELAUNCH)
                     {
-                        doWarningProcessing(vslenumerator.Current.Value, currentTime);
+                        doWarningProcessing(vessel, vslenumerator.Current.Value, currentTime);
                     }
                 }
             }
@@ -510,13 +517,15 @@ namespace Tac
                         crewenumerator.Current.Value.lastUpdate = currentTime;
                         crewenumerator.Current.Value.vesselIsPreLaunch = PreLaunch;
                     }
-                }                
+                }
+                entry.Value.estimatedElectricityConsumptionRate = CalculateElectricityConsumptionRate(vessel, entry.Value);
             }
             else
             {
                 if (entry.Value.recoveryvessel)
                     this.Log("Recovery Vessel no longer has any crew, changing it's status to normal vessel: " + vessel.vesselName);
                 entry.Value.recoveryvessel = false;
+                entry.Value.estimatedElectricityConsumptionRate = 0f;
             }
         }
                 
@@ -626,7 +635,7 @@ namespace Tac
             vessel.GetConnectedResourceTotals(globalsettings.CO2Id, out vesselInfo.remainingCO2, out maxCO2);
             vessel.GetConnectedResourceTotals(globalsettings.WasteId, out vesselInfo.remainingWaste, out maxWaste);
             vessel.GetConnectedResourceTotals(globalsettings.WasteWaterId, out vesselInfo.remainingWasteWater, out maxWasteWater);
-
+            vesselInfo.estimatedElectricityConsumptionRate = CalculateElectricityConsumptionRate(vessel, vesselInfo);
             return crewCapacity;
         }
 
@@ -636,17 +645,14 @@ namespace Tac
         /// <param name="vesselInfo"></param>
         /// <param name="vessel"></param>
         /// <returns></returns>
-        private int UpdateUnloadedVesselInfo(VesselInfo vesselInfo, Vessel vessel)
+        private void UpdateUnloadedVesselInfo(VesselInfo vesselInfo, Vessel vessel)
         {
-            int crewCapacity = 0;
             //vesselInfo.ClearAmounts();                     
-            crewCapacity = vessel.GetCrewCapacity();
-            crewCapacity += vesselInfo.numFrozenCrew;
-            vesselInfo.numCrew = vessel.GetCrewCount();
-            vesselInfo.numOccupiedParts = vessel.crewedParts;
-            vesselInfo.vesselSituation = vessel.situation;
-            vesselInfo.vesselIsPreLaunch = vessel.situation == Vessel.Situations.PRELAUNCH;
-            if (settings_sec1.enabled)
+            vesselInfo.numCrew = vessel.protoVessel.GetVesselCrew().Count;
+            vesselInfo.numOccupiedParts = vessel.protoVessel.crewedParts;
+            vesselInfo.vesselSituation = vessel.protoVessel.situation;
+            vesselInfo.vesselIsPreLaunch = vessel.protoVessel.situation == Vessel.Situations.PRELAUNCH;
+            if (settings_sec1.enabled && settings_sec1.backgroundresources && backgroundProcessingAvailable)
             {
                 UnloadedResourceProcessing.GetResourceTotals(vessel.protoVessel, globalsettings.Food, out vesselInfo.remainingFood, out vesselInfo.maxFood);
                 UnloadedResourceProcessing.GetResourceTotals(vessel.protoVessel, globalsettings.Water, out vesselInfo.remainingWater, out vesselInfo.maxWater);
@@ -659,7 +665,7 @@ namespace Tac
                 UnloadedResourceProcessing.GetResourceTotals(vessel.protoVessel, globalsettings.Waste, out vesselInfo.remainingWaste, out maxWaste);
                 UnloadedResourceProcessing.GetResourceTotals(vessel.protoVessel, globalsettings.WasteWater, out vesselInfo.remainingWasteWater, out maxWasteWater);
             }
-            return crewCapacity;
+            vesselInfo.estimatedElectricityConsumptionRate = CalculateElectricityConsumptionRate(vessel, vesselInfo);
         }
 
         /// <summary>
@@ -693,6 +699,17 @@ namespace Tac
                 {
                     this.Log("Deleting crew member: " + crewToDelete[i]);
                     gameSettings.knownCrew.Remove(crewToDelete[i]);
+                }
+                if (settings_sec1.backgroundresources && backgroundProcessingAvailable)
+                {
+                    if (UnloadedResources.Instance != null)
+                    {
+                        Vessel vsl = FlightGlobals.FindVessel(vesselID);
+                        if (vsl != null && vsl.protoVessel != null)
+                        {
+                            UnloadedResources.Instance.RemoveInterestedVessel(vsl.protoVessel);
+                        }
+                    }
                 }
             }
         }
@@ -927,7 +944,7 @@ namespace Tac
                     RSTUtils.Utilities.requireResourceID(vessel, globalsettings.FoodId,
                         Math.Min(desiredFood, vesselInfo.remainingFood / vesselInfo.numCrew), true, true, false, out foodObtained, out foodSpace);
                 }
-                else
+                else if (settings_sec1.backgroundresources && backgroundProcessingAvailable)
                 {
                     UnloadedResourceProcessing.RequestResource(vessel.protoVessel, globalsettings.Food, desiredFood, out foodObtained);
                 }
@@ -940,7 +957,7 @@ namespace Tac
                     RSTUtils.Utilities.requireResourceID(vessel, globalsettings.WasteId,
                         -wasteProduced, true, false, false, out wasteObtained, out wasteSpace);
                 }
-                else
+                else if (settings_sec1.backgroundresources && backgroundProcessingAvailable)
                 {
                     UnloadedResourceProcessing.RequestResource(vessel.protoVessel, globalsettings.Waste, wasteProduced, out wasteObtained, true);
                 }
@@ -1015,7 +1032,7 @@ namespace Tac
                     RSTUtils.Utilities.requireResourceID(vessel, globalsettings.WaterId,
                         Math.Min(desiredWater, vesselInfo.remainingWater / vesselInfo.numCrew), true, true, false, out waterObtained, out waterSpace);
                 }
-                else
+                else if (settings_sec1.backgroundresources && backgroundProcessingAvailable)
                 {
                     UnloadedResourceProcessing.RequestResource(vessel.protoVessel, globalsettings.Water, desiredWater, out waterObtained);
                 }
@@ -1028,7 +1045,7 @@ namespace Tac
                     RSTUtils.Utilities.requireResourceID(vessel, globalsettings.WasteWaterId,
                         -wasteWaterProduced, true, false, false, out wasteWaterObtained, out wasteWaterSpace);
                 }
-                else
+                else if (settings_sec1.backgroundresources && backgroundProcessingAvailable)
                 {
                     UnloadedResourceProcessing.RequestResource(vessel.protoVessel, globalsettings.WasteWater, wasteWaterProduced, out wasteWaterObtained, true);
                 }
@@ -1104,7 +1121,7 @@ namespace Tac
                             RSTUtils.Utilities.requireResourceID(vessel, globalsettings.OxygenId,
                                 desiredOxygen, true, true, false, out oxygenObtained, out oxygenSpace);
                         }
-                        else
+                        else if (settings_sec1.backgroundresources && backgroundProcessingAvailable)
                         {
                             UnloadedResourceProcessing.RequestResource(vessel.protoVessel, globalsettings.Oxygen, desiredOxygen, out oxygenObtained);
                         }
@@ -1117,7 +1134,7 @@ namespace Tac
                             RSTUtils.Utilities.requireResourceID(vessel, globalsettings.CO2Id,
                                 -co2Production, true, false, false, out co2Obtained, out co2Space);
                         }
-                        else
+                        else if (settings_sec1.backgroundresources && backgroundProcessingAvailable)
                         {
                             UnloadedResourceProcessing.RequestResource(vessel.protoVessel, globalsettings.CO2, co2Production, out co2Obtained, true);
                         }
@@ -1160,14 +1177,14 @@ namespace Tac
             vesselInfo.windowOpen = false; //Close the windows (temporarily if already open).
             //Calculate the rate of EC we need based on number of occupied parts and kerbals on board.
             //The rate is per second.
-            double rate = CalculateElectricityConsumptionRate(vessel, vesselInfo);
-            vesselInfo.estimatedElectricityConsumptionRate = rate;
+            double rate = vesselInfo.estimatedElectricityConsumptionRate;
+            //vesselInfo.estimatedElectricityConsumptionRate = rate;
             if (rate > 0.0)  //If the rate > zero we have a job to do.
             {
                 if (vesselInfo.remainingElectricity >= rate)  //If we have enough EC stored we process
                 {
                     //The delta Time is the minimum of the amount of time since we last took EC and the minimum of EC max delta time or currented fixed delta time.
-                    double deltaTime = Math.Min(currentTime - vesselInfo.lastElectricity, Math.Min(globalsettings.ElectricityMaxDeltaTime, TimeWarp.fixedDeltaTime));
+                    double deltaTime = Math.Min(currentTime - vesselInfo.lastElectricity, globalsettings.MaxDeltaTime);
                     double desiredElectricity = rate * deltaTime;  //We need the rate x delta time.                    
                     double electricityObtained = 0;
                     double electricitySpace = 0;
@@ -1176,7 +1193,7 @@ namespace Tac
                         RSTUtils.Utilities.requireResourceID(vessel, globalsettings.ElectricityId,
                             desiredElectricity, true, true, false, out electricityObtained, out electricitySpace);
                     }
-                    else
+                    else if (settings_sec1.backgroundresources && backgroundProcessingAvailable)
                     {
                         UnloadedResourceProcessing.RequestResource(vessel.protoVessel, globalsettings.Electricity, desiredElectricity, out electricityObtained);
                     }
@@ -1328,7 +1345,7 @@ namespace Tac
         /// </summary>
         /// <param name="vesselInfo"></param>
         /// <param name="currentTime"></param>
-        private void doWarningProcessing(VesselInfo vesselInfo, double currentTime)
+        private void doWarningProcessing(Vessel vessel, VesselInfo vesselInfo, double currentTime)
         {
             double foodRate = globalsettings.FoodConsumptionRate * vesselInfo.numCrew;
             vesselInfo.estimatedTimeFoodDepleted = vesselInfo.lastFood + (vesselInfo.remainingFood / foodRate);
@@ -1345,11 +1362,12 @@ namespace Tac
             double estimatedOxygen = vesselInfo.remainingOxygen - ((currentTime - vesselInfo.lastOxygen) * oxygenRate);
             ShowWarnings(vesselInfo.vesselName, estimatedOxygen, vesselInfo.maxOxygen, oxygenRate, globalsettings.displayOxygen, ref vesselInfo.oxygenStatus);
 
-            vesselInfo.estimatedTimeElectricityDepleted = vesselInfo.lastElectricity + (vesselInfo.remainingElectricity / vesselInfo.estimatedElectricityConsumptionRate);
+            double ECRate = vesselInfo.estimatedElectricityConsumptionRate;
+            vesselInfo.estimatedTimeElectricityDepleted = vesselInfo.lastElectricity + (vesselInfo.remainingElectricity / ECRate);
             if (vesselInfo.numCrew > 0 || vesselInfo.numFrozenCrew > 0)  //Only show EC warning if there are crew on board.
             {
-                double estimatedElectricity = vesselInfo.remainingElectricity - ((currentTime - vesselInfo.lastElectricity) * vesselInfo.estimatedElectricityConsumptionRate);
-                ShowWarnings(vesselInfo.vesselName, estimatedElectricity, vesselInfo.maxElectricity, vesselInfo.estimatedElectricityConsumptionRate, globalsettings.displayElectricity, ref vesselInfo.electricityStatus);
+                double estimatedElectricity = vesselInfo.remainingElectricity - ((currentTime - vesselInfo.lastElectricity) * ECRate);
+                ShowWarnings(vesselInfo.vesselName, estimatedElectricity, vesselInfo.maxElectricity, ECRate, globalsettings.displayElectricity, ref vesselInfo.electricityStatus);
             }
 
             vesselInfo.overallStatus = vesselInfo.foodStatus | vesselInfo.oxygenStatus | vesselInfo.waterStatus | vesselInfo.electricityStatus;
