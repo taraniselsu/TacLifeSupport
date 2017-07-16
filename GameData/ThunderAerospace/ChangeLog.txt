@@ -1,3 +1,5 @@
+v0.13.4
+	Unloaded vessels EC processing at high timewarp.
 v0.13.3
 	Fix EC processing for unloaded vessels.
 	Expanded Unloaded vessel resource processing to Produce EC for vessels that have solar panels and generators (including Kopernicus Solar Panels).

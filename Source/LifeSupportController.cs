@@ -64,7 +64,8 @@ namespace Tac
         private List<Vessel> allVessels;
         private VesselInfo.Status overallLifeSupportStatus;
         private VesselSorter vesselSorter;
-        private bool backgroundProcessingAvailable = false;
+        private bool backgroundProcessingAvailable = false;  //This is the backgroundProcessing Mod
+        private bool backgroundResourcesAvailable = false;   //This is TAC LS backgroundResources processing DLL
 
         #endregion
 
@@ -148,8 +149,9 @@ namespace Tac
                 onFrozenKerbalDiedEvent.Add(onFrozenKerbalDie);
             }
 
-            backgroundProcessingAvailable = RSTUtils.Utilities.IsModInstalled("BackgroundResources");
-            
+            backgroundResourcesAvailable = RSTUtils.Utilities.IsModInstalled("BackgroundResources");
+            backgroundProcessingAvailable = RSTUtils.Utilities.IsModInstalled("BackgroundProcessing");
+
             // Double check that we have the right sea level pressure for Kerbin
             seaLevelPressure = FlightGlobals.Bodies[1].GetPressure(0);
             
@@ -289,7 +291,7 @@ namespace Tac
                     }
                     else  //Process Unloaded Vessel                   
                     {
-                        if (settings_sec1.backgroundresources && backgroundProcessingAvailable)
+                        if (settings_sec1.backgroundresources && backgroundResourcesAvailable && !backgroundProcessingAvailable)
                         {
                             if (UnloadedResources.Instance != null)
                             {
@@ -306,7 +308,7 @@ namespace Tac
                         //Vessel is NOT PRELAUNCH
                         else
                         {
-                            if (settings_sec1.backgroundresources && backgroundProcessingAvailable)
+                            if (settings_sec1.backgroundresources && backgroundResourcesAvailable)
                             {
                                 ConsumeResources(currentTime, vessel, vslenumerator.Current.Value);
                             }
@@ -652,7 +654,7 @@ namespace Tac
             vesselInfo.numOccupiedParts = vessel.protoVessel.crewedParts;
             vesselInfo.vesselSituation = vessel.protoVessel.situation;
             vesselInfo.vesselIsPreLaunch = vessel.protoVessel.situation == Vessel.Situations.PRELAUNCH;
-            if (settings_sec1.enabled && settings_sec1.backgroundresources && backgroundProcessingAvailable)
+            if (settings_sec1.enabled && settings_sec1.backgroundresources && backgroundResourcesAvailable)
             {
                 UnloadedResourceProcessing.GetResourceTotals(vessel.protoVessel, globalsettings.Food, out vesselInfo.remainingFood, out vesselInfo.maxFood);
                 UnloadedResourceProcessing.GetResourceTotals(vessel.protoVessel, globalsettings.Water, out vesselInfo.remainingWater, out vesselInfo.maxWater);
@@ -700,7 +702,7 @@ namespace Tac
                     this.Log("Deleting crew member: " + crewToDelete[i]);
                     gameSettings.knownCrew.Remove(crewToDelete[i]);
                 }
-                if (settings_sec1.backgroundresources && backgroundProcessingAvailable)
+                if (settings_sec1.backgroundresources && backgroundResourcesAvailable)
                 {
                     if (UnloadedResources.Instance != null)
                     {
@@ -944,7 +946,7 @@ namespace Tac
                     RSTUtils.Utilities.requireResourceID(vessel, globalsettings.FoodId,
                         Math.Min(desiredFood, vesselInfo.remainingFood / vesselInfo.numCrew), true, true, false, out foodObtained, out foodSpace);
                 }
-                else if (settings_sec1.backgroundresources && backgroundProcessingAvailable)
+                else if (settings_sec1.backgroundresources && backgroundResourcesAvailable)
                 {
                     UnloadedResourceProcessing.RequestResource(vessel.protoVessel, globalsettings.Food, desiredFood, out foodObtained);
                 }
@@ -957,7 +959,7 @@ namespace Tac
                     RSTUtils.Utilities.requireResourceID(vessel, globalsettings.WasteId,
                         -wasteProduced, true, false, false, out wasteObtained, out wasteSpace);
                 }
-                else if (settings_sec1.backgroundresources && backgroundProcessingAvailable)
+                else if (settings_sec1.backgroundresources && backgroundResourcesAvailable)
                 {
                     UnloadedResourceProcessing.RequestResource(vessel.protoVessel, globalsettings.Waste, wasteProduced, out wasteObtained, true);
                 }
@@ -1032,7 +1034,7 @@ namespace Tac
                     RSTUtils.Utilities.requireResourceID(vessel, globalsettings.WaterId,
                         Math.Min(desiredWater, vesselInfo.remainingWater / vesselInfo.numCrew), true, true, false, out waterObtained, out waterSpace);
                 }
-                else if (settings_sec1.backgroundresources && backgroundProcessingAvailable)
+                else if (settings_sec1.backgroundresources && backgroundResourcesAvailable)
                 {
                     UnloadedResourceProcessing.RequestResource(vessel.protoVessel, globalsettings.Water, desiredWater, out waterObtained);
                 }
@@ -1045,7 +1047,7 @@ namespace Tac
                     RSTUtils.Utilities.requireResourceID(vessel, globalsettings.WasteWaterId,
                         -wasteWaterProduced, true, false, false, out wasteWaterObtained, out wasteWaterSpace);
                 }
-                else if (settings_sec1.backgroundresources && backgroundProcessingAvailable)
+                else if (settings_sec1.backgroundresources && backgroundResourcesAvailable)
                 {
                     UnloadedResourceProcessing.RequestResource(vessel.protoVessel, globalsettings.WasteWater, wasteWaterProduced, out wasteWaterObtained, true);
                 }
@@ -1121,7 +1123,7 @@ namespace Tac
                             RSTUtils.Utilities.requireResourceID(vessel, globalsettings.OxygenId,
                                 desiredOxygen, true, true, false, out oxygenObtained, out oxygenSpace);
                         }
-                        else if (settings_sec1.backgroundresources && backgroundProcessingAvailable)
+                        else if (settings_sec1.backgroundresources && backgroundResourcesAvailable)
                         {
                             UnloadedResourceProcessing.RequestResource(vessel.protoVessel, globalsettings.Oxygen, desiredOxygen, out oxygenObtained);
                         }
@@ -1134,7 +1136,7 @@ namespace Tac
                             RSTUtils.Utilities.requireResourceID(vessel, globalsettings.CO2Id,
                                 -co2Production, true, false, false, out co2Obtained, out co2Space);
                         }
-                        else if (settings_sec1.backgroundresources && backgroundProcessingAvailable)
+                        else if (settings_sec1.backgroundresources && backgroundResourcesAvailable)
                         {
                             UnloadedResourceProcessing.RequestResource(vessel.protoVessel, globalsettings.CO2, co2Production, out co2Obtained, true);
                         }
@@ -1184,7 +1186,8 @@ namespace Tac
                 if (vesselInfo.remainingElectricity >= rate)  //If we have enough EC stored we process
                 {
                     //The delta Time is the minimum of the amount of time since we last took EC and the minimum of EC max delta time or currented fixed delta time.
-                    double deltaTime = Math.Min(currentTime - vesselInfo.lastElectricity, globalsettings.MaxDeltaTime);
+                    //double deltaTime = Math.Min(currentTime - vesselInfo.lastElectricity, globalsettings.MaxDeltaTime);
+                    double deltaTime = currentTime - vesselInfo.lastElectricity;
                     double desiredElectricity = rate * deltaTime;  //We need the rate x delta time.                    
                     double electricityObtained = 0;
                     double electricitySpace = 0;
@@ -1193,7 +1196,7 @@ namespace Tac
                         RSTUtils.Utilities.requireResourceID(vessel, globalsettings.ElectricityId,
                             desiredElectricity, true, true, false, out electricityObtained, out electricitySpace);
                     }
-                    else if (settings_sec1.backgroundresources && backgroundProcessingAvailable)
+                    else if (settings_sec1.backgroundresources && backgroundResourcesAvailable)
                     {
                         UnloadedResourceProcessing.RequestResource(vessel.protoVessel, globalsettings.Electricity, desiredElectricity, out electricityObtained);
                     }
