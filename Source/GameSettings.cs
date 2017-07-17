@@ -55,15 +55,6 @@ namespace Tac
                 ConfigNode settingsNode = node.GetNode(configNodeName);
 
                 settingsNode.TryGetValue("IsNewSave", ref IsNewSave);
-
-                knownCrew.Clear();
-                var crewNodes = settingsNode.GetNodes(CrewMemberInfo.ConfigNodeName);
-                foreach (ConfigNode crewNode in crewNodes)
-                {
-                    CrewMemberInfo crewMemberInfo = CrewMemberInfo.Load(crewNode);
-                    knownCrew[crewMemberInfo.name] = crewMemberInfo;
-                }
-
                 knownVessels.Clear();
                 var vesselNodes = settingsNode.GetNodes(VesselInfo.ConfigNodeName);
                 foreach (ConfigNode vesselNode in vesselNodes)
@@ -73,6 +64,18 @@ namespace Tac
                         Guid id = new Guid(vesselNode.GetValue("Guid"));
                         VesselInfo vesselInfo = VesselInfo.Load(vesselNode);
                         knownVessels[id] = vesselInfo;
+                    }
+                }
+
+                knownCrew.Clear();
+                var crewNodes = settingsNode.GetNodes(CrewMemberInfo.ConfigNodeName);
+                foreach (ConfigNode crewNode in crewNodes)
+                {
+                    CrewMemberInfo crewMemberInfo = CrewMemberInfo.Load(crewNode);
+                    knownCrew[crewMemberInfo.name] = crewMemberInfo;
+                    if (knownVessels.Contains(crewMemberInfo.vesselId))
+                    {
+                        knownVessels[crewMemberInfo.vesselId].CrewInVessel.Add(crewMemberInfo);
                     }
                 }
             }

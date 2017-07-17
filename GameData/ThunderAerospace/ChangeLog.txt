@@ -1,3 +1,7 @@
+v0.13.5
+	Fix so opening the window only occurs in an actual atmosphere.
+	Added Hibernate option for EC and O2 consumption. Re-wrote how hibernation works internally.
+	Fix EC processing.
 v0.13.4
 	Unloaded vessels EC processing at high timewarp.
 v0.13.3
