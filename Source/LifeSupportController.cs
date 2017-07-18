@@ -1389,13 +1389,24 @@ namespace Tac
             // 2) flying on Kerbin with electricity for the vents, below a reasonable altitude
             if (vessel.mainBody == FlightGlobals.GetHomeBody() || vessel.mainBody.atmosphereContainsOxygen)
             {
+                // On or above a planet with Oxygen
+                double atmdensity = 0f;
+                if (vessel.loaded)
+                {
+                    atmdensity = vessel.atmDensity;
+                }
+                else
+                {
+                    double seaLevelPressure = vessel.mainBody.GetPressure(0);
+                    atmdensity = vessel.staticPressurekPa / seaLevelPressure;
+                }
                 // On or above Kerbin or a Planet that has an atmosphere that contains oxygen.
-                if (vessel.atmDensity > 0.5)
+                if (atmdensity > 0.5)
                 {
                     // air pressure is high enough so they can open a window
                     return false;
                 }
-                if (vessel.atmDensity > 0.2 && vesselInfo.remainingElectricity > vesselInfo.estimatedElectricityConsumptionRate)
+                if (atmdensity > 0.2 && vesselInfo.remainingElectricity > vesselInfo.estimatedElectricityConsumptionRate)
                 {
                     // air pressure is high enough & have electricity to run vents
                     return false;
@@ -1417,8 +1428,18 @@ namespace Tac
             // 1) on Kerbin below a reasonable altitude, so they can open a hatch or window or vent
             if (vessel.mainBody == FlightGlobals.GetHomeBody() || vessel.mainBody.atmosphereContainsOxygen)
             {
-                // On or above Kerbin
-                if (vessel.atmDensity > 0.5)
+                // On or above a planet with Oxygen
+                double atmdensity = 0f;
+                if (vessel.loaded)
+                {
+                    atmdensity = vessel.atmDensity;
+                }
+                else
+                {
+                    double seaLevelPressure = vessel.mainBody.GetPressure(0);
+                    atmdensity = vessel.staticPressurekPa / seaLevelPressure;
+                }
+                if (atmdensity > 0.5)
                 {
                     // air pressure is high enough so they can open a window
                     return false;
@@ -2023,9 +2044,12 @@ namespace Tac
         private void KillCrewMember(ProtoCrewMember crewMember, string causeOfDeath, Vessel vessel)
         {
             TimeWarp.SetRate(0, false);
-            if (CameraManager.Instance.currentCameraMode == CameraManager.CameraMode.IVA)
+            if (CameraManager.Instance != null)
             {
-                CameraManager.Instance.SetCameraFlight();
+                if (CameraManager.Instance.currentCameraMode == CameraManager.CameraMode.IVA)
+                {
+                    CameraManager.Instance.SetCameraFlight();
+                }
             }
 
             string vesselName = (!vessel.isEVA) ? vessel.vesselName + " - " : "";
