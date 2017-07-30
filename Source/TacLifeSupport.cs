@@ -210,7 +210,7 @@ namespace Tac
                         child.Load(gameNode);
                     }
                 }
-                //this.Log("OnLoad: " + gameNode);
+                this.Log("OnLoad: " + gameNode);
             }
         }
 
@@ -228,7 +228,7 @@ namespace Tac
                         child.Save(gameNode);
                     }
                 }
-                //this.Log("OnSave: " + gameNode);
+                this.Log("OnSave: " + gameNode);
             }
         }
 

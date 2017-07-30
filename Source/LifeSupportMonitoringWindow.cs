@@ -61,6 +61,7 @@ namespace Tac
         private static string cacheautoLOC_TACLS_00011;
         private static string cacheautoLOC_TACLS_00012;
         private static string cacheautoLOC_TACLS_00233;
+        private static string cacheautoLOC_TACLS_00257;
         private void cacheLocalStrings()
         {
             cacheautoLOC_TACLS_00002 = Localizer.Format("#autoLOC_TACLS_00002"); // cacheautoLOC_TACLS_00002 = No Vessels.
@@ -75,6 +76,7 @@ namespace Tac
             cacheautoLOC_TACLS_00011 = Localizer.Format("#autoLOC_TACLS_00011"); // cacheautoLOC_TACLS_00011 = \u0020\u0020Oxygen remaining:
             cacheautoLOC_TACLS_00012 = Localizer.Format("#autoLOC_TACLS_00012"); // cacheautoLOC_TACLS_00012 = \u0020\u0020Electricity remaining:
             cacheautoLOC_TACLS_00233 = Localizer.Format("#autoLOC_TACLS_00233"); // cacheautoLOC_TACLS_00012 = \u0020\u0020Out of EC, Windows are Open
+            cacheautoLOC_TACLS_00257 = Localizer.Format("#autoLOC_TACLS_00257"); // cacheautoLOC_TACLS_00257 = \u0020\u0020Out of O2, Windows are Open
         }
 
         #endregion
@@ -221,15 +223,27 @@ namespace Tac
                     GUILayout.Label(cacheautoLOC_TACLS_00011, getStyle(vesselInfo.oxygenStatus), GUILayout.Width(150)); // cacheautoLOC_TACLS_00011 = \u0020\u0020Oxygen remaining:
                     GUILayout.Label(Utilities.FormatTime(vesselInfo.estimatedTimeOxygenDepleted - currentTime),getStyle(vesselInfo.oxygenStatus));
                     GUILayout.EndHorizontal();
+                    if (vesselInfo.windowOpen)
+                    {                        
+                        if (vesselInfo.oxygenStatus == VesselInfo.Status.CRITICAL)
+                        {
+                            GUILayout.BeginHorizontal();
+                            GUILayout.Label(cacheautoLOC_TACLS_00257, getStyle(VesselInfo.Status.CRITICAL), GUILayout.Width(150)); // #autoLOC_TACLS_00233 = \u0020\u0020Out of O2, Windows are Open
+                            GUILayout.EndHorizontal();
+                        }
+                    }
                     GUILayout.BeginHorizontal();
                     GUILayout.Label(cacheautoLOC_TACLS_00012, getStyle(vesselInfo.electricityStatus),GUILayout.Width(150)); // cacheautoLOC_TACLS_00012 = \u0020\u0020Electricity remaining:
                     GUILayout.Label(Utilities.FormatTime(vesselInfo.estimatedTimeElectricityDepleted - currentTime),getStyle(vesselInfo.electricityStatus));
                     GUILayout.EndHorizontal();
                     if (vesselInfo.windowOpen)
                     {
-                        GUILayout.BeginHorizontal();
-                        GUILayout.Label(cacheautoLOC_TACLS_00233, getStyle(VesselInfo.Status.CRITICAL), GUILayout.Width(150)); // #autoLOC_TACLS_00233 = \u0020\u0020Out of EC, Windows are Open
-                        GUILayout.EndHorizontal();
+                        if (vesselInfo.electricityStatus == VesselInfo.Status.CRITICAL)
+                        {
+                            GUILayout.BeginHorizontal();
+                            GUILayout.Label(cacheautoLOC_TACLS_00233, getStyle(VesselInfo.Status.CRITICAL), GUILayout.Width(150)); // #autoLOC_TACLS_00233 = \u0020\u0020Out of EC, Windows are Open
+                            GUILayout.EndHorizontal();
+                        }                        
                     }
                 }
             }

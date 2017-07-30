@@ -1,11 +1,19 @@
-v0.13.5
-	Fix so opening the window only occurs in an actual atmosphere.
-	Added Hibernate option for EC and O2 consumption. Re-wrote how hibernation works internally.
-	Fix EC processing.
-	Update CRP to latest version.
-	Fix NRE when attempting to kill Kerbals when not in Flight.
 v0.13.4
-	Unloaded vessels EC processing at high timewarp.
+	This is a DEV/Test build.
+	Caches, produces and consumes Life Support resources on Unloaded vessels and provides a buffer for high time warp.
+	EC Production only supported for solar panels and generators (including Kopernicus Solar Panels) at this time.
+	Fix so opening the window only occurs in an actual atmosphere.
+	Window will be opened when EC or O2 runs out and in an atmosphere.
+	Added Hibernate option for EC and O2 consumption. Re-wrote how hibernation works internally.
+	Hibernation vs Death now working correctly.
+	Fix EC processing for unloaded vessels.
+	Rescue Kerbals now have correct Life support given to them. Rescue kerbas will remain as "Rescue Me!" status consuming no resources until such time as either a) - You swap to them or b) they are loaded (come within loading range of the active vessel).
+	Fixed issue where recovered vessels at times will not clean up Kerbal tracking causing multiple "copies" and duplicated kerbals appearing in the TAC LS monitoring UI.
+	Russian Localization texts included- Thanks go to forum user Tirathangil.
+	Also includes Spanish Localization text.
+	TAC LS Will recognize if BackgroundProcessing mod is installed and turn off it's own processing for all resources.
+	It is highly recommended you Uninstall BackgroundProcessing Mod if you have it installed!
+	Update CRP to latest version. (0.7.1)
 v0.13.3
 	Fix EC processing for unloaded vessels.
 	Expanded Unloaded vessel resource processing to Produce EC for vessels that have solar panels and generators (including Kopernicus Solar Panels).
