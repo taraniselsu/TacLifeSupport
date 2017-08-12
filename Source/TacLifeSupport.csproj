@@ -38,8 +38,9 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\KSPDLLs - 1.3\Assembly-CSharp.dll</HintPath>
     </Reference>
-    <Reference Include="BackgroundResources">
-      <HintPath>..\..\REPOSoftTechKSPUtils\BackgroundResources\bin\Debug\BackgroundResources.dll</HintPath>
+    <Reference Include="BackgroundResources, Version=1.2.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\REPOSoftTechKSPUtils\BackgroundResources\bin\Release\BackgroundResources.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -111,7 +112,7 @@
   <PropertyGroup>
     <AssemblyMajorVersion>0</AssemblyMajorVersion>
     <AssemblyMinorVersion>13</AssemblyMinorVersion>
-    <AssemblyBuildNumber>2</AssemblyBuildNumber>
+    <AssemblyBuildNumber>5</AssemblyBuildNumber>
     <AssemblyFileMajorVersion>$(AssemblyMajorVersion)</AssemblyFileMajorVersion>
     <AssemblyFileMinorVersion>$(AssemblyMinorVersion)</AssemblyFileMinorVersion>
     <AssemblyFileBuildNumber>$(AssemblyBuildNumber)</AssemblyFileBuildNumber>
@@ -206,7 +207,7 @@
     <!-- Copy to the test directory -->
     <Warning Condition="'$(KSP_TEST)' == ''" Text="The environment variable KSP_TEST is not set!" />
     <Message Text="Execute Test Debug mode commands" Importance="high" />
-    <Exec Command="$(ProjectDir)packages\Mono.Unofficial.pdb2mdb.4.2.3.4\tools\pdb2mdb.exe $(TargetFileName)" WorkingDirectory="$(TargetDir)" IgnoreExitCode="true" Condition="'$(KSP_TEST)' != ''" />
+    <Exec Command="$(ProjectDir)..\..\pdb2mdb\pdb2mdb.exe $(TargetFileName)" WorkingDirectory="$(TargetDir)" IgnoreExitCode="true" Condition="'$(KSP_TEST)' != ''" />
     <Copy SourceFiles="$(TargetDir)$(TargetName).pdb" DestinationFolder="$(KSP_TEST)\GameData\ThunderAerospace\TacLifeSupport\Plugins\" Condition="'$(KSP_TEST)' != ''" />
     <Copy SourceFiles="$(TargetDir)$(TargetName).dll.mdb" DestinationFolder="$(KSP_TEST)\GameData\ThunderAerospace\TacLifeSupport\Plugins\" Condition="'$(KSP_TEST)' != ''" />
     <Exec Command="test.bat" WorkingDirectory="$(BaseDir)\" IgnoreExitCode="true" Condition="'$(KSP_TEST)' != ''" />

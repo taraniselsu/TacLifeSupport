@@ -301,13 +301,13 @@ namespace Tac
 
                 if (numCrew > 0)
                 {
-                    foodDuration = Utilities.FormatTime(foodValue / globalSettings.FoodConsumptionRate / numCrew);
-                    waterDuration = Utilities.FormatTime(waterValue / globalSettings.WaterConsumptionRate / numCrew);
-                    oxygenDuration = Utilities.FormatTime(oxygenValue / globalSettings.OxygenConsumptionRate / numCrew);
+                    foodDuration = Utilities.FormatTime(foodValue / HighLogic.CurrentGame.Parameters.CustomParams<TAC_SettingsParms_Sec2>().FoodConsumptionRate / numCrew);
+                    waterDuration = Utilities.FormatTime(waterValue / HighLogic.CurrentGame.Parameters.CustomParams<TAC_SettingsParms_Sec2>().WaterConsumptionRate / numCrew);
+                    oxygenDuration = Utilities.FormatTime(oxygenValue / HighLogic.CurrentGame.Parameters.CustomParams<TAC_SettingsParms_Sec2>().OxygenConsumptionRate / numCrew);
                     electricityDuration = Utilities.FormatTime(electricityValue / CalculateElectricityConsumptionRate(numCrew, numOccupiedParts));
-                    wasteRoom = Utilities.FormatTime(wasteValue / globalSettings.WasteProductionRate / numCrew);
-                    wasteWaterRoom = Utilities.FormatTime(wasteWaterValue / globalSettings.WasteWaterProductionRate / numCrew);
-                    carbonDioxideRoom = Utilities.FormatTime(carbonDioxideValue / globalSettings.CO2ProductionRate / numCrew);
+                    wasteRoom = Utilities.FormatTime(wasteValue / HighLogic.CurrentGame.Parameters.CustomParams<TAC_SettingsParms_Sec2>().WasteProductionRate / numCrew);
+                    wasteWaterRoom = Utilities.FormatTime(wasteWaterValue / HighLogic.CurrentGame.Parameters.CustomParams<TAC_SettingsParms_Sec2>().WasteWaterProductionRate / numCrew);
+                    carbonDioxideRoom = Utilities.FormatTime(carbonDioxideValue / HighLogic.CurrentGame.Parameters.CustomParams<TAC_SettingsParms_Sec2>().CO2ProductionRate / numCrew);
                 }
                 else
                 {
@@ -322,13 +322,13 @@ namespace Tac
 
                 if (maxCrew > 0)
                 {
-                    foodDurationMaxCrew = Utilities.FormatTime(foodValue / globalSettings.FoodConsumptionRate / maxCrew);
-                    waterDurationMaxCrew = Utilities.FormatTime(waterValue / globalSettings.WaterConsumptionRate / maxCrew);
-                    oxygenDurationMaxCrew = Utilities.FormatTime(oxygenValue / globalSettings.OxygenConsumptionRate / maxCrew);
+                    foodDurationMaxCrew = Utilities.FormatTime(foodValue / HighLogic.CurrentGame.Parameters.CustomParams<TAC_SettingsParms_Sec2>().FoodConsumptionRate / maxCrew);
+                    waterDurationMaxCrew = Utilities.FormatTime(waterValue / HighLogic.CurrentGame.Parameters.CustomParams<TAC_SettingsParms_Sec2>().WaterConsumptionRate / maxCrew);
+                    oxygenDurationMaxCrew = Utilities.FormatTime(oxygenValue / HighLogic.CurrentGame.Parameters.CustomParams<TAC_SettingsParms_Sec2>().OxygenConsumptionRate / maxCrew);
                     electricityDurationMaxCrew = Utilities.FormatTime(electricityValue / CalculateElectricityConsumptionRate(maxCrew, numOccupiableParts));
-                    wasteRoomMaxCrew = Utilities.FormatTime(wasteValue / globalSettings.WasteProductionRate / maxCrew);
-                    wasteWaterRoomMaxCrew = Utilities.FormatTime(wasteWaterValue / globalSettings.WasteWaterProductionRate / maxCrew);
-                    carbonDioxideRoomMaxCrew = Utilities.FormatTime(carbonDioxideValue / globalSettings.CO2ProductionRate / maxCrew);
+                    wasteRoomMaxCrew = Utilities.FormatTime(wasteValue / HighLogic.CurrentGame.Parameters.CustomParams<TAC_SettingsParms_Sec2>().WasteProductionRate / maxCrew);
+                    wasteWaterRoomMaxCrew = Utilities.FormatTime(wasteWaterValue / HighLogic.CurrentGame.Parameters.CustomParams<TAC_SettingsParms_Sec2>().WasteWaterProductionRate / maxCrew);
+                    carbonDioxideRoomMaxCrew = Utilities.FormatTime(carbonDioxideValue / HighLogic.CurrentGame.Parameters.CustomParams<TAC_SettingsParms_Sec2>().CO2ProductionRate / maxCrew);
                 }
                 else
                 {
@@ -345,8 +345,8 @@ namespace Tac
 
         private double CalculateElectricityConsumptionRate(int numCrew, int numParts)
         {
-            return (globalSettings.ElectricityConsumptionRate * numCrew) + 
-                (globalSettings.BaseElectricityConsumptionRate * numParts);
+            return (HighLogic.CurrentGame.Parameters.CustomParams<TAC_SettingsParms_Sec2>().ElectricityConsumptionRate * numCrew) + 
+                (HighLogic.CurrentGame.Parameters.CustomParams<TAC_SettingsParms_Sec2>().BaseElectricityConsumptionRate * numParts);
         }
     }
 }

@@ -25,6 +25,9 @@
  */
 
 
+using System;
+using System.Collections.Generic;
+
 namespace Tac
 {
 
@@ -39,6 +42,7 @@ namespace Tac
         public int numCrew;  //The number of crew on board
         public int numOccupiedParts; //The number of occupied parts
         public int numFrozenCrew; //The number of frozen crew on board (DeepFreeze compatibility)
+        public List<CrewMemberInfo> CrewInVessel;
 
         public double lastUpdate;  //The last time the vesselinfo was updated
         public double lastFood;    //The last time food was consumed
@@ -90,6 +94,7 @@ namespace Tac
             vesselType = vesseltype;
             recoveryvessel = false;
             windowOpen = false;
+            CrewInVessel = new List<CrewMemberInfo>();
         }
 
         public static VesselInfo Load(ConfigNode node)
@@ -202,11 +207,12 @@ namespace Tac
             maxElectricity = 0.0;
         }
 
+        [Flags]
         public enum Status 
         {
             GOOD = 1,
             LOW = 2,
-            CRITICAL = 3
+            CRITICAL = 4
         }
     }
 }
