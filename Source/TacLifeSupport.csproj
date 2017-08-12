@@ -38,8 +38,9 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\KSPDLLs - 1.3\Assembly-CSharp.dll</HintPath>
     </Reference>
-    <Reference Include="BackgroundResources">
-      <HintPath>..\..\REPOSoftTechKSPUtils\BackgroundResources\bin\Debug\BackgroundResources.dll</HintPath>
+    <Reference Include="BackgroundResources, Version=1.2.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\REPOSoftTechKSPUtils\BackgroundResources\bin\Release\BackgroundResources.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -111,7 +112,7 @@
   <PropertyGroup>
     <AssemblyMajorVersion>0</AssemblyMajorVersion>
     <AssemblyMinorVersion>13</AssemblyMinorVersion>
-    <AssemblyBuildNumber>4</AssemblyBuildNumber>
+    <AssemblyBuildNumber>5</AssemblyBuildNumber>
     <AssemblyFileMajorVersion>$(AssemblyMajorVersion)</AssemblyFileMajorVersion>
     <AssemblyFileMinorVersion>$(AssemblyMinorVersion)</AssemblyFileMinorVersion>
     <AssemblyFileBuildNumber>$(AssemblyBuildNumber)</AssemblyFileBuildNumber>

@@ -35,7 +35,7 @@ namespace Tac
     public class TacStartOnce : MonoBehaviour
     {
         public GlobalSettings globalSettings { get; set; }
-        public static TacStartOnce Instance;
+        public static TacStartOnce Instance;       
         
         public void Awake()
         {
@@ -139,12 +139,12 @@ namespace Tac
 
         public double BaseElectricityConsumptionRate
         {
-            get { return TacStartOnce.Instance.globalSettings.BaseElectricityConsumptionRate; }
+            get { return HighLogic.CurrentGame.Parameters.CustomParams<TAC_SettingsParms_Sec2>().BaseElectricityConsumptionRate; }
         }
 
         public double ElectricityConsumptionRate
         {
-            get { return TacStartOnce.Instance.globalSettings.ElectricityConsumptionRate; }
+            get { return HighLogic.CurrentGame.Parameters.CustomParams<TAC_SettingsParms_Sec2>().ElectricityConsumptionRate; }
         }
 
         public TacLifeSupport()

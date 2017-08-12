@@ -1005,8 +1005,8 @@ namespace Tac
         /// <param name="part"></param>
         private void ConsumeFood(double currentTime, Vessel vessel, VesselInfo vesselInfo, ProtoCrewMember crewMember, CrewMemberInfo crewMemberInfo, Part part)
         {
-            double deltaTime = Math.Min(currentTime - crewMemberInfo.lastFood, globalsettings.MaxDeltaTime);
-            double desiredFood = globalsettings.FoodConsumptionRate * deltaTime;
+            double deltaTime = Math.Min(currentTime - crewMemberInfo.lastFood, HighLogic.CurrentGame.Parameters.CustomParams<TAC_SettingsParms_Sec3>().MaxDeltaTime);
+            double desiredFood = HighLogic.CurrentGame.Parameters.CustomParams<TAC_SettingsParms_Sec2>().FoodConsumptionRate * deltaTime;
             // determine if we have enough remaining Food.
             //If Vessel is unloaded and timewarp is high, we need to check the resource cache.
             bool haveEnough = false;
@@ -1032,7 +1032,7 @@ namespace Tac
                     UnloadedResourceProcessing.RequestResource(vessel.protoVessel, globalsettings.Food, desiredFood, out foodObtained);
                 }
 
-                double wasteProduced = foodObtained * globalsettings.WasteProductionRate / globalsettings.FoodConsumptionRate;
+                double wasteProduced = foodObtained * HighLogic.CurrentGame.Parameters.CustomParams<TAC_SettingsParms_Sec2>().WasteProductionRate / HighLogic.CurrentGame.Parameters.CustomParams<TAC_SettingsParms_Sec2>().FoodConsumptionRate;
                 double wasteObtained = 0;
                 double wasteSpace = 0;
                 if (vessel.loaded)
@@ -1044,7 +1044,7 @@ namespace Tac
                     UnloadedResourceProcessing.RequestResource(vessel.protoVessel, globalsettings.Waste, wasteProduced, out wasteObtained, true);
                 }
 
-                crewMemberInfo.lastFood += deltaTime - ((desiredFood - foodObtained) / globalsettings.FoodConsumptionRate);
+                crewMemberInfo.lastFood += deltaTime - ((desiredFood - foodObtained) / HighLogic.CurrentGame.Parameters.CustomParams<TAC_SettingsParms_Sec2>().FoodConsumptionRate);
 
                 if (crewMemberInfo.hibernating && crewMemberInfo.lackofFood)
                 {
@@ -1054,7 +1054,7 @@ namespace Tac
             else
             {
                 double timeWithoutFood = currentTime - crewMemberInfo.lastFood;
-                if (timeWithoutFood > (globalsettings.MaxTimeWithoutFood + crewMemberInfo.respite) * Mathf.Max(1, TimeWarp.CurrentRateIndex))
+                if (timeWithoutFood > (HighLogic.CurrentGame.Parameters.CustomParams<TAC_SettingsParms_Sec3>().MaxTimeWithoutFood + crewMemberInfo.respite) * Mathf.Max(1, TimeWarp.CurrentRateIndex))
                 {
                     if (settings_sec1.hibernate == "Die")
                     {
@@ -1080,8 +1080,8 @@ namespace Tac
         /// <param name="part"></param>
         private void ConsumeWater(double currentTime, Vessel vessel, VesselInfo vesselInfo, ProtoCrewMember crewMember,CrewMemberInfo crewMemberInfo, Part part)
         {
-            double deltaTime = Math.Min(currentTime - crewMemberInfo.lastWater, globalsettings.MaxDeltaTime);
-            double desiredWater = globalsettings.WaterConsumptionRate * deltaTime;
+            double deltaTime = Math.Min(currentTime - crewMemberInfo.lastWater, HighLogic.CurrentGame.Parameters.CustomParams<TAC_SettingsParms_Sec3>().MaxDeltaTime);
+            double desiredWater = HighLogic.CurrentGame.Parameters.CustomParams<TAC_SettingsParms_Sec2>().WaterConsumptionRate * deltaTime;
 
             //determine if we have enough remaining Water.
             //If Vessel is unloaded and timewarp is high, we need to check the resource cache.
@@ -1108,7 +1108,7 @@ namespace Tac
                     UnloadedResourceProcessing.RequestResource(vessel.protoVessel, globalsettings.Water, desiredWater, out waterObtained);
                 }
 
-                double wasteWaterProduced = waterObtained * globalsettings.WasteWaterProductionRate / globalsettings.WaterConsumptionRate;
+                double wasteWaterProduced = waterObtained * HighLogic.CurrentGame.Parameters.CustomParams<TAC_SettingsParms_Sec2>().WasteWaterProductionRate / HighLogic.CurrentGame.Parameters.CustomParams<TAC_SettingsParms_Sec2>().WaterConsumptionRate;
                 double wasteWaterObtained = 0;
                 double wasteWaterSpace = 0;
                 if (vessel.loaded)
@@ -1120,7 +1120,7 @@ namespace Tac
                     UnloadedResourceProcessing.RequestResource(vessel.protoVessel, globalsettings.WasteWater, wasteWaterProduced, out wasteWaterObtained, true);
                 }
 
-                crewMemberInfo.lastWater += deltaTime - ((desiredWater - waterObtained) / globalsettings.WaterConsumptionRate);
+                crewMemberInfo.lastWater += deltaTime - ((desiredWater - waterObtained) / HighLogic.CurrentGame.Parameters.CustomParams<TAC_SettingsParms_Sec2>().WaterConsumptionRate);
                 if (crewMemberInfo.hibernating && crewMemberInfo.lackofWater)
                 {
                     RemoveHibernationState(crewMemberInfo, vessel, "Water");
@@ -1129,7 +1129,7 @@ namespace Tac
             else
             {
                 double timeWithoutWater = currentTime - crewMemberInfo.lastWater;
-                if (timeWithoutWater > (globalsettings.MaxTimeWithoutWater + crewMemberInfo.respite) * Mathf.Max(1, TimeWarp.CurrentRateIndex))
+                if (timeWithoutWater > (HighLogic.CurrentGame.Parameters.CustomParams<TAC_SettingsParms_Sec3>().MaxTimeWithoutWater + crewMemberInfo.respite) * Mathf.Max(1, TimeWarp.CurrentRateIndex))
                 {
                     if (settings_sec1.hibernate == "Die")
                     {
@@ -1154,8 +1154,8 @@ namespace Tac
         {            
             if (vesselInfo.numCrew > 0)  //If there is crew on board, we need to process oxygen.
             {
-                double deltaTime = Math.Min(currentTime - vesselInfo.lastOxygen, globalsettings.MaxDeltaTime);
-                double rate = globalsettings.OxygenConsumptionRate * vesselInfo.numCrew;
+                double deltaTime = Math.Min(currentTime - vesselInfo.lastOxygen, HighLogic.CurrentGame.Parameters.CustomParams<TAC_SettingsParms_Sec3>().MaxDeltaTime);
+                double rate = HighLogic.CurrentGame.Parameters.CustomParams<TAC_SettingsParms_Sec2>().OxygenConsumptionRate * vesselInfo.numCrew;
                 double desiredOxygen = rate * deltaTime;
                 //determine if we have enough remaining O2.
                 //If Vessel is unloaded and timewarp is high, we need to check the resource cache.
@@ -1185,7 +1185,7 @@ namespace Tac
                         UnloadedResourceProcessing.RequestResource(vessel.protoVessel, globalsettings.Oxygen, desiredOxygen, out oxygenObtained);
                     }
 
-                    double co2Production = oxygenObtained * globalsettings.CO2ProductionRate / globalsettings.OxygenConsumptionRate;
+                    double co2Production = oxygenObtained * HighLogic.CurrentGame.Parameters.CustomParams<TAC_SettingsParms_Sec2>().CO2ProductionRate / HighLogic.CurrentGame.Parameters.CustomParams<TAC_SettingsParms_Sec2>().OxygenConsumptionRate;
                     double co2Obtained = 0;
                     double co2Space = 0;
                     if (vessel.loaded)
@@ -1204,7 +1204,7 @@ namespace Tac
                     if (NeedOxygen(vessel, vesselInfo))  //And yeah, we kinda need Oxygen where we are... Oh dear!
                     {
                         double timeWithoutOxygen = currentTime - vesselInfo.lastOxygen;
-                        if (timeWithoutOxygen > globalsettings.MaxTimeWithoutOxygen * Mathf.Max(1, TimeWarp.CurrentRateIndex))
+                        if (timeWithoutOxygen > HighLogic.CurrentGame.Parameters.CustomParams<TAC_SettingsParms_Sec3>().MaxTimeWithoutOxygen * Mathf.Max(1, TimeWarp.CurrentRateIndex))
                         {
                             if (settings_sec1.hibernate == "Die")
                             {
@@ -1286,7 +1286,7 @@ namespace Tac
                     if (NeedElectricity(vessel))
                     {
                         double timeWithoutElectricity = currentTime - vesselInfo.lastElectricity;
-                        if (timeWithoutElectricity > globalsettings.MaxTimeWithoutElectricity * Mathf.Max(1, TimeWarp.CurrentRateIndex))
+                        if (timeWithoutElectricity > HighLogic.CurrentGame.Parameters.CustomParams<TAC_SettingsParms_Sec3>().MaxTimeWithoutElectricity * Mathf.Max(1, TimeWarp.CurrentRateIndex))
                         {
                             if (settings_sec1.hibernate == "Die")
                             {
@@ -1357,11 +1357,11 @@ namespace Tac
                 }
                 else
                 {
-                    return (globalsettings.ElectricityConsumptionRate * vesselInfo.numCrew) + (globalsettings.BaseElectricityConsumptionRate * vesselInfo.numOccupiedParts);
+                    return (HighLogic.CurrentGame.Parameters.CustomParams<TAC_SettingsParms_Sec2>().ElectricityConsumptionRate * vesselInfo.numCrew) + (HighLogic.CurrentGame.Parameters.CustomParams<TAC_SettingsParms_Sec2>().BaseElectricityConsumptionRate * vesselInfo.numOccupiedParts);
                 }
             }
             //EVA vessel:
-            return globalsettings.EvaElectricityConsumptionRate + ConsumeEVALightEC(vessel);
+            return HighLogic.CurrentGame.Parameters.CustomParams<TAC_SettingsParms_Sec2>().EvaElectricityConsumptionRate + ConsumeEVALightEC(vessel);
         }
 
         /// <summary>
@@ -1381,7 +1381,7 @@ namespace Tac
                 {
                     if (kerbalEVA.lampOn) //Ok so if their lamp is on, consume EC
                     {
-                        returnAmount = globalsettings.EvaLampElectricityConsumptionRate;
+                        returnAmount = HighLogic.CurrentGame.Parameters.CustomParams<TAC_SettingsParms_Sec2>().EvaLampElectricityConsumptionRate;
                     }
                 }
             }
@@ -1482,17 +1482,17 @@ namespace Tac
         /// <param name="currentTime"></param>
         private void doWarningProcessing(VesselInfo vesselInfo, double currentTime)
         {
-            double foodRate = globalsettings.FoodConsumptionRate * vesselInfo.numCrew;
+            double foodRate = HighLogic.CurrentGame.Parameters.CustomParams<TAC_SettingsParms_Sec2>().FoodConsumptionRate * vesselInfo.numCrew;
             vesselInfo.estimatedTimeFoodDepleted = vesselInfo.lastFood + (vesselInfo.remainingFood / foodRate);
             double estimatedFood = vesselInfo.remainingFood - ((currentTime - vesselInfo.lastFood) * foodRate);
             ShowWarnings(vesselInfo.vesselName, estimatedFood, vesselInfo.maxFood, foodRate, globalsettings.displayFood, ref vesselInfo.foodStatus);
 
-            double waterRate = globalsettings.WaterConsumptionRate * vesselInfo.numCrew;
+            double waterRate = HighLogic.CurrentGame.Parameters.CustomParams<TAC_SettingsParms_Sec2>().WaterConsumptionRate * vesselInfo.numCrew;
             vesselInfo.estimatedTimeWaterDepleted = (vesselInfo.lastWater + vesselInfo.remainingWater / waterRate);
             double estimatedWater = vesselInfo.remainingWater - ((currentTime - vesselInfo.lastWater) * waterRate);
             ShowWarnings(vesselInfo.vesselName, estimatedWater, vesselInfo.maxWater, waterRate, globalsettings.displayWater, ref vesselInfo.waterStatus);
 
-            double oxygenRate = globalsettings.OxygenConsumptionRate * vesselInfo.numCrew;
+            double oxygenRate = HighLogic.CurrentGame.Parameters.CustomParams<TAC_SettingsParms_Sec2>().OxygenConsumptionRate * vesselInfo.numCrew;
             vesselInfo.estimatedTimeOxygenDepleted = vesselInfo.lastOxygen + (vesselInfo.remainingOxygen / oxygenRate);
             double estimatedOxygen = vesselInfo.remainingOxygen - ((currentTime - vesselInfo.lastOxygen) * oxygenRate);
             ShowWarnings(vesselInfo.vesselName, estimatedOxygen, vesselInfo.maxOxygen, oxygenRate, globalsettings.displayOxygen, ref vesselInfo.oxygenStatus);
@@ -1607,10 +1607,10 @@ namespace Tac
                 this.LogError("FillEvaSuit: new part does not have room for a Food resource.");
             }
 
-            double desiredFood = globalsettings.FoodConsumptionRate * globalsettings.EvaDefaultResourceAmount;
-            double desiredWater = globalsettings.WaterConsumptionRate * globalsettings.EvaDefaultResourceAmount;
-            double desiredOxygen = globalsettings.OxygenConsumptionRate * globalsettings.EvaDefaultResourceAmount;
-            double desiredElectricity = globalsettings.EvaElectricityConsumptionRate * globalsettings.EvaDefaultResourceAmount;
+            double desiredFood = HighLogic.CurrentGame.Parameters.CustomParams<TAC_SettingsParms_Sec2>().FoodConsumptionRate * HighLogic.CurrentGame.Parameters.CustomParams<TAC_SettingsParms_Sec3>().EvaDefaultResourceAmount;
+            double desiredWater = HighLogic.CurrentGame.Parameters.CustomParams<TAC_SettingsParms_Sec2>().WaterConsumptionRate * HighLogic.CurrentGame.Parameters.CustomParams<TAC_SettingsParms_Sec3>().EvaDefaultResourceAmount;
+            double desiredOxygen = HighLogic.CurrentGame.Parameters.CustomParams<TAC_SettingsParms_Sec2>().OxygenConsumptionRate * HighLogic.CurrentGame.Parameters.CustomParams<TAC_SettingsParms_Sec3>().EvaDefaultResourceAmount;
+            double desiredElectricity = HighLogic.CurrentGame.Parameters.CustomParams<TAC_SettingsParms_Sec2>().EvaElectricityConsumptionRate * HighLogic.CurrentGame.Parameters.CustomParams<TAC_SettingsParms_Sec3>().EvaDefaultResourceAmount;
 
             Vessel lastVessel = oldPart.vessel;
             Vessel newVessel = newPart.vessel;
@@ -1648,10 +1648,10 @@ namespace Tac
 
             // Only fill the suit to 50-90% full
             double fillAmount = UnityEngine.Random.Range(0.5f, 0.9f);
-            RescuePartAddResource(part, globalsettings.Electricity, fillAmount * (globalsettings.BaseElectricityConsumptionRate + globalsettings.ElectricityConsumptionRate) * globalsettings.EvaDefaultResourceAmount);
-            RescuePartAddResource(part, globalsettings.Food, fillAmount * globalsettings.FoodConsumptionRate * globalsettings.EvaDefaultResourceAmount);
-            RescuePartAddResource(part, globalsettings.Water, fillAmount * globalsettings.WaterConsumptionRate * globalsettings.EvaDefaultResourceAmount);
-            RescuePartAddResource(part, globalsettings.Oxygen, fillAmount * globalsettings.OxygenConsumptionRate * globalsettings.EvaDefaultResourceAmount);
+            RescuePartAddResource(part, globalsettings.Electricity, fillAmount * (HighLogic.CurrentGame.Parameters.CustomParams<TAC_SettingsParms_Sec2>().BaseElectricityConsumptionRate + HighLogic.CurrentGame.Parameters.CustomParams<TAC_SettingsParms_Sec2>().ElectricityConsumptionRate) * HighLogic.CurrentGame.Parameters.CustomParams<TAC_SettingsParms_Sec3>().EvaDefaultResourceAmount);
+            RescuePartAddResource(part, globalsettings.Food, fillAmount * HighLogic.CurrentGame.Parameters.CustomParams<TAC_SettingsParms_Sec2>().FoodConsumptionRate * HighLogic.CurrentGame.Parameters.CustomParams<TAC_SettingsParms_Sec3>().EvaDefaultResourceAmount);
+            RescuePartAddResource(part, globalsettings.Water, fillAmount * HighLogic.CurrentGame.Parameters.CustomParams<TAC_SettingsParms_Sec2>().WaterConsumptionRate * HighLogic.CurrentGame.Parameters.CustomParams<TAC_SettingsParms_Sec3>().EvaDefaultResourceAmount);
+            RescuePartAddResource(part, globalsettings.Oxygen, fillAmount * HighLogic.CurrentGame.Parameters.CustomParams<TAC_SettingsParms_Sec2>().OxygenConsumptionRate * HighLogic.CurrentGame.Parameters.CustomParams<TAC_SettingsParms_Sec3>().EvaDefaultResourceAmount);
             vessel.UpdateResourceSets();
         }
 

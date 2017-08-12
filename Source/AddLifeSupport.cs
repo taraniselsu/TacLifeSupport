@@ -89,14 +89,15 @@ namespace Tac
 
             this.Log("Adding resources to " + part.name + "/" + prefabPart.partInfo.title);
 
-            EvaAddPartModule(prefabPart); 
-            EvaAddResource(prefabPart, globalSettings.EvaElectricityConsumptionRate, globalSettings.Electricity, false);
-            EvaAddResource(prefabPart, globalSettings.FoodConsumptionRate, globalSettings.Food, false);
-            EvaAddResource(prefabPart, globalSettings.WaterConsumptionRate, globalSettings.Water, false);
-            EvaAddResource(prefabPart, globalSettings.OxygenConsumptionRate, globalSettings.Oxygen, false);
-            EvaAddResource(prefabPart, globalSettings.CO2ProductionRate, globalSettings.CO2, false);
-            EvaAddResource(prefabPart, globalSettings.WasteProductionRate, globalSettings.Waste, false);
-            EvaAddResource(prefabPart, globalSettings.WasteWaterProductionRate, globalSettings.WasteWater, false);
+            EvaAddPartModule(prefabPart);
+            if (HighLogic.CurrentGame == null) return;
+            EvaAddResource(prefabPart, HighLogic.CurrentGame.Parameters.CustomParams<TAC_SettingsParms_Sec2>().EvaElectricityConsumptionRate, globalSettings.Electricity, false);
+            EvaAddResource(prefabPart, HighLogic.CurrentGame.Parameters.CustomParams<TAC_SettingsParms_Sec2>().FoodConsumptionRate, globalSettings.Food, false);
+            EvaAddResource(prefabPart, HighLogic.CurrentGame.Parameters.CustomParams<TAC_SettingsParms_Sec2>().WaterConsumptionRate, globalSettings.Water, false);
+            EvaAddResource(prefabPart, HighLogic.CurrentGame.Parameters.CustomParams<TAC_SettingsParms_Sec2>().OxygenConsumptionRate, globalSettings.Oxygen, false);
+            EvaAddResource(prefabPart, HighLogic.CurrentGame.Parameters.CustomParams<TAC_SettingsParms_Sec2>().CO2ProductionRate, globalSettings.CO2, false);
+            EvaAddResource(prefabPart, HighLogic.CurrentGame.Parameters.CustomParams<TAC_SettingsParms_Sec2>().WasteProductionRate, globalSettings.Waste, false);
+            EvaAddResource(prefabPart, HighLogic.CurrentGame.Parameters.CustomParams<TAC_SettingsParms_Sec2>().WasteWaterProductionRate, globalSettings.WasteWater, false);
             for (int i = 0; i < prefabPart.Resources.Count; i++)
             {
                 this.Log("Resource " + prefabPart.Resources[i].resourceName);
@@ -142,7 +143,7 @@ namespace Tac
         {
             try
             {
-                double max = rate * TacStartOnce.Instance.globalSettings.EvaDefaultResourceAmount;
+                double max = rate * HighLogic.CurrentGame.Parameters.CustomParams<TAC_SettingsParms_Sec3>().EvaDefaultResourceAmount;
                 ConfigNode resourceNode = new ConfigNode("RESOURCE");
                 resourceNode.AddValue("name", name);
                 resourceNode.AddValue("maxAmount", max);

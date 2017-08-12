@@ -1,8 +1,7 @@
-v0.13.4
-	This is a DEV/Test build.
+v0.13.5
 	Caches, produces and consumes Life Support resources on Unloaded vessels and provides a buffer for high time warp.
-	EC Production only supported for solar panels and generators (including Kopernicus Solar Panels) at this time.
-	Fix so opening the window only occurs in an actual atmosphere.
+	WARNING: EC Production only supported for solar panels and generators (including Kopernicus Solar Panels) at this time.
+	Fixed bug so that opening the window only occurs in an actual atmosphere.
 	Window will be opened when EC or O2 runs out and in an atmosphere.
 	Added Hibernate option for EC and O2 consumption. Re-wrote how hibernation works internally.
 	Hibernation vs Death now working correctly.
@@ -10,10 +9,11 @@ v0.13.4
 	Rescue Kerbals now have correct Life support given to them. Rescue kerbas will remain as "Rescue Me!" status consuming no resources until such time as either a) - You swap to them or b) they are loaded (come within loading range of the active vessel).
 	Fixed issue where recovered vessels at times will not clean up Kerbal tracking causing multiple "copies" and duplicated kerbals appearing in the TAC LS monitoring UI.
 	Russian Localization texts included- Thanks go to forum user Tirathangil.
-	Also includes Spanish Localization text.
-	TAC LS Will recognize if BackgroundProcessing mod is installed and turn off it's own processing for all resources.
-	It is highly recommended you Uninstall BackgroundProcessing Mod if you have it installed!
+	Also includes Spanish Localization text. Thanks goes to forum user Fitiales.
+	TAC LS Will recognize if BackgroundProcessing mod is installed and turn off it's own processing for all resources. It is highly recommended you Uninstall BackgroundProcessing Mod if you have it installed!
+	Fixed TACLS difficulty Game Settings from being reset. - WARNING: This may reset some of your TACLS resource values in your save game. Please check them in your save games after upgrading.
 	Update CRP to latest version. (0.7.1)
+v0.13.4 - Was a series of dev/test builds see changelog for 0.13.5 above.
 v0.13.3
 	Fix EC processing for unloaded vessels.
 	Expanded Unloaded vessel resource processing to Produce EC for vessels that have solar panels and generators (including Kopernicus Solar Panels).
