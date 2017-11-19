@@ -1,3 +1,6 @@
+v0.13.7 Dev
+	Fix issue where if CCK is not installed TAC LS parts not showing in Editors.
+	Fix issues with EC consumption - Correct delta time check and not recording last EC usage when EC runs out resulting in never ending shortage in both scenario where window can be open and cannot.	
 v0.13.6
 	Re-Compile for KSP 1.3.1
 v0.13.5
