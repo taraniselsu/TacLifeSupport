@@ -34,9 +34,9 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Assembly-CSharp, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+    <Reference Include="Assembly-CSharp, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\KSPDLLs - 1.3\Assembly-CSharp.dll</HintPath>
+      <HintPath>..\..\KSPDLLs - 1.4\Assembly-CSharp.dll</HintPath>
     </Reference>
     <Reference Include="BackgroundResources, Version=1.3.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
@@ -50,11 +50,11 @@
     <Reference Include="System.Xml" />
     <Reference Include="UnityEngine, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\KSPDLLs - 1.3\UnityEngine.dll</HintPath>
+      <HintPath>..\..\KSPDLLs - 1.4\UnityEngine.dll</HintPath>
     </Reference>
     <Reference Include="UnityEngine.UI, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\KSPDLLs - 1.3\UnityEngine.UI.dll</HintPath>
+      <HintPath>..\..\KSPDLLs - 1.4\UnityEngine.UI.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
@@ -112,7 +112,7 @@
   <PropertyGroup>
     <AssemblyMajorVersion>0</AssemblyMajorVersion>
     <AssemblyMinorVersion>13</AssemblyMinorVersion>
-    <AssemblyBuildNumber>7</AssemblyBuildNumber>
+    <AssemblyBuildNumber>8</AssemblyBuildNumber>
     <AssemblyFileMajorVersion>$(AssemblyMajorVersion)</AssemblyFileMajorVersion>
     <AssemblyFileMinorVersion>$(AssemblyMinorVersion)</AssemblyFileMinorVersion>
     <AssemblyFileBuildNumber>$(AssemblyBuildNumber)</AssemblyFileBuildNumber>
@@ -130,13 +130,13 @@
     <DownloadUrl>https://github.com/KSP-RO/TacLifeSupport/releases</DownloadUrl>
     <ChangelogUrl>https://github.com/KSP-RO/TacLifeSupport/wiki/Changes</ChangelogUrl>
     <KspVersionMajor>1</KspVersionMajor>
-    <KspVersionMinor>3</KspVersionMinor>
+    <KspVersionMinor>4</KspVersionMinor>
     <KspVersionPatch>1</KspVersionPatch>
     <KspMinVersionMajor>1</KspMinVersionMajor>
-    <KspMinVersionMinor>3</KspMinVersionMinor>
+    <KspMinVersionMinor>4</KspMinVersionMinor>
     <KspMinVersionPatch>1</KspMinVersionPatch>
     <KspMaxVersionMajor>1</KspMaxVersionMajor>
-    <KspMaxVersionMinor>3</KspMaxVersionMinor>
+    <KspMaxVersionMinor>4</KspMaxVersionMinor>
     <KspMaxVersionPatch>1</KspMaxVersionPatch>
   </PropertyGroup>
   <Target Name="GitInfo">
