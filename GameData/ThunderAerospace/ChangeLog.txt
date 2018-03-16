@@ -1,3 +1,6 @@
+V0.13.9
+	Add Life Support to kerbals wearing the Making History suits.
+	Update the included Module Manager version to the correct one.
 V0.13.8
 	Re-compile for KSP 1.4.1.
 v0.13.7 Dev

@@ -53,7 +53,7 @@ namespace Tac
 
                 try
                 {
-                    var evaParts = PartLoader.LoadedPartsList.Where(p => p.name.Equals("kerbalEVA") || p.name.Equals("kerbalEVAfemale"));
+                    var evaParts = PartLoader.LoadedPartsList.Where(p => p.name.Contains("kerbalEVA"));
                     foreach (var evaPart in evaParts)
                     {
                         EvaAddLifeSupport(evaPart);
@@ -71,7 +71,7 @@ namespace Tac
         {
             try
             {
-                var evaParts = PartLoader.LoadedPartsList.Where(p => p.name.Equals("kerbalEVA") || p.name.Equals("kerbalEVAfemale"));
+                var evaParts = PartLoader.LoadedPartsList.Where(p => p.name.Contains("kerbalEVA"));
                 foreach (var evaPart in evaParts)
                 {
                     EvaAddLifeSupport(evaPart);
