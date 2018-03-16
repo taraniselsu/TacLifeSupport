@@ -24,7 +24,7 @@ namespace Tac
         // This class ass a Filter Icon to the Editor to show TACLS Parts
         private static List<AvailablePart> TacavPartItems = new List<AvailablePart>();
         public static TACEditorFilter Instance;
-        internal string category = "Filter by function";
+        internal string category = "Filter by Function";
         internal string subCategoryName = "TAC LS Items";        
         internal bool filter = true;
         

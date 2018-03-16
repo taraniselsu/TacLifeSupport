@@ -1247,8 +1247,8 @@ namespace Tac
             //The rate is per second.
             double rate = vesselInfo.estimatedElectricityConsumptionRate;
             //The delta Time is the minimum of the amount of time since we last took EC and the minimum of EC max delta time or currented fixed delta time.
-            //double deltaTime = Math.Min(currentTime - vesselInfo.lastElectricity, globalsettings.MaxDeltaTime);
-            double deltaTime = currentTime - vesselInfo.lastElectricity;
+            double deltaTime = Math.Min(currentTime - vesselInfo.lastElectricity, globalsettings.MaxDeltaTime);
+            //double deltaTime = currentTime - vesselInfo.lastElectricity;
             double desiredElectricity = rate * deltaTime; //We need the rate x delta time.    
 
             if (desiredElectricity > 0.0) //If the rate > zero we have a job to do.
@@ -1286,7 +1286,7 @@ namespace Tac
                     if (NeedElectricity(vessel))
                     {
                         double timeWithoutElectricity = currentTime - vesselInfo.lastElectricity;
-                        if (timeWithoutElectricity > HighLogic.CurrentGame.Parameters.CustomParams<TAC_SettingsParms_Sec3>().MaxTimeWithoutElectricity * Mathf.Max(1, TimeWarp.CurrentRateIndex))
+                        if (timeWithoutElectricity > HighLogic.CurrentGame.Parameters.CustomParams<TAC_SettingsParms_Sec3>().MaxTimeWithoutElectricity * Mathf.Max(globalsettings.ElectricityMaxDeltaTime, TimeWarp.CurrentRateIndex))
                         {
                             if (settings_sec1.hibernate == "Die")
                             {
@@ -1298,14 +1298,16 @@ namespace Tac
                             {
                                 HibernateCrewMembers(vessel, vesselInfo, "EC");
                             }
-                            vesselInfo.lastElectricity += UnityEngine.Random.Range(60, 600);
                         }
+                        vesselInfo.lastElectricity += UnityEngine.Random.Range(500, 2000);
+                        vesselInfo.lastElectricity = Math.Min(vesselInfo.lastElectricity, currentTime);
                     }
                     else //We are out of EC, but we can open the windows. so put that in the GUI
                     {
                         if (settings_sec1.hibernate != "Die")
                             RemoveHibernationStates(vessel, vesselInfo, "EC");
                         vesselInfo.windowOpen = true;
+                        vesselInfo.lastElectricity = currentTime;
                     }
                 }
             }
