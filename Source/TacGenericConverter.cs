@@ -36,8 +36,6 @@ namespace Tac
     [KSPModule("TAC Converter")]
     public class TacGenericConverter : ModuleResourceConverter
     {
-        [KSPField] public string converterName = "TAC Generic Converter";
-
         [KSPField(isPersistant = true)] public bool converterEnabled = false;
 
         [KSPField] public bool alwaysActive = false;

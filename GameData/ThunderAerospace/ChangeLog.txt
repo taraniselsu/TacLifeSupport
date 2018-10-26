@@ -1,3 +1,6 @@
+V0.13.10
+	Re-compile for KSP 1.5.x.
+	Should now show converter name in converter part extended part tooltip in VAB/SPH.	
 V0.13.9
 	Add Life Support to kerbals wearing the Making History suits.
 	Update the included Module Manager version to the correct one.
