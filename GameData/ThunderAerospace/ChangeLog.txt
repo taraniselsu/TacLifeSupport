@@ -1,3 +1,6 @@
+V0.13.11
+	Add test subject to Making History parts.
+	Fix LS resources not appearing for Female Kerbals on EVA without Making History installed.
 V0.13.10
 	Re-compile for KSP 1.5.x.
 	Should now show converter name in converter part extended part tooltip in VAB/SPH.	
