@@ -27,6 +27,7 @@
  */
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
@@ -53,10 +54,13 @@ namespace Tac
 
                 try
                 {
-                    var evaParts = PartLoader.LoadedPartsList.Where(p => p.name.Contains("kerbalEVA"));
-                    foreach (var evaPart in evaParts)
+                    IEnumerable<AvailablePart> evaParts = PartLoader.LoadedPartsList.Where(p => p.name.Contains("kerbalEVA"));
+                    foreach (AvailablePart evaPart in evaParts)
                     {
-                        EvaAddLifeSupport(evaPart);
+                        if (evaPart.partPrefab != null && evaPart.partPrefab.Resources != null)
+                        {
+                            EvaAddLifeSupport(evaPart);
+                        }
                     }
                 }
                 catch (Exception ex)
@@ -86,11 +90,19 @@ namespace Tac
         private void EvaAddLifeSupport(AvailablePart part)
         {
             Part prefabPart = part.partPrefab;
-
+            if (prefabPart == null)
+            {
+                this.Log("Part " + part.name + " has no partPrefab");
+                return;
+            }
             this.Log("Adding resources to " + part.name + "/" + prefabPart.partInfo.title);
 
             EvaAddPartModule(prefabPart);
             if (HighLogic.CurrentGame == null) return;
+            if (prefabPart.Resources == null || !prefabPart.Resources.IsValid || prefabPart.SimulationResources == null || !prefabPart.SimulationResources.IsValid)
+            {
+                prefabPart.SetupResources();
+            }
             EvaAddResource(prefabPart, HighLogic.CurrentGame.Parameters.CustomParams<TAC_SettingsParms_Sec2>().EvaElectricityConsumptionRate, globalSettings.Electricity, false);
             EvaAddResource(prefabPart, HighLogic.CurrentGame.Parameters.CustomParams<TAC_SettingsParms_Sec2>().FoodConsumptionRate, globalSettings.Food, false);
             EvaAddResource(prefabPart, HighLogic.CurrentGame.Parameters.CustomParams<TAC_SettingsParms_Sec2>().WaterConsumptionRate, globalSettings.Water, false);
@@ -111,20 +123,13 @@ namespace Tac
             {
                 ConfigNode node = new ConfigNode("MODULE");
                 node.AddValue("name", "LifeSupportModule");
-                int c = part.Modules.Count;
-                bool Found = false;
-                for (int mI = 0; mI < c; ++mI)
+                node.AddValue("moduleName", "LifeSupportModule");
+                if (part.FindModuleImplementing<LifeSupportModule>() == null)
                 {
-                    if (part.Modules[mI].moduleName == "LifeSupportModule")
-                    {
-                        Found = true;
-                        break;
-                    }
-                }
-                if (!Found)
                     part.AddModule(node);
+                }
 
-                this.LogWarning("The expected exception did not happen when adding the Life Support part module to the EVA!");
+                //this.LogWarning("The expected exception did not happen when adding the Life Support part module to " + part.partInfo.name + "-" +  part.partInfo.title);
             }
             catch (Exception ex)
             {
