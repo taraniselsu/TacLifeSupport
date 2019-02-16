@@ -1,3 +1,10 @@
+V0.13.12
+	Re-compile for KSP 1.6.x
+	Added support for Near Future fission Generator in Unloaded Resource processing.
+	Added support for TacGenericConvertor in Unloaded Resource processing. - NB: does not factor in crew bonuses in resource calcs for unloaded vessels.
+	Added support for ModuleResourceConverter's that produce ElectricCharge ONLY (eg: FuelCell) in Unloaded Resource processing. - NB: does not factor in crew bonuses in resource calcs for unloaded vessels.
+	Fix ModuleTestSubject configuration for the revamped pod parts.
+	
 V0.13.11
 	Add test subject to Making History parts.
 	Fix LS resources not appearing for Female Kerbals on EVA without Making History installed.
