@@ -163,8 +163,8 @@ namespace Tac
         {
             const double SECONDS_PER_MINUTE = 60.0;
             const double MINUTES_PER_HOUR = 60.0;
-            double HOURS_PER_DAY = (GameSettings.KERBIN_TIME) ? 6.0 : 24.0;
-            double DAYS_PER_YEAR = (GameSettings.KERBIN_TIME) ? 426.0 : 365.0;
+            double HOURS_PER_DAY = KSPUtil.dateTimeFormatter.Day / 3600;
+            double DAYS_PER_YEAR = KSPUtil.dateTimeFormatter.Year / KSPUtil.dateTimeFormatter.Day;
 
             if (!stringsCached)
             {
