@@ -95,7 +95,7 @@ namespace Tac
                 this.Log("Part " + part.name + " has no partPrefab");
                 return;
             }
-            this.Log("Adding resources to " + part.name + "/" + prefabPart.partInfo.title);
+            //this.Log("Adding resources to " + part.name + "/" + prefabPart.partInfo.title);
 
             EvaAddPartModule(prefabPart);
             if (HighLogic.CurrentGame == null) return;
@@ -110,10 +110,10 @@ namespace Tac
             EvaAddResource(prefabPart, HighLogic.CurrentGame.Parameters.CustomParams<TAC_SettingsParms_Sec2>().CO2ProductionRate, globalSettings.CO2, false);
             EvaAddResource(prefabPart, HighLogic.CurrentGame.Parameters.CustomParams<TAC_SettingsParms_Sec2>().WasteProductionRate, globalSettings.Waste, false);
             EvaAddResource(prefabPart, HighLogic.CurrentGame.Parameters.CustomParams<TAC_SettingsParms_Sec2>().WasteWaterProductionRate, globalSettings.WasteWater, false);
-            for (int i = 0; i < prefabPart.Resources.Count; i++)
-            {
-                this.Log("Resource " + prefabPart.Resources[i].resourceName);
-            }
+            //for (int i = 0; i < prefabPart.Resources.Count; i++)
+            //{
+            //    this.Log("Resource " + prefabPart.Resources[i].resourceName);
+            //}
 
         }
 
