@@ -1,3 +1,11 @@
+1.1.0 - 2019.02.05
+------------------
+KSP 1.6.x Compatibility
+
+1.0.1 - 2018.11.20
+------------------
+Fixed antimatter config name
+
 1.0.0 - 2018.10.20
 ------------------
 KSP 1.5.0 Compatibility
