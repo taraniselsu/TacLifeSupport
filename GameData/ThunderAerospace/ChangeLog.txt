@@ -1,3 +1,8 @@
+V0.13.13
+	Re-compile for KSP 1.7.x
+	Reduce Log Spam when scenes change (no longer logs all save data).
+	Support for Kromoneter and other mods that replace KSPUtil.dateTimeFormatter.
+	Add missing buildhead profile to 1.25m waste container.	
 V0.13.12
 	Re-compile for KSP 1.6.x
 	Added support for Near Future fission Generator in Unloaded Resource processing.
