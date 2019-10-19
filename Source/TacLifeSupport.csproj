@@ -230,7 +230,7 @@
     <!-- Copy to the test directory -->
     <Warning Condition="'$(KSP_TEST)' == ''" Text="The environment variable KSP_TEST is not set!" />
     <Message Text="Execute Test Debug mode commands" Importance="high" />
-    <Exec Command="$(ProjectDir)..\..\pdb2mdb\pdb2mdb.exe $(TargetFileName)" WorkingDirectory="$(TargetDir)" IgnoreExitCode="true" Condition="'$(KSP_TEST)' != ''" />
+    <Exec Command="$(ProjectDir)..\..\pdb2mdb\mono.exe $(ProjectDir)..\..\pdb2mdb\pdb2mdb.exe $(TargetFileName)" WorkingDirectory="$(TargetDir)" IgnoreExitCode="true" Condition="'$(KSP_TEST)' != ''" />
     <Copy SourceFiles="$(TargetDir)$(TargetName).pdb" DestinationFolder="$(KSP_TEST)\GameData\ThunderAerospace\TacLifeSupport\Plugins\" Condition="'$(KSP_TEST)' != ''" />
     <Copy SourceFiles="$(TargetDir)$(TargetName).dll.mdb" DestinationFolder="$(KSP_TEST)\GameData\ThunderAerospace\TacLifeSupport\Plugins\" Condition="'$(KSP_TEST)' != ''" />
     <Exec Command="test.bat" WorkingDirectory="$(BaseDir)\" IgnoreExitCode="true" Condition="'$(KSP_TEST)' != ''" />

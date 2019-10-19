@@ -438,7 +438,13 @@ namespace Tac
 
         [GameParameters.CustomIntParameterUI("#autoLOC_TACLS_00104", toolTip = "#autoLOC_TACLS_00105", minValue = 0, maxValue = 90000)] //#autoLOC_TACLS_00104 = Default Units amount for EVA suits //# autoLOC_TACLS_00105 = The amount of each resource EVA suits will take with them (in units).
         public int EvaDefaultResourceAmount = 21600;
-        
+
+        [GameParameters.CustomIntParameterUI("#autoLOC_TACLS_00258", toolTip = "#autoLOC_TACLS_00259", minValue = 0, maxValue = 90)] //#autoLOC_TACLS_00258 = Warning Percent //#autoLOC_TACLS_00259 = Percentage remaining of a resource that will cause a Warning message to occur.
+        public int WarningMessagePercent = 10;
+
+        [GameParameters.CustomIntParameterUI("#autoLOC_TACLS_00260", toolTip = "#autoLOC_TACLS_00261", minValue = 0, maxValue = 50)] //#autoLOC_TACLS_00260 = Critical Percent //#autoLOC_TACLS_00261 = Percentage remaining of a resource that will cause a Critical Warning message to occur.
+        public int CriticalMessagePercent = 3;
+
         /// <summary>
         /// If the user selects of the default difficulty preset buttons.
         /// TAC LS does not change the settings for different difficulty presets.
@@ -515,6 +521,8 @@ namespace Tac
                 displayMaxTimeWithoutElectricity = (int) (TacStartOnce.Instance.globalSettings.MaxTimeWithoutElectricity / 60f);
                 MaxTimeWithoutElectricity = TacStartOnce.Instance.globalSettings.MaxTimeWithoutElectricity;
                 EvaDefaultResourceAmount = (int) TacStartOnce.Instance.globalSettings.EvaDefaultResourceAmount;
+                WarningMessagePercent = 10;
+                CriticalMessagePercent = 3;
             }
         }
 
@@ -553,6 +561,11 @@ namespace Tac
             node.SetValue("MaxTimeWithoutWater", MaxTimeWithoutWater);
             MaxTimeWithoutElectricity = (double)displayMaxTimeWithoutElectricity * 60f;
             node.SetValue("MaxTimeWithoutElectricity", MaxTimeWithoutElectricity);
+            if (CriticalMessagePercent > WarningMessagePercent)
+            {
+                WarningMessagePercent = CriticalMessagePercent;
+                node.SetValue("WarningMessagePercent",  WarningMessagePercent);
+            }
         }
     }
 }
