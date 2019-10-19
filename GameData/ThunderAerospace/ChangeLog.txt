@@ -1,3 +1,6 @@
+V0.14.0
+	Re-compile for KSP 1.8.x
+	Add Warning and Critical Warning percentage levels to difficulty settings.
 V0.13.13
 	Re-compile for KSP 1.7.x
 	Reduce Log Spam when scenes change (no longer logs all save data).

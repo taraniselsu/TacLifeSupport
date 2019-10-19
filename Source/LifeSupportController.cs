@@ -1522,8 +1522,8 @@ namespace Tac
         /// <param name="status"></param>
         private void ShowWarnings(string vesselName, double resourceRemaining, double max, double rate, string resourceName, ref VesselInfo.Status status)
         {
-            double criticalLevel = max * 0.03; // 3% full
-            double warningLevel = max * 0.10; // 10% full
+            double criticalLevel = max * (HighLogic.CurrentGame.Parameters.CustomParams<TAC_SettingsParms_Sec3>().CriticalMessagePercent / 100f); // 3% full is default
+            double warningLevel = max * (HighLogic.CurrentGame.Parameters.CustomParams<TAC_SettingsParms_Sec3>().WarningMessagePercent / 100f);  // 10% full is default
 
             if (resourceRemaining < criticalLevel)
             {
