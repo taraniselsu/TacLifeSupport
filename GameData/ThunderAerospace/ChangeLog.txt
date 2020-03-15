@@ -1,3 +1,9 @@
+V0.15.0
+	Fix potential NRE when applying game settings changes.
+	Remove Mini AVC plugin.
+	Fix NRE in TAC window in VAB/SPH spamming log.
+	Fix potential out of resources scenario in timewarp with background resources active.
+	Re-compile for KSP 1.9.x.
 V0.14.0
 	Re-compile for KSP 1.8.x
 	Add Warning and Critical Warning percentage levels to difficulty settings.

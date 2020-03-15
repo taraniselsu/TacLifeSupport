@@ -68,7 +68,7 @@ namespace Tac
 
         void Update()
         {
-            if (window.IsVisible() && window.Contains(Event.current.mousePosition))
+            if (window.IsVisible() && Event.current != null && window.Contains(Event.current.mousePosition))
             {
                 if (InputLockManager.GetControlLock(lockName) != desiredLock)
                 {
