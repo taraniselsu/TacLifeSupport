@@ -1334,7 +1334,7 @@ namespace Tac
                 CacheResources.CacheResource tmpResource = CacheResources.GetcachedVesselResource(vessel.protoVessel, resourceName);
                 if (tmpResource != null)
                 {
-                    if (tmpResource.timeWarpOverflow.totalAmount >= amountRequired) //If we have enough overflow we are good to go.
+                    if (tmpResource.amount + tmpResource.timeWarpOverflow.totalAmount >= amountRequired) //If we have enough plus overflow we are good to go.
                     {
                         retValue = true;
                     }

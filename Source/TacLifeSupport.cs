@@ -79,7 +79,7 @@ namespace Tac
         public void ApplySettings()
         {
             // If TAC LS is enabled re-apply TACLS custom Part filter and if it is not, turn off the TACLS custom Part filter.
-            if (HighLogic.CurrentGame != null & HighLogic.CurrentGame.Parameters.CustomParams<TAC_SettingsParms>() != null)
+            if (HighLogic.CurrentGame != null && HighLogic.CurrentGame.Parameters.CustomParams<TAC_SettingsParms>() != null)
             {
                 if (HighLogic.CurrentGame.Parameters.CustomParams<TAC_SettingsParms>().enabled)
                 {

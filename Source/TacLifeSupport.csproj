@@ -134,7 +134,7 @@
   <Import Project="$(PROGRAMFILES)\MSBuild\ExtensionPack\4.0\MSBuild.ExtensionPack.tasks" Condition="Exists('$(PROGRAMFILES)\MSBuild\ExtensionPack\4.0\MSBuild.ExtensionPack.tasks')" />
   <PropertyGroup>
     <AssemblyMajorVersion>0</AssemblyMajorVersion>
-    <AssemblyMinorVersion>14</AssemblyMinorVersion>
+    <AssemblyMinorVersion>15</AssemblyMinorVersion>
     <AssemblyBuildNumber>0</AssemblyBuildNumber>
     <AssemblyFileMajorVersion>$(AssemblyMajorVersion)</AssemblyFileMajorVersion>
     <AssemblyFileMinorVersion>$(AssemblyMinorVersion)</AssemblyFileMinorVersion>
@@ -153,13 +153,13 @@
     <DownloadUrl>https://github.com/KSP-RO/TacLifeSupport/releases</DownloadUrl>
     <ChangelogUrl>https://github.com/KSP-RO/TacLifeSupport/wiki/Changes</ChangelogUrl>
     <KspVersionMajor>1</KspVersionMajor>
-    <KspVersionMinor>8</KspVersionMinor>
+    <KspVersionMinor>9</KspVersionMinor>
     <KspVersionPatch>0</KspVersionPatch>
     <KspMinVersionMajor>1</KspMinVersionMajor>
-    <KspMinVersionMinor>8</KspMinVersionMinor>
+    <KspMinVersionMinor>9</KspMinVersionMinor>
     <KspMinVersionPatch>0</KspMinVersionPatch>
     <KspMaxVersionMajor>1</KspMaxVersionMajor>
-    <KspMaxVersionMinor>8</KspMaxVersionMinor>
+    <KspMaxVersionMinor>9</KspMaxVersionMinor>
     <KspMaxVersionPatch>99</KspMaxVersionPatch>
   </PropertyGroup>
   <Target Name="GitInfo">
@@ -223,14 +223,14 @@
     </PropertyGroup>
     <Delete Files="$(AVCFile)" />
     <WriteLinesToFile File="$(AVCFile)" Lines="{&#xD;&#xA;  &quot;NAME&quot;: &quot;$(ModName)&quot;,&#xD;&#xA;  &quot;URL&quot;: &quot;$(ModUrl)&quot;,&#xD;&#xA;  &quot;DOWNLOAD&quot;: &quot;$(DownloadUrl)&quot;,&#xD;&#xA;  &quot;CHANGE_LOG_URL&quot;: &quot;$(ChangelogUrl)&quot;,&#xD;&#xA;  &quot;VERSION&quot;: &quot;$(VersionNum)&quot;,&#xD;&#xA;  &quot;KSP_VERSION&quot;: {&#xD;&#xA;    &quot;MAJOR&quot;: $(KspVersionMajor),&#xD;&#xA;    &quot;MINOR&quot;: $(KspVersionMinor),&#xD;&#xA;    &quot;PATCH&quot;: $(KspVersionPatch)&#xD;&#xA;  },&#xD;&#xA;  &quot;KSP_VERSION_MIN&quot;: {&#xD;&#xA;    &quot;MAJOR&quot;: $(KspMinVersionMajor),&#xD;&#xA;    &quot;MINOR&quot;: $(KspMinVersionMinor),&#xD;&#xA;    &quot;PATCH&quot;: $(KspMinVersionPatch)&#xD;&#xA;  },&#xD;&#xA;  &quot;KSP_VERSION_MAX&quot;: {&#xD;&#xA;    &quot;MAJOR&quot;: $(KspMaxVersionMajor),&#xD;&#xA;    &quot;MINOR&quot;: $(KspMaxVersionMinor),&#xD;&#xA;    &quot;PATCH&quot;: $(KspMaxVersionPatch)&#xD;&#xA;  }&#xD;&#xA;}" Overwrite="true" Encoding="UTF-8" />
-    <Copy SourceFiles="$(BaseDir)\TacLib\AVC\MiniAVC.dll" DestinationFolder="$(BaseDir)\GameData\ThunderAerospace\$(ProjectName)\" />
+    <!-- Copy SourceFiles="$(BaseDir)\TacLib\AVC\MiniAVC.dll" DestinationFolder="$(BaseDir)\GameData\ThunderAerospace\$(ProjectName)\" /> -->
     <Message Text="Writing AVC version file complete." Importance="high" />
   </Target>
   <Target Name="CopyToTest">
     <!-- Copy to the test directory -->
     <Warning Condition="'$(KSP_TEST)' == ''" Text="The environment variable KSP_TEST is not set!" />
     <Message Text="Execute Test Debug mode commands" Importance="high" />
-    <Exec Command="$(ProjectDir)..\..\pdb2mdb\mono.exe $(ProjectDir)..\..\pdb2mdb\pdb2mdb.exe $(TargetFileName)" WorkingDirectory="$(TargetDir)" IgnoreExitCode="true" Condition="'$(KSP_TEST)' != ''" />
+    <Exec Command="&quot;$(PDB_DIR)bin\mono.exe&quot; &quot;$(PDB_DIR)lib\mono\4.5\pdb2mdb.exe&quot; $(TargetFileName)" WorkingDirectory="$(TargetDir)" IgnoreExitCode="true" Condition="'$(KSP_TEST)' != ''" ConsoleToMSBuild="true"/>
     <Copy SourceFiles="$(TargetDir)$(TargetName).pdb" DestinationFolder="$(KSP_TEST)\GameData\ThunderAerospace\TacLifeSupport\Plugins\" Condition="'$(KSP_TEST)' != ''" />
     <Copy SourceFiles="$(TargetDir)$(TargetName).dll.mdb" DestinationFolder="$(KSP_TEST)\GameData\ThunderAerospace\TacLifeSupport\Plugins\" Condition="'$(KSP_TEST)' != ''" />
     <Exec Command="test.bat" WorkingDirectory="$(BaseDir)\" IgnoreExitCode="true" Condition="'$(KSP_TEST)' != ''" />
